@@ -1,0 +1,35 @@
+{
+  "name": "acausal",
+  "version": "1.0.0",
+  "description": "Procedural generation toolset.",
+  "main": "./lib/index.js",
+  "scripts": {
+    "start": "NODE_ENV=production node ./lib",
+    "dev": "NODE_ENV=development nodemon ./lib",
+    "test": "jest"
+  },
+  "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/abrisene/acausal/issues"
+  },
+  "homepage": "https://github.com/abrisene/acausal#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abrisene/acausal.git"
+  },
+  "devDependencies": {
+    "eslint": "5.5.0",
+    "eslint-config-airbnb": "17.1.0",
+    "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-jsx-a11y": "6.1.1",
+    "eslint-plugin-react": "7.11.1",
+    "jest": "23.5.0",
+    "nodemon": "1.18.4"
+  },
+  "dependencies": {
+    "chalk": "2.4.1",
+    "dotenv": "6.0.0",
+    "random-js": "1.0.8"
+  }
+}
