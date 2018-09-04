@@ -105,7 +105,7 @@ const value = chain.generate({
 console.log(value); 
 
 // value => [[ { id: 'c' }, { id: 'c' }, { id: 'b' }, { id: 'c' }, { id: 'c' } ]
-// 
+
 ```
 
 ### Environment Variables
