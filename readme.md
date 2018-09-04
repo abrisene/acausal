@@ -29,9 +29,7 @@ npm run start
 
 ## API
 
-###Markov###
-
-####Create a new Markov Chain
+### Markov
 
 **Basic Example:**
 
