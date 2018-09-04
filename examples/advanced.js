@@ -33,6 +33,6 @@ const value = chain.generate({
   start: ['c'], // Starts generation from this sequence.
 });
 
-console.log(value); 
+console.log(value);
 
 // value => [[ { id: 'c' }, { id: 'c' }, { id: 'b' }, { id: 'c' }, { id: 'c' } ]

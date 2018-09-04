@@ -19,13 +19,22 @@ npm run start
 ### Planned Features ###
 
 **Structures**
-- [x] Markov Chain
-- [ ] Quadtree / Octree
-- [ ] Voronoi Diagram
+- [x] **Markov**
+  + [ ] Markov Chain
+  + [ ] Markov Decision Process
+  + [ ] Markov Field
+
+- [ ] **Trees**
+  + [ ] Quadtree
+  + [ ] Octree
+
+- [ ] **Clustering**
+  - [ ] Voronoi Diagram
 
 **Modules**
 - [ ] Name Generator
 - [ ] Place Generator
+- [ ] Narrative Generator
 
 ## API
 
