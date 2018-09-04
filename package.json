@@ -6,6 +6,7 @@
   "scripts": {
     "start": "NODE_ENV=production node ./lib",
     "dev": "NODE_ENV=development nodemon ./lib",
+    "profile": "NODE_ENV=production node --prof ./lib",
     "test": "jest"
   },
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
