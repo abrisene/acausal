@@ -4,6 +4,7 @@ A toolset for building procedurally generated content.
 
 ### Features ###
 
+- **Transition Matrix**
 - **Markov**
 
 ## Installation
