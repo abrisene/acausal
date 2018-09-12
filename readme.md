@@ -1,4 +1,4 @@
-## aCausal
+## Acausal
 
 A toolset for building procedurally generated content.
 
@@ -19,22 +19,22 @@ npm run start
 ### Planned Features ###
 
 **Structures**
-- [x] **Markov**
-  + [ ] Markov Chain
-  + [ ] Markov Decision Process
-  + [ ] Markov Field
+[x] **Markov**
++ [x] Markov Chain
++ [ ] Markov Decision Process
++ [ ] Markov Field
 
-- [ ] **Trees**
-  + [ ] Quadtree
-  + [ ] Octree
+[ ] **Trees**
++ [ ] Quadtree
++ [ ] Octree
 
-- [ ] **Clustering**
-  - [ ] Voronoi Diagram
+[ ] **Clustering**
++ [ ] Voronoi Diagram
 
 **Modules**
-- [ ] Name Generator
-- [ ] Place Generator
-- [ ] Narrative Generator
++ [ ] Name Generator
++ [ ] Place Generator
++ [ ] Narrative Generator
 
 ## API
 
