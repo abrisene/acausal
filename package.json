@@ -27,8 +27,6 @@
     "nodemon": "1.18.4"
   },
   "dependencies": {
-    "chalk": "2.4.1",
-    "dotenv": "6.0.0",
     "random-js": "1.0.8"
   }
 }
