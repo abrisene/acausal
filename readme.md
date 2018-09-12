@@ -121,9 +121,3 @@ console.log(value);
 // value => [[ { id: 'c' }, { id: 'c' }, { id: 'b' }, { id: 'c' }, { id: 'c' } ]
 
 ```
-
-### Environment Variables
-
-```
-    ENVIRONMENT VARIABLES WILL BE LISTED HERE
-```
