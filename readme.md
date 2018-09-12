@@ -19,16 +19,20 @@ npm run start
 ### Planned Features ###
 
 **Structures**
-[x] **Markov**
-+ [x] Markov Chain
+
+**General**
++ [x] Transition Matrix (1.0.2)
+
+**Markov**
++ [x] Markov Chain (1.0.0)
 + [ ] Markov Decision Process
 + [ ] Markov Field
 
-[ ] **Trees**
+**Trees**
 + [ ] Quadtree
 + [ ] Octree
 
-[ ] **Clustering**
+**Clustering**
 + [ ] Voronoi Diagram
 
 **Modules**

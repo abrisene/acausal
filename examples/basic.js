@@ -28,7 +28,7 @@ const chain = new Markov({
 const value = chain.generate({
   min: 4,       // Minimum Length of the result.
   max: 10,      // Maximum Length of the result.
-  order: 1,     // Maximum Order - this will adjust up or down dynamically.
+  order: 2,     // Maximum Order - this will adjust up or down dynamically.
 });
 
 console.log(value);
