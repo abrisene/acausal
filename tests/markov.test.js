@@ -78,7 +78,7 @@ test('Markov Chain can pick values', () => {
   const valueA = markovA.generate(configA);
   const valueB = markovB.generate(configB);
   expect(valueA).toEqual(['a', 'l', 'i', 'n']);
-  expect(valueB).toEqual([{ id: 'c' }, { id: 'b' }, { id: 'c' }, { id: 'b' }, { id: 'c' }]);
+  expect(valueB).toEqual([{ id: 'c' }, { id: 'b' }, { id: 'a' }, { id: 'c' }, { id: 'c' }]);
   expect(valueB[0].id).toEqual(configB.start[0]);
 });
 
