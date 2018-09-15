@@ -2,6 +2,7 @@
   "name": "acausal",
   "version": "1.0.2",
   "description": "Procedural generation toolset.",
+  "keywords": ["procedural generation", "markov chain", "markov"],
   "main": "./lib/index.js",
   "scripts": {
     "start": "NODE_ENV=production node ./lib",
