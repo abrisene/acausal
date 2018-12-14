@@ -15,7 +15,7 @@
     "test": "jest"
   },
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/abrisene/acausal/issues"
   },
