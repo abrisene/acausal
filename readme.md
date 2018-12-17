@@ -21,7 +21,7 @@ npm install -S acausal
 ## Gocausal ##
 
 acausal is also implemented in Golang. You can find the module here:
-* [Gocausal](https://github.com/abrisene/gocausal).
+* [Gocausal](https://github.com/abrisene/gocausal)
 
 ## API
 
