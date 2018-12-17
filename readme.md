@@ -1,45 +1,27 @@
-## Acausal
+## acausal
 
-A toolset for building procedurally generated content.
+[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal)
+
+acausal is a toolset for building procedurally generated content using markov models and other probablistic systems.
 
 ### Features ###
 
-- **Transition Matrix**
-- **Markov**
+**Structures**
++ **Transition Matrix** (1.0.2)
++ **Markov Chain** (1.0.0)
 
 ## Installation
 
 Run:
 
 ```
-touch .env
-npm install
-npm run start
+npm install -S acausal
 ```
 
-### Planned Features ###
+## Gocausal ##
 
-**Structures**
-
-**General**
-+ [x] Transition Matrix (1.0.2)
-
-**Markov**
-+ [x] Markov Chain (1.0.0)
-+ [ ] Markov Decision Process
-+ [ ] Markov Field
-
-**Trees**
-+ [ ] Quadtree
-+ [ ] Octree
-
-**Clustering**
-+ [ ] Voronoi Diagram
-
-**Modules**
-+ [ ] Name Generator
-+ [ ] Place Generator
-+ [ ] Narrative Generator
+acausal is also implemented in Golang. You can find the module here:
+* [Gocausal](https://github.com/abrisene/gocausal).
 
 ## API
 
