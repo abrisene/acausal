@@ -4,7 +4,7 @@
 
 acausal is a toolset for building procedurally generated content using markov models and other probablistic systems.
 
-### Features ###
+### Features
 
 **Structures**
 + **Transition Matrix** (1.0.2)
@@ -18,7 +18,7 @@ Run:
 npm install -S acausal
 ```
 
-## Gocausal ##
+## Gocausal
 
 acausal is also implemented in Golang. You can find the module here:
 * [Gocausal](https://github.com/abrisene/gocausal)
@@ -103,3 +103,59 @@ console.log(value);
 // value => [[ { id: 'c' }, { id: 'c' }, { id: 'b' }, { id: 'c' }, { id: 'c' } ]
 
 ```
+
+### Utilities
+
+**Loading Data**
+
+acausal also includes utility functions to make the loading and processing of data easier.
+
+
+```javascript
+
+const { utilities } = require('acausal');
+const { readTxt, loadSeeds } = utilities;
+
+```
+
+#### `acausal.utilities.readTxt`
+
+ASYNC. Loads a .txt file from a defined path. Can split into an array and filter data.
+
+**Arguments**
+
+* `loc` (string): A path to a .txt file.
+* `delimiter` (string): An optional delimiter, defaults to '\n' to parse text into an array.
+* `filter` (function): An optional filtering function to evaluate each element of the resulting array.
+
+**Returns**
+
+If no delimiter is defined, the text is returned as a utf8 string. Otherwise readTxt will return an array of strings split using the delimiter and filtered by the filtering function.
+
+#### `acausal.utilities.loadSeeds`
+
+ASYNC. Loads a directory of text files and returns an object containing deduped data with nested keys defined by filenames.
+
+**Arguments**
+
+* `loc` (string): A path to a .txt file.
+
+**Returns**
+
+Returns an object with keys nested according to the filenames. This allows the structure of the object to be defined using a naming convention following: `keyA.keyB => { keyA: { keyB } }`
+
+For example, if we have a directory with the following files:
+
+```
+    - names.male.txt
+    - names.female.txt
+    - words.adjectives.txt
+    - words.nouns.txt
+```
+
+ Using loadSeeds() will return:
+```javascript
+{
+  names: { male: [...], female: [...] },
+  words: { adjectives: [...], nouns: [...] },
+}
