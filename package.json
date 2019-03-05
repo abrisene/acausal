@@ -25,10 +25,10 @@
     "url": "git+https://github.com/abrisene/acausal.git"
   },
   "devDependencies": {
-    "eslint": "5.5.0",
+    "eslint": "5.15.1",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-plugin-import": "2.14.0",
-    "jest": "23.5.0",
+    "jest": "24.1.0",
     "nodemon": "1.18.4"
   },
   "dependencies": {
