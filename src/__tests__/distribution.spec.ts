@@ -135,11 +135,17 @@ const pickOneU1 = Distribution.pickValue(dtoU1);
 const pickOneU2 = Distribution.pickValue(dtoU2);
 const pickOneU3 = Distribution.pickValue(dtoU3);
 
-const pickOneMaskU1 = Distribution.pickValue(dtoU1, ['a']);
-const pickOneMaskU2 = Distribution.pickValue(dtoU2, ['a']);
-const pickOneMaskU3 = Distribution.pickValue(dtoU3, ['a', 'b']);
+const pickOneMaskU1 = Distribution.pickValue(dtoU1, ['a'], engine);
+const pickOneMaskU2 = Distribution.pickValue(dtoU2, ['a'], engine);
+const pickOneMaskU3 = Distribution.pickValue(dtoU3, ['a', 'b'], engine);
 
-const pickFiveMaskU3 = Distribution.pickValues(dtoU3, 5, ['a', 'b']);
+const pickFiveMaskU3 = Distribution.pickValues(
+  dtoU3,
+  5,
+  ['a', 'b'],
+  false,
+  engine
+);
 
 const pickTwoU3 = Distribution.pickValues(dtoU3, 2);
 const pickFiveU3 = Distribution.pickValues(dtoU3, 5);

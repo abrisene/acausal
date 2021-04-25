@@ -51,17 +51,17 @@ export interface DistributionNormalDTO {
 
 export type DistributionDTO = DistributionSourceDTO | DistributionNormalDTO;
 
-export interface DistributionConstructor
-  extends DistributionSourceDTO,
-    RandomDTO {
+export interface DistributionConstructor extends RandomDTO {
   engine?: Random;
+  source?: WeightedDistribution;
+  normal?: WeightedDistribution;
 }
 
 /**
  # Constants
  */
 
-const defaultDTO: DistributionDTO = {
+const defaultDTO: DistributionSourceDTO = {
   source: {},
   normal: {},
 };
@@ -87,29 +87,32 @@ function addObjects(...objects: WeightedDistribution[]) {
 
 export class Distribution {
   private _engine: Random;
-  private _source: WeightedDistribution;
+  private _source?: WeightedDistribution;
   private _normal: WeightedDistribution;
 
   constructor(config: DistributionConstructor) {
-    this._engine = config.engine || new Random(config);
-    this._source = config.source || {};
-    this._normal = {};
-    // this.regenerate();
+    const { engine, source, normal, ...randomConfig } = config;
+    this._engine = config.engine || new Random(randomConfig);
+
+    if (source !== undefined) {
+      const dto = Distribution.addSourceValues(defaultDTO, source);
+      this._source = dto.source;
+      this._normal = dto.normal;
+    } else if (normal !== undefined) {
+      const dto = Distribution.addNormalValues(defaultDTO, normal);
+      this._normal = dto.normal;
+    } else {
+      this._source = defaultDTO.source;
+      this._normal = defaultDTO.normal;
+    }
   }
 
-  get distribution() {
+  get source() {
     return this._source;
   }
 
-  get distributionNormal() {
+  get normal() {
     return this._normal;
-  }
-
-  get isReadOnly() {
-    return (
-      Object.keys(this._normal).length > 0 &&
-      Object.keys(this._source).length === 0
-    );
   }
 
   /**
@@ -336,8 +339,9 @@ export class Distribution {
    * @param source An optional source of values to generate the distribution from.
    */
   public static new(source?: WeightedDistribution) {
-    const dto = { source: {}, normal: {} };
-    return source ? Distribution.addSourceValues(dto, source) : dto;
+    return source
+      ? Distribution.addSourceValues(defaultDTO, source)
+      : defaultDTO;
   }
 
   /**
