@@ -116,14 +116,150 @@ export class Distribution {
   }
 
   /**
+   * Applies a DTO's data to the source and normal distributions.
+   * @param data A Distribution data transfer object.
+   */
+  private update(data: DistributionDTO) {
+    this._source = data.source;
+    this._normal = data.normal;
+    return this;
+  }
+
+  /**
+   * Picks one more values from a Distribution without exclusion.
+   * If you just need to pick one value, you should use pickOne instead.
+   * @param count       The number of picks to make (default 1).
+   * @param mask        A mask containing keys in the distribution that should be ignored.
+   * @param exclusive   If true picks are considered exclusive and are removed.
+   */
+  public pick(count = 1, mask?: string[], exclusive = false) {
+    return Distribution.pick(
+      { source: this._source, normal: this._normal },
+      count,
+      mask,
+      exclusive,
+      this._engine
+    );
+  }
+
+  /**
+   * Picks a single value from a Distribution.
+   * If you are picking multiple values, use pick instead.
+   * @param mask        A mask containing keys in the distribution that should be ignored.
+   */
+  public pickOne(mask?: string[]) {
+    return this._engine.pickWeighted(this._normal, mask);
+  }
+
+  /**
+   * Adds a key / value pair to a Distribution.
+   * Will add to the source distribution by default, unless the distribution
+   * only has normalized values.
+   * @param key   Key to be added.
+   * @param value Value of the key to add.
+   */
+  public add(key: string, value: number) {
+    const data = Distribution.addValues(
+      { source: this._source, normal: this._normal },
+      { [key]: value }
+    );
+    return this.update(data);
+  }
+
+  /**
+   * Adds a key / value pair to a Distribution.
+   * Will add to the source distribution by default, unless the distribution
+   * only has normalized values.
+   * @param key   Key to be added.
+   * @param value Value of the key to add.
+   */
+  /* public addValue(key: string, value: number) {
+    const data = Distribution.addValues({ source: this._source, normal: this._normal }, { [key]: value });
+    return this.update(data);
+  } */
+
+  /**
+   * Adds an object of values to a Distribution.
+   * Will add to the source distribution by default, unless the distribution
+   * only has normalized values.
+   * @param additions   An object containing additions.
+   */
+  public addValues(additions: WeightedDistribution) {
+    const data = Distribution.addValues(
+      { source: this._source, normal: this._normal },
+      additions
+    );
+    return this.update(data);
+  }
+
+  /**
+   * Removes a key or array of keys from a Distribution and renormalizes.
+   * @param keys  Key or Keys to be removed.
+   */
+  public remove(keys: string | string[]) {
+    const data = Distribution.remove(
+      { source: this._source, normal: this._normal },
+      keys
+    );
+    return this.update(data);
+  }
+
+  /**
+   * Creates a clone of a Distribution instance.
+   * @param stripSource If true this will strip out the source.
+   */
+  public clone(stripSource: boolean) {
+    const { source, normal } = Distribution.clone(
+      { source: this._source, normal: this._normal },
+      stripSource
+    );
+  }
+
+  /* public serialize(): DistributionDTO {
+
+  } */
+
+  /**
    * Picks multiple values from a Distribution without exclusion.
    * @param data        A Distribution data transfer object.
    * @param count       The number of picks to make (default 1).
    * @param mask        A mask containing keys in the distribution that should be ignored.
-   * @param exclusive   If true picks are considered exclusive and are removed
+   * @param exclusive   If true picks are considered exclusive and are removed.
    * @param engine      A Random engine. This is created if not provided.
    */
-  public static pickValues(
+  /*   public static pickValues(
+    data: DistributionNormalDTO,
+    count = 1,
+    mask?: string[],
+    exclusive = false,
+    engine?: Random
+  ) {
+    const eng = engine || new Random({});
+    const picks: string[] = [];
+    const iMask = mask ? [...mask] : exclusive ? [] : undefined;
+    for (let i = 0; i < count; i += 1) {
+      const pick = eng.pickWeighted(data.normal, iMask);
+      if (pick) {
+        picks.push(pick);
+        if (exclusive && iMask) iMask.push(pick);
+      } else {
+        break;
+      }
+    }
+
+    return picks;
+  } */
+
+  /**
+   * Picks one more values from a Distribution without exclusion.
+   * If you just need to pick one value, you should use pickOne instead.
+   * @param data        A Distribution data transfer object.
+   * @param count       The number of picks to make (default 1).
+   * @param mask        A mask containing keys in the distribution that should be ignored.
+   * @param exclusive   If true picks are considered exclusive and are removed.
+   * @param engine      A Random engine. This is created if not provided.
+   */
+  public static pick(
     data: DistributionNormalDTO,
     count = 1,
     mask?: string[],
@@ -148,11 +284,12 @@ export class Distribution {
 
   /**
    * Picks a single value from a Distribution.
+   * If you are picking multiple values, use pick instead.
    * @param data        A Distribution data transfer object.
    * @param mask        A mask containing keys in the distribution that should be ignored.
    * @param engine      A Random engine. This is created if not provided.
    */
-  public static pickValue(
+  public static pickOne(
     data: DistributionNormalDTO,
     mask?: string[],
     engine?: Random
@@ -240,7 +377,7 @@ export class Distribution {
   }
 
   /**
-   * Adds an object of values to a Distribution source.
+   * Adds an object of values to a Distribution.
    * Will add to the source distribution by default, unless the distribution
    * only has normalized values.
    * @param data        A Distribution data transfer object.
@@ -266,13 +403,13 @@ export class Distribution {
    * @param key   Key to be added.
    * @param value Value of the key to add.
    */
-  public static addValue(
+  /* public static addValue(
     data: DistributionDTO,
     key: string,
     value: number
   ): DistributionDTO {
     return Distribution.addValues(data, { [key]: value });
-  }
+  } */
 
   /**
    * Adds a key / value pair to a Distribution.
@@ -291,18 +428,19 @@ export class Distribution {
   }
 
   /**
-   * Removes a key / value pair from a Distribution and renormalizes.
+   * Removes a key or array of keys from a Distribution and renormalizes.
    * @param data  A Distribution data transfer object.
-   * @param keys   Keys to be removed.
+   * @param keys  Key or Keys to be removed.
    */
-  public static removeValues(data: DistributionDTO, keys: string[]) {
+  public static remove(data: DistributionDTO, keys: string | string[]) {
     // Determine whether we're using the source or the normal distribution.
+    const rem = Array.isArray(keys) ? keys : [keys];
     const ref = data.source || data.normal || {}; // The fallback should be unreachable.
     const res: WeightedDistribution = {};
 
     // Filter out the keys when creating the new distribution.
     for (const key of Object.keys(ref)) {
-      if (!keys.includes(key)) res[key] = ref[key];
+      if (!rem.includes(key)) res[key] = ref[key];
     }
 
     // Renormalize and return the result.
@@ -321,18 +459,18 @@ export class Distribution {
    * @param data  A Distribution data transfer object.
    * @param key   Key(s) to be removed.
    */
-  public static removeValue(data: DistributionDTO, keys: string | string[]) {
+  /* public static removeValue(data: DistributionDTO, keys: string | string[]) {
     return Distribution.removeValues(data, Array.isArray(keys) ? keys : [keys]);
-  }
+  } */
 
   /**
    * Removes a key from a Distribution and renormalizes.
    * @param data  A Distribution data transfer object.
    * @param key   Key(s) to be removed.
    */
-  public static remove(data: DistributionDTO, keys: string | string[]) {
+  /* public static remove(data: DistributionDTO, keys: string | string[]) {
     return Distribution.removeValues(data, Array.isArray(keys) ? keys : [keys]);
-  }
+  } */
 
   /**
    * Initializes a new DistributionSourceDTO.

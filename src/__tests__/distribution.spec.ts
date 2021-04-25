@@ -131,28 +131,22 @@ const dtoB3SwapAB10pExpected = {
 
 // Picks
 
-const pickOneU1 = Distribution.pickValue(dtoU1);
-const pickOneU2 = Distribution.pickValue(dtoU2);
-const pickOneU3 = Distribution.pickValue(dtoU3);
+const pickOneU1 = Distribution.pickOne(dtoU1);
+const pickOneU2 = Distribution.pickOne(dtoU2);
+const pickOneU3 = Distribution.pickOne(dtoU3);
 
-const pickOneMaskU1 = Distribution.pickValue(dtoU1, ['a'], engine);
-const pickOneMaskU2 = Distribution.pickValue(dtoU2, ['a'], engine);
-const pickOneMaskU3 = Distribution.pickValue(dtoU3, ['a', 'b'], engine);
+const pickOneMaskU1 = Distribution.pickOne(dtoU1, ['a'], engine);
+const pickOneMaskU2 = Distribution.pickOne(dtoU2, ['a'], engine);
+const pickOneMaskU3 = Distribution.pickOne(dtoU3, ['a', 'b'], engine);
 
-const pickFiveMaskU3 = Distribution.pickValues(
-  dtoU3,
-  5,
-  ['a', 'b'],
-  false,
-  engine
-);
+const pickFiveMaskU3 = Distribution.pick(dtoU3, 5, ['a', 'b'], false, engine);
 
-const pickTwoU3 = Distribution.pickValues(dtoU3, 2);
-const pickFiveU3 = Distribution.pickValues(dtoU3, 5);
-const pickTwentyU3 = Distribution.pickValues(dtoU3, 20);
+const pickTwoU3 = Distribution.pick(dtoU3, 2);
+const pickFiveU3 = Distribution.pick(dtoU3, 5);
+const pickTwentyU3 = Distribution.pick(dtoU3, 20);
 
 const sampleCount = 50000;
-const sampleB3 = Distribution.pickValues(dtoB3, sampleCount);
+const sampleB3 = Distribution.pick(dtoB3, sampleCount);
 const sampleB3Summary = sampleB3.reduce((l, k) => {
   const result = { ...l };
   if (result[k] === undefined) result[k] = 0;
@@ -281,28 +275,28 @@ describe('Distributions', () => {
     });
     it('can remove one or more values from a distribution.', () => {
       // Multi-Value
-      expect(Distribution.removeValue(dtoU2, ['a', 'b'])).toEqual(dtoEmpty);
-      expect(Distribution.removeValue(dtoU3, ['b', 'c'])).toEqual(dtoU1);
+      // expect(Distribution.removeValue(dtoU2, ['a', 'b'])).toEqual(dtoEmpty);
+      // expect(Distribution.removeValue(dtoU3, ['b', 'c'])).toEqual(dtoU1);
 
       expect(Distribution.remove(dtoU2, ['a', 'b'])).toEqual(dtoEmpty);
       expect(Distribution.remove(dtoU3, ['b', 'c'])).toEqual(dtoU1);
 
       // Single Value
-      expect(Distribution.removeValue(dtoU1, 'a')).toEqual(dtoEmpty);
-      expect(Distribution.removeValue(dtoU2, 'b')).toEqual(dtoU1);
-      expect(Distribution.removeValue(dtoU3, 'c')).toEqual(dtoU2);
+      // expect(Distribution.removeValue(dtoU1, 'a')).toEqual(dtoEmpty);
+      // expect(Distribution.removeValue(dtoU2, 'b')).toEqual(dtoU1);
+      // expect(Distribution.removeValue(dtoU3, 'c')).toEqual(dtoU2);
 
       expect(Distribution.remove(dtoU1, 'a')).toEqual(dtoEmpty);
       expect(Distribution.remove(dtoU2, 'b')).toEqual(dtoU1);
       expect(Distribution.remove(dtoU3, 'c')).toEqual(dtoU2);
 
       // Multi-Value (No Source)
-      expect(stripSource(Distribution.removeValue(dtoU2, ['a', 'b']))).toEqual(
-        stripSource(dtoEmpty)
-      );
-      expect(stripSource(Distribution.removeValue(dtoU3, ['b', 'c']))).toEqual(
-        stripSource(dtoU1)
-      );
+      // expect(stripSource(Distribution.removeValue(dtoU2, ['a', 'b']))).toEqual(
+      //   stripSource(dtoEmpty)
+      // );
+      // expect(stripSource(Distribution.removeValue(dtoU3, ['b', 'c']))).toEqual(
+      //   stripSource(dtoU1)
+      // );
 
       expect(stripSource(Distribution.remove(dtoU2, ['a', 'b']))).toEqual(
         stripSource(dtoEmpty)
@@ -312,15 +306,15 @@ describe('Distributions', () => {
       );
 
       // Single Value (No Source)
-      expect(stripSource(Distribution.removeValue(dtoU1, 'a'))).toEqual(
-        stripSource(dtoEmpty)
-      );
-      expect(stripSource(Distribution.removeValue(dtoU2, 'b'))).toEqual(
-        stripSource(dtoU1)
-      );
-      expect(stripSource(Distribution.removeValue(dtoU3, 'c'))).toEqual(
-        stripSource(dtoU2)
-      );
+      // expect(stripSource(Distribution.removeValue(dtoU1, 'a'))).toEqual(
+      //   stripSource(dtoEmpty)
+      // );
+      // expect(stripSource(Distribution.removeValue(dtoU2, 'b'))).toEqual(
+      //   stripSource(dtoU1)
+      // );
+      // expect(stripSource(Distribution.removeValue(dtoU3, 'c'))).toEqual(
+      //   stripSource(dtoU2)
+      // );
 
       expect(stripSource(Distribution.remove(dtoU1, 'a'))).toEqual(
         stripSource(dtoEmpty)
