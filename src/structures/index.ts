@@ -8,4 +8,4 @@
  */
 
 export * from './distribution';
-// export * from './markov';
+export * from './markov';

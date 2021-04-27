@@ -504,7 +504,7 @@ export class Distribution {
   public static clone(
     data: DistributionDTO,
     stripSource = false
-  ): DistributionDTO | DistributionNormalDTO {
+  ): DistributionDTO {
     const { source, normal, ...dtoData } = data;
     return stripSource || data.source === undefined
       ? {
