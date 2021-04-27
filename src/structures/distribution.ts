@@ -92,7 +92,7 @@ export class Distribution {
 
   constructor(config: DistributionConstructor) {
     const { engine, source, normal, ...randomConfig } = config;
-    this._engine = config.engine || new Random(randomConfig);
+    this._engine = engine || new Random(randomConfig);
 
     if (source !== undefined) {
       const dto = Distribution.addSourceValues(defaultDTO, source);
@@ -105,6 +105,14 @@ export class Distribution {
       this._source = defaultDTO.source;
       this._normal = defaultDTO.normal;
     }
+  }
+
+  get seed() {
+    return this._engine.seed;
+  }
+
+  get uses() {
+    return this._engine.uses;
   }
 
   get source() {
@@ -208,11 +216,17 @@ export class Distribution {
    * Creates a clone of a Distribution instance.
    * @param stripSource If true this will strip out the source.
    */
-  public clone(stripSource: boolean) {
+  public clone(stripSource = false) {
     const { source, normal } = Distribution.clone(
       { source: this._source, normal: this._normal },
       stripSource
     );
+    return new Distribution({
+      seed: this.seed,
+      uses: this.uses,
+      source,
+      normal,
+    });
   }
 
   /* public serialize(): DistributionDTO {
@@ -309,7 +323,7 @@ export class Distribution {
   ): DistributionSourceDTO {
     // Create the new distribution and normalize.
     const src = addObjects(data.source, additions);
-    const nrm = normalizeObject(src);
+    const nrm = Object.keys(src).length > 0 ? normalizeObject(src) : {};
     return { ...data, source: src, normal: nrm };
   }
 
@@ -353,7 +367,7 @@ export class Distribution {
 
     // If we have sources, recalculate it from the normalized values.
     const src =
-      source !== undefined
+      source !== undefined && Object.keys(source).length > 0
         ? scaleNormalObject(nrm, sumObject(source))
         : undefined;
 
@@ -492,7 +506,7 @@ export class Distribution {
     stripSource = false
   ): DistributionDTO | DistributionNormalDTO {
     const { source, normal, ...dtoData } = data;
-    return stripSource
+    return stripSource || data.source === undefined
       ? {
           ...dtoData,
           normal: { ...normal },

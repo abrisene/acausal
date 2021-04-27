@@ -9,6 +9,7 @@
 
 import * as randomjs from 'random-js';
 import { WeightedDistribution } from '..';
+import { CONSTANTS } from '..';
 
 /**
  # Types
@@ -23,7 +24,7 @@ export interface RandomDTO {
  # Constants
  */
 
-const MT_PREWARM = 2000;
+// const MT_PREWARM = 2000;
 
 /**
  # Class
@@ -39,7 +40,13 @@ export class Random {
     this._engine = Array.isArray(this._seed)
       ? randomjs.MersenneTwister19937.seedWithArray(this._seed)
       : randomjs.MersenneTwister19937.seed(this._seed);
-    this._engine.discard(config.uses !== undefined ? config.uses : MT_PREWARM);
+    this._engine.discard(
+      config.uses !== undefined ? config.uses : CONSTANTS.MT_PREWARM
+    );
+  }
+
+  get seed() {
+    return this._seed;
   }
 
   get uses() {
