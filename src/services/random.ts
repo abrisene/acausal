@@ -25,6 +25,7 @@ export interface RandomDTO {
  */
 
 // const MT_PREWARM = 2000;
+const defaultDTO: RandomDTO = {};
 
 /**
  # Class
@@ -53,19 +54,19 @@ export class Random {
     return this._engine.getUseCount();
   }
 
-  integer(min: number, max: number) {
+  public integer(min: number, max: number) {
     return randomjs.integer(min, max)(this._engine);
   }
 
-  real(min: number, max: number, inclusive?: boolean) {
+  public real(min: number, max: number, inclusive?: boolean) {
     return randomjs.real(min, max, inclusive)(this._engine);
   }
 
-  bool(percentage = 0.5) {
+  public bool(percentage = 0.5) {
     return randomjs.bool(percentage)(this._engine);
   }
 
-  pick<T>(source: ArrayLike<T>, begin?: number, end?: number) {
+  public pick<T>(source: ArrayLike<T>, begin?: number, end?: number) {
     return randomjs.pick(this._engine, source, begin, end);
   }
 
@@ -74,7 +75,7 @@ export class Random {
    * @param {object} object   An object containing normalized number values.
    * @param {array}  mask     Array of keys to be ignored while evaluating.
    */
-  pickWeighted(
+  public pickWeighted(
     object: WeightedDistribution,
     mask?: string[]
   ): string | undefined {
@@ -100,10 +101,18 @@ export class Random {
     return result;
   }
 
-  serialize(): RandomDTO {
+  public serialize(): RandomDTO {
     return {
       seed: this._seed,
       uses: this.uses,
     };
+  }
+
+  public clone(useCount?: number) {
+    return new Random({ seed: this._seed, uses: useCount || this.uses });
+  }
+
+  public static new(seed?: number | number[], uses?: number) {
+    return new Random({ seed, uses });
   }
 }

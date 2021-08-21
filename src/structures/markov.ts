@@ -9,6 +9,8 @@
 
 import { Random, RandomDTO } from '../services';
 import { Distribution, DistributionSourceDTO } from './distribution';
+// import { MC_START_DELIMITER, MC_END_DELIMITER } from '../constants';
+import { CONSTANTS } from '..';
 // import { WeightedDistribution } from '../types';
 
 /**
@@ -75,9 +77,9 @@ export interface Gram {
 
 const defaultOptions = {
   maxOrder: 4,
-  delimiter: '⏐',
-  startDelimiter: '○',
-  endDelimiter: '◍',
+  delimiter: CONSTANTS.MC_GRAM_DELIMITER,
+  startDelimiter: CONSTANTS.MC_START_DELIMITER,
+  endDelimiter: CONSTANTS.MC_END_DELIMITER,
 };
 
 const defaultDTO: MarkovChainSequenceDTO = {
@@ -355,7 +357,7 @@ export class MarkovChain {
 
   /**
    * Initializes a new Markov Chain Sequence DTO.
-   * @param source An optional source of values to generate the distribution from.
+   * @param sequences An optional source of values to generate the distribution from.
    */
   static new(sequences?: string[][]): MarkovChainSequenceDTO {
     return sequences
