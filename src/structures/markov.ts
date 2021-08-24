@@ -146,7 +146,7 @@ export class MarkovChain {
     return data.grams[id];
   }
 
-   /**
+  /**
    * Adds or inserts a Sequence into a Markov Chain DTO.
    * @param data      A Markov Chain data transfer object.
    * @param sequence  The sequences to be added.
