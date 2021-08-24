@@ -439,7 +439,7 @@ describe('Distribution', () => {
       expect(distA3.source).toEqual(dtoA3AddABC1Expected.source);
       expect(distA3.normal).toEqual(dtoA3AddABC1Expected.normal);
 
-      // // Single Value
+      // Single Value
       distA1a.add('a', 1);
       expect(distA1a.source).toEqual(dtoA1AddA1Expected.source);
       expect(distA1a.normal).toEqual(dtoA1AddA1Expected.normal);
@@ -543,17 +543,17 @@ describe('Distribution', () => {
       expect(distU2.pickOne(undefined)).toBeDefined();
       expect(distU3.pickOne(undefined)).toBeDefined();
 
-      // // Single Pick (Masked)
+      // Single Pick (Masked)
       expect(distU1.pickOne(['a'])).toBeUndefined();
       expect(distU2.pickOne(['a'])).toBe('b');
       expect(distU3.pickOne(['a', 'b'])).toBe('c');
 
-      // // Multi Pick
+      // Multi Pick
       expect(distU3.pick(2).length).toBe(2);
       expect(distU3.pick(5).length).toBe(5);
       expect(distU3.pick(20).length).toBe(20);
 
-      // // Multi Pick Masked
+      // Multi Pick Masked
       expect(distU3.pick(5, ['a', 'b'])).toEqual(['c', 'c', 'c', 'c', 'c']);
     });
     it('samples properly over many picks.', () => {

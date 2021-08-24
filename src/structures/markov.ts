@@ -18,6 +18,7 @@ import { CONSTANTS } from '..';
  */
 
 type MarkovChainDirection = 'next' | 'last';
+type MarkovChainInsertType = boolean | 'start' | 'end' | 'middle';
 
 export interface MarkovChainOptions extends RandomDTO {
   maxOrder?: number;
@@ -145,9 +146,20 @@ export class MarkovChain {
     return data.grams[id];
   }
 
+   /**
+   * Adds or inserts a Sequence into a Markov Chain DTO.
+   * @param data      A Markov Chain data transfer object.
+   * @param sequence  The sequences to be added.
+   * @param insert    Determines how sequences should be inserted. If false, delimiters will be
+   *                  prepended and appended to the sequences.
+   *                  "start" or setting true will only prepend the start delimiter, while
+   *                  "end" will append the end delimiter. "middle" will not add any delimiters.
+   * @param copy      Whether or not an immutable deep copy of the dto should be returned.
+   */
   static addSequences(
     data: MarkovChainSequenceDTO,
     sequences: string[][],
+    insert: MarkovChainInsertType = false,
     copy = true
   ): MarkovChainSequenceDTO {
     // Configs
@@ -155,15 +167,26 @@ export class MarkovChain {
 
     // Add the sequences.
     for (let i = 0; i < sequences.length; i += 1) {
-      m = MarkovChain.addSequence(m, sequences[i], false);
+      m = MarkovChain.addSequence(m, sequences[i], insert, false);
     }
 
     return m;
   }
 
+  /**
+   * Adds or inserts a Sequence into a Markov Chain DTO.
+   * @param data      A Markov Chain data transfer object.
+   * @param sequence  The sequence to be added.
+   * @param insert    Determines how sequences should be inserted. If false, delimiters will be
+   *                  prepended and appended to the sequences.
+   *                  "start" or setting true will only prepend the start delimiter, while
+   *                  "end" will append the end delimiter. "middle" will not add any delimiters.
+   * @param copy      Whether or not an immutable deep copy of the dto should be returned.
+   */
   static addSequence(
     data: MarkovChainSequenceDTO,
     sequence: string[],
+    insert: MarkovChainInsertType = false,
     copy = true
   ): MarkovChainSequenceDTO {
     // Configs
@@ -177,8 +200,26 @@ export class MarkovChain {
     // If we wanted to store the raw sequences, we'd do it here.
     if (m.sequences !== undefined) m.sequences.push(sequence);
 
-    // Add delimiters so we can properly generate the grams.
-    const seq = [startDelimiter, ...sequence, endDelimiter];
+    // If we're not inserting, add delimiters so we can properly generate the grams.
+    // const seq = insert ? [...sequence] : [startDelimiter, ...sequence, endDelimiter];
+    let seq: string[];
+    if (insert) {
+      switch (insert) {
+        case 'start':
+          seq = [startDelimiter, ...sequence];
+          break;
+        case 'end':
+          seq = [...sequence, endDelimiter];
+          break;
+        case 'middle':
+        case true:
+        default:
+          seq = [...sequence];
+          break;
+      }
+    } else {
+      seq = [startDelimiter, ...sequence, endDelimiter];
+    }
 
     // Iterate through each order.
     for (let order = 1; order <= maxOrder; order += 1) {
@@ -209,6 +250,11 @@ export class MarkovChain {
     return m;
   }
 
+  // TODO: Refactor
+  // This function is problematic when using standalone.
+  // It relies on being used iteratively by the addSequence function
+  // to generate valid data.
+  // This WILL NOT WORK if it's only used once.
   static addEdge(
     data: MarkovChainSequenceDTO,
     id: string,
@@ -237,21 +283,26 @@ export class MarkovChain {
     // Add the edges to the distributions.
     const gram = grams[id];
 
-    // TODO: FIX
+    // TODO: FIX - This is an older message, investigate.
+    // TODO: NEW - The problem here is that we need to make sure that both the next and
+    // last grams also have their in / out / frequencies updated, but the current
+    // method would result in double counting.
     if (last !== undefined) {
       gram.last = Distribution.addSourceValue(gram.last, last, 1);
-      gram.degreeIn += 1;
+      // gram.degreeIn += 1;
       gram.frequency += 1;
     }
 
     if (next !== undefined) {
       gram.next = Distribution.addSourceValue(gram.next, next, 1);
-      gram.degreeOut += 1;
+      // gram.degreeOut += 1;
       gram.frequency += 1;
     }
 
     return m;
   }
+
+  // TODO - Add removeEdge(), sequence, etc.
 
   static pick(
     engine: Random,
@@ -261,11 +312,12 @@ export class MarkovChain {
     mask?: string[]
   ) {
     const gram = MarkovChain.getGram(model, gramSequence);
+    // console.log(gram);
     let result;
     if (gram !== undefined) {
       const distribution = next ? gram.next : gram.last;
       if (distribution !== undefined) {
-        result = Distribution.pickOne(gram.next, mask, engine);
+        result = Distribution.pickOne(distribution, mask, engine);
       }
     }
     return result;
@@ -296,7 +348,8 @@ export class MarkovChain {
     order?: number,
     min = 4,
     max = 100,
-    strict = false
+    strict = false,
+    trim = true
   ) {
     const startDelimiter =
       model.startDelimiter || defaultOptions.startDelimiter;
@@ -318,7 +371,8 @@ export class MarkovChain {
           const gramSeq = sequence.slice(sequence.length - o, sequence.length);
           gram = this.getGram(model, gramSeq);
 
-          // If we have a Gram and we're over our min, or we're not guaranteed to end, then break.
+          // If we have a Gram and we're over our min,
+          // or we're not guaranteed to end, then break.
           if (
             gram !== undefined &&
             (i > min || gram.next.normal[endDelimiter] < 1)
@@ -352,22 +406,37 @@ export class MarkovChain {
       }
     }
 
+    // If we're trimming, remove the start / end delimiters.
+    if (trim) {
+      if (sequence[0] === startDelimiter) sequence.shift();
+      if (sequence[sequence.length - 1] === endDelimiter) sequence.pop();
+    }
+
     return sequence;
   }
 
   /**
    * Initializes a new Markov Chain Sequence DTO.
    * @param sequences An optional source of values to generate the distribution from.
+   * @param maxOrder The maximum gram size of the markov chain.
+   * @param insert Determines how sequences should be inserted. If false, delimiters will be
+   * prepended and appended to the sequences. "start" or setting true will only prepend the start delimiter, while
+   * "end" will append the end delimiter. "middle" will not add any delimiters.
    */
-  static new(sequences?: string[][]): MarkovChainSequenceDTO {
+  static new(
+    sequences?: string[][],
+    maxOrder = defaultOptions.maxOrder,
+    insert: MarkovChainInsertType = false
+  ): MarkovChainSequenceDTO {
     return sequences
-      ? MarkovChain.addSequences(defaultDTO, sequences)
-      : defaultDTO;
+      ? MarkovChain.addSequences({ ...defaultDTO, maxOrder }, sequences, insert)
+      : { ...defaultDTO, maxOrder };
   }
 
   /**
    * Create a deep copy of a Markov Chain DTO.
    * @param data Markov DTO to clone.
+   * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
    */
   static clone(data: MarkovChainDTO, stripSequences = false): MarkovChainDTO {
     const { sequences, grams, ...dtoData } = data;

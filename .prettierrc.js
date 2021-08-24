@@ -1,4 +1,5 @@
 module.exports = {
   ...require('gts/.prettierrc.json'),
-  "bracketSpacing": true,
+  "bracketSpacing": true
+  // "newline-per-chained-call": true,
 }
