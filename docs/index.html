@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>acausal - v2.0.0</title>
-	<meta name="description" content="Documentation for acausal - v2.0.0">
+	<title>acausal - v2.0.0-alpha.0</title>
+	<meta name="description" content="Documentation for acausal - v2.0.0-alpha.0">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
 	<script async src="assets/js/search.js" id="search-script"></script>
@@ -23,7 +23,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">acausal - v2.0.0</a>
+					<a href="index.html" class="title">acausal - v2.0.0-alpha.0</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -50,7 +50,7 @@
 	</div>
 	<div class="tsd-page-title">
 		<div class="container">
-			<h1>acausal - v2.0.0</h1>
+			<h1>acausal - v2.0.0-alpha.0</h1>
 		</div>
 	</div>
 </header>
@@ -58,6 +58,61 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
+				<a href="#acausal-" id="acausal-" style="color: inherit; text-decoration: none;">
+					<h2>acausal <a href="http://github.com/badges/stability-badges"><img src="http://badges.github.io/stability-badges/dist/stable.svg" alt="stable"></a></h2>
+				</a>
+				<p><a href="https://badge.fury.io/js/acausal"><img src="https://badge.fury.io/js/acausal.svg" alt="npm version"></a> <a href="https://badge.fury.io/gh/abrisene%2Facausal"><img src="https://badge.fury.io/gh/abrisene%2Facausal.svg" alt="GitHub version"></a> <a href="https://travis-ci.com/abrisene/acausal"><img src="https://travis-ci.com/abrisene/acausal.svg?branch=main" alt="Build Status"></a> <a href="https://coveralls.io/github/abrisene/acausal?branch=feature/typescript"><img src="https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=main" alt="Coverage Status"></a></p>
+				<p>Scalr is a lightweight module of pure functions for normalizing and scaling numbers stored within arrays and objects to arbitrary unit lengths.</p>
+				<p>All inputs are treated as immutable.</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">MarkovChain</span><span style="color: #000000">, </span><span style="color: #001080">Distribution</span><span style="color: #000000">, </span><span style="color: #001080">Random</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;acausal&#039;</span><span style="color: #000000">;</span>
+
+<span style="color: #008000">// example a</span>
+<span style="color: #008000">// example b</span>
+
+<span style="color: #008000">// example c</span>
+<span style="color: #008000">// examble d</span>
+
+<span style="color: #008000">// example f</span>
+<span style="color: #008000">// example g</span>
+</code></pre>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
+				<p>Run:</p>
+				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">install</span><span style="color: #000000"> -</span><span style="color: #001080">s</span><span style="color: #000000"> </span><span style="color: #001080">scalr</span>
+</code></pre>
+				<a href="#gocausal" id="gocausal" style="color: inherit; text-decoration: none;">
+					<h2>Gocausal</h2>
+				</a>
+				<p>acausal is also implemented in Golang. You can find the module here:</p>
+				<ul>
+					<li><a href="https://github.com/abrisene/gocausal">Gocausal</a></li>
+				</ul>
+				<a href="#api" id="api" style="color: inherit; text-decoration: none;">
+					<h2>API</h2>
+				</a>
+				<a href="#markov-chains" id="markov-chains" style="color: inherit; text-decoration: none;">
+					<h3>Markov Chains</h3>
+				</a>
+				<a href="#" id="" style="color: inherit; text-decoration: none;">
+					<h4>....</h4>
+				</a>
+				<a href="#random-distributions" id="random-distributions" style="color: inherit; text-decoration: none;">
+					<h3>Random Distributions</h3>
+				</a>
+				<a href="#-1" id="-1" style="color: inherit; text-decoration: none;">
+					<h4>....</h4>
+				</a>
+				<a href="#random-numbers" id="random-numbers" style="color: inherit; text-decoration: none;">
+					<h3>Random Numbers</h3>
+				</a>
+				<a href="#-2" id="-2" style="color: inherit; text-decoration: none;">
+					<h4>....</h4>
+				</a>
+				<a href="#other-functions" id="other-functions" style="color: inherit; text-decoration: none;">
+					<h3>Other Functions</h3>
+				</a>
+				<p>For documentation of underlying functions, please see the <a href="https://abrisene.github.io/acausal/modules.html">docs</a>.</p>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -71,6 +126,9 @@
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/structures_distribution.html">structures/distribution</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/structures_markov.html">structures/markov</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/types.html">types</a>
