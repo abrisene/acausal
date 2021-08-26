@@ -241,7 +241,7 @@ export class MarkovChain {
         // Add the gram and edge.
         m = MarkovChain.addEdge(m, gramId, lastState, nextState, order, false);
 
-        // Break if we've hit the end delimiter.
+        // Break if we've hit the end.
         // if (nextState === data.endDelimiter) break;
         if (nextState === undefined) break;
       }
@@ -304,13 +304,7 @@ export class MarkovChain {
 
   // TODO - Add removeEdge(), sequence, etc.
 
-  static pick(
-    engine: Random,
-    model: MarkovChainDTO,
-    gramSequence: string[],
-    next = true,
-    mask?: string[]
-  ) {
+  static pick(engine: Random, model: MarkovChainDTO, gramSequence: string[], next = true, mask?: string[]) {
     const gram = MarkovChain.getGram(model, gramSequence);
     // console.log(gram);
     let result;
@@ -323,36 +317,25 @@ export class MarkovChain {
     return result;
   }
 
-  static next(
-    engine: Random,
-    model: MarkovChainDTO,
-    gramSequence: string[],
-    mask?: string[]
-  ) {
+  static next(engine: Random, model: MarkovChainDTO, gramSequence: string[], mask?: string[]) {
     return MarkovChain.pick(engine, model, gramSequence, true, mask);
   }
 
-  static last(
-    engine: Random,
-    model: MarkovChainDTO,
-    gramSequence: string[],
-    mask?: string[]
-  ) {
+  static last(engine: Random, model: MarkovChainDTO, gramSequence: string[], mask?: string[]) {
     return MarkovChain.pick(engine, model, gramSequence, false, mask);
   }
 
   static generate(
     engine: Random,
     model: MarkovChainDTO,
-    start = [],
+    start: string[] = [],
     order?: number,
     min = 4,
     max = 100,
     strict = false,
     trim = true
   ) {
-    const startDelimiter =
-      model.startDelimiter || defaultOptions.startDelimiter;
+    const startDelimiter = model.startDelimiter || defaultOptions.startDelimiter;
     const endDelimiter = model.endDelimiter || defaultOptions.endDelimiter;
     const sequence = [startDelimiter, ...start];
     const defaultOrder = order || sequence.length;
@@ -373,16 +356,11 @@ export class MarkovChain {
 
           // If we have a Gram and we're over our min,
           // or we're not guaranteed to end, then break.
-          if (
-            gram !== undefined &&
-            (i > min || gram.next.normal[endDelimiter] < 1)
-          )
-            break;
+          if (gram !== undefined && (i > min || gram.next.normal[endDelimiter] < 1)) break;
         }
 
         // Add our next state to the sequence.
-        if (gram !== undefined)
-          nextState = Distribution.pickOne(gram.next, mask, engine);
+        if (gram !== undefined) nextState = Distribution.pickOne(gram.next, mask, engine);
         if (nextState !== undefined) sequence.push(nextState);
 
         // Break if our next state is the end delimiter.
@@ -391,11 +369,7 @@ export class MarkovChain {
         // Adjust the order if dynamic.
         if (currentOrder < defaultOrder) {
           currentOrder += 1;
-        } else if (
-          currentOrder === defaultOrder &&
-          defaultOrder > 1 &&
-          !strict
-        ) {
+        } else if (currentOrder === defaultOrder && defaultOrder > 1 && !strict) {
           currentOrder -= 1;
         }
       } else {
@@ -429,7 +403,7 @@ export class MarkovChain {
     insert: MarkovChainInsertType = false
   ): MarkovChainSequenceDTO {
     return sequences
-      ? MarkovChain.addSequences({ ...defaultDTO, maxOrder }, sequences, insert)
+      ? MarkovChain.addSequences({ ...defaultDTO, maxOrder }, sequences, insert, true)
       : { ...defaultDTO, maxOrder };
   }
 
@@ -441,10 +415,7 @@ export class MarkovChain {
   static clone(data: MarkovChainDTO, stripSequences = false): MarkovChainDTO {
     const { sequences, grams, ...dtoData } = data;
 
-    const sequencesClone =
-      sequences !== undefined && !stripSequences
-        ? sequences.map(s => [...s])
-        : undefined;
+    const sequencesClone = sequences !== undefined && !stripSequences ? sequences.map(s => [...s]) : undefined;
     const gramsClone = Object.keys(grams).reduce((l, k) => {
       const gram = grams[k];
       const gramClone = {

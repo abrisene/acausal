@@ -7,13 +7,7 @@
  # Module Dependencies
  */
 
-import {
-  Distribution,
-  DistributionDTO,
-  CONSTANTS,
-  Random,
-  WeightedDistribution,
-} from '..';
+import { Distribution, DistributionDTO, CONSTANTS, Random, WeightedDistribution } from '..';
 
 /**
  # Utility Functions
@@ -34,12 +28,18 @@ function stripSource(dto: DistributionDTO) {
   return Distribution.clone(dto, true);
 }
 
+/* function stripNormals(dto: DistributionDTO) {
+  const { source } = Distribution.clone(dto, false)
+  return { source, normal: {} };
+} */
+
 /**
  # Constants
  */
 
 // Engine
 const engine = new Random({ seed: 50 });
+const engineB = engine.clone();
 
 // Additions
 const addA1 = { a: 1 };
@@ -137,9 +137,19 @@ const pickOneU1 = Distribution.pickOne(dtoU1, undefined, engine);
 const pickOneU2 = Distribution.pickOne(dtoU2, undefined, engine);
 const pickOneU3 = Distribution.pickOne(dtoU3, undefined, engine);
 
+Distribution.pickOne(dtoU1, undefined, engineB);
+Distribution.pickOne(dtoU2, undefined, engineB);
+const pickOneU3b = Distribution.pick(dtoU3, undefined, undefined, undefined, engineB);
+
+const pickOneEnginelessU1 = Distribution.pickOne(dtoU1, undefined, undefined);
+const pickOneEnginelessU2 = Distribution.pickOne(dtoU2, undefined, undefined);
+const pickOneEnginelessU3 = Distribution.pickOne(dtoU3, undefined, undefined);
+
 const pickOneMaskU1 = Distribution.pickOne(dtoU1, ['a'], engine);
 const pickOneMaskU2 = Distribution.pickOne(dtoU2, ['a'], engine);
 const pickOneMaskU3 = Distribution.pickOne(dtoU3, ['a', 'b'], engine);
+
+const pickDefaultU3 = Distribution.pick(dtoU3);
 
 const pickFiveMaskU3 = Distribution.pick(dtoU3, 5, ['a', 'b'], false, engine);
 
@@ -148,13 +158,7 @@ const pickFiveU3 = Distribution.pick(dtoU3, 5);
 const pickTwentyU3 = Distribution.pick(dtoU3, 20);
 
 const sampleCount = 50000;
-const sampleB3 = Distribution.pick(
-  dtoB3,
-  sampleCount,
-  undefined,
-  false,
-  engine
-);
+const sampleB3 = Distribution.pick(dtoB3, sampleCount, undefined, false, engine);
 const sampleB3Summary = sampleB3.reduce((l, k) => {
   const result = { ...l };
   if (result[k] === undefined) result[k] = 0;
@@ -205,6 +209,9 @@ describe('Distribution', () => {
       expect(Distribution.clone(dtoA2, false)).toEqual(dtoA2);
       expect(Distribution.clone(dtoA3, false)).toEqual(dtoA3);
 
+      expect(Distribution.clone(dtoDefault)).toEqual(Distribution.clone(dtoDefault, false));
+      expect(Distribution.clone(dtoU1)).toEqual(Distribution.clone(dtoU1, false));
+
       // Stripping Sources
       expect(Distribution.clone(dtoDefault, true)).toEqual({
         normal: dtoDefault.normal,
@@ -218,68 +225,43 @@ describe('Distribution', () => {
     });
     it('can add one or more values to a source.', () => {
       // Multi-Value
-      expect(Distribution.addSourceValues(dtoEmpty, addAB1)).toEqual(
-        dtoEmptyAddAB1Expected
-      );
-      expect(Distribution.addSourceValues(dtoA1, addA1)).toEqual(
-        dtoA1AddA1Expected
-      );
-      expect(Distribution.addSourceValues(dtoA2, addAB1)).toEqual(
-        dtoA2AddAB1Expected
-      );
-      expect(Distribution.addSourceValues(dtoA3, addABC1)).toEqual(
-        dtoA3AddABC1Expected
-      );
+      expect(Distribution.addSourceValues(dtoEmpty, addAB1)).toEqual(dtoEmptyAddAB1Expected);
+      expect(Distribution.addSourceValues(dtoA1, addA1)).toEqual(dtoA1AddA1Expected);
+      expect(Distribution.addSourceValues(dtoA2, addAB1)).toEqual(dtoA2AddAB1Expected);
+      expect(Distribution.addSourceValues(dtoA3, addABC1)).toEqual(dtoA3AddABC1Expected);
 
       // Single Value
-      expect(Distribution.addSourceValue(dtoA1, 'a', 1)).toEqual(
-        dtoA1AddA1Expected
-      );
+      expect(Distribution.addSourceValue(dtoA1, 'a', 1)).toEqual(dtoA1AddA1Expected);
       expect(Distribution.add(dtoA1, 'a', 1)).toEqual(dtoA1AddA1Expected);
+
+      // Adding Empty to Empty
+      expect(Distribution.addSourceValues(dtoEmpty, {})).toEqual(dtoEmpty);
     });
     it('can add one or more values to a normal distribution.', () => {
       // Multi-Value
-      expect(Distribution.addNormalValues(dtoU1, addA10p)).toEqual(
-        dtoU1AddA10pExpected
-      );
-      expect(Distribution.addNormalValues(dtoB1, swapAB10p)).toEqual(
-        dtoB1SwapAB10pExpected
-      );
-      expect(Distribution.addNormalValues(dtoB2, swapAB10p)).toEqual(
-        dtoB2SwapAB10pExpected
-      );
-      expect(Distribution.addNormalValues(dtoB3, swapAB10p)).toEqual(
-        dtoB3SwapAB10pExpected
-      );
+      expect(Distribution.addNormalValues(dtoEmpty, sourceU1)).toEqual(stripSource(dtoU1));
+      expect(Distribution.addNormalValues(dtoU1, addA10p)).toEqual(dtoU1AddA10pExpected);
+      expect(Distribution.addNormalValues(dtoB1, swapAB10p)).toEqual(dtoB1SwapAB10pExpected);
+      expect(Distribution.addNormalValues(dtoB2, swapAB10p)).toEqual(dtoB2SwapAB10pExpected);
+      expect(Distribution.addNormalValues(dtoB3, swapAB10p)).toEqual(dtoB3SwapAB10pExpected);
 
       // Single Value
-      expect(Distribution.addNormalValue(dtoU1, 'b', 1)).toEqual(
-        dtoU1AddB100pExpected
-      );
+      expect(Distribution.addNormalValue(dtoU1, 'b', 1)).toEqual(dtoU1AddB100pExpected);
 
       // Multi-Value (No Source)
-      expect(stripSource(Distribution.addNormalValues(dtoU1, addA10p))).toEqual(
-        stripSource(dtoU1AddA10pExpected)
-      );
-      expect(
-        stripSource(Distribution.addNormalValues(dtoB1, swapAB10p))
-      ).toEqual(stripSource(dtoB1SwapAB10pExpected));
-      expect(
-        stripSource(Distribution.addNormalValues(dtoB2, swapAB10p))
-      ).toEqual(stripSource(dtoB2SwapAB10pExpected));
-      expect(
-        stripSource(Distribution.addNormalValues(dtoB3, swapAB10p))
-      ).toEqual(stripSource(dtoB3SwapAB10pExpected));
+      expect(stripSource(Distribution.addNormalValues(dtoU1, addA10p))).toEqual(stripSource(dtoU1AddA10pExpected));
+      expect(stripSource(Distribution.addNormalValues(dtoB1, swapAB10p))).toEqual(stripSource(dtoB1SwapAB10pExpected));
+      expect(stripSource(Distribution.addNormalValues(dtoB2, swapAB10p))).toEqual(stripSource(dtoB2SwapAB10pExpected));
+      expect(stripSource(Distribution.addNormalValues(dtoB3, swapAB10p))).toEqual(stripSource(dtoB3SwapAB10pExpected));
 
       // Single Value (No Source)
-      expect(stripSource(Distribution.addNormalValue(dtoU1, 'b', 1))).toEqual(
-        stripSource(dtoU1AddB100pExpected)
-      );
+      expect(stripSource(Distribution.addNormalValue(dtoU1, 'b', 1))).toEqual(stripSource(dtoU1AddB100pExpected));
 
       // Routing Method
-      expect(stripSource(Distribution.add(dtoU1, 'b', 1))).toEqual(
-        stripSource(dtoU1AddB100pExpected)
-      );
+      expect(stripSource(Distribution.add(dtoU1, 'b', 1))).toEqual(stripSource(dtoU1AddB100pExpected));
+
+      // Adding to Empty
+      expect(Distribution.addNormalValues(dtoEmpty, {})).toEqual(dtoEmpty);
     });
     it('can remove one or more values from a distribution.', () => {
       // Multi-Value
@@ -292,28 +274,27 @@ describe('Distribution', () => {
       expect(Distribution.remove(dtoU3, 'c')).toEqual(dtoU2);
 
       // Multi-Value (No Source)
-      expect(stripSource(Distribution.remove(dtoU2, ['a', 'b']))).toEqual(
-        stripSource(dtoEmpty)
-      );
-      expect(stripSource(Distribution.remove(dtoU3, ['b', 'c']))).toEqual(
-        stripSource(dtoU1)
-      );
+      expect(stripSource(Distribution.remove(dtoU2, ['a', 'b']))).toEqual(stripSource(dtoEmpty));
+      expect(stripSource(Distribution.remove(dtoU3, ['b', 'c']))).toEqual(stripSource(dtoU1));
 
-      expect(stripSource(Distribution.remove(dtoU1, 'a'))).toEqual(
-        stripSource(dtoEmpty)
-      );
-      expect(stripSource(Distribution.remove(dtoU2, 'b'))).toEqual(
-        stripSource(dtoU1)
-      );
-      expect(stripSource(Distribution.remove(dtoU3, 'c'))).toEqual(
-        stripSource(dtoU2)
-      );
+      expect(stripSource(Distribution.remove(dtoU1, 'a'))).toEqual(stripSource(dtoEmpty));
+      expect(stripSource(Distribution.remove(dtoU2, 'b'))).toEqual(stripSource(dtoU1));
+      expect(stripSource(Distribution.remove(dtoU3, 'c'))).toEqual(stripSource(dtoU2));
+
+      // Removing Empty from Empty
+      expect(Distribution.remove(dtoEmpty, 'x')).toEqual(dtoEmpty);
     });
     it('can pick one or more values from a distribution.', () => {
       // Single Pick
       expect(pickOneU1).toBe('a');
       expect(pickOneU2).toBeDefined();
       expect(pickOneU3).toBeDefined();
+      expect(pickOneU3).toEqual(pickOneU3b[0]);
+
+      // Single Pick (Engineless)
+      expect(pickOneEnginelessU1).toBe('a');
+      expect(pickOneEnginelessU2).toBeDefined();
+      expect(pickOneEnginelessU3).toBeDefined();
 
       // Single Pick (Masked)
       expect(pickOneMaskU1).toBeUndefined();
@@ -321,12 +302,17 @@ describe('Distribution', () => {
       expect(pickOneMaskU3).toBe('c');
 
       // Multi Pick
+      expect(pickDefaultU3.length).toBe(1);
       expect(pickTwoU3.length).toBe(2);
       expect(pickFiveU3.length).toBe(5);
       expect(pickTwentyU3.length).toBe(20);
 
       // Multi Pick Masked
       expect(pickFiveMaskU3).toEqual(['c', 'c', 'c', 'c', 'c']);
+
+      // Multi Pick Exclusive + Masked
+      expect(Distribution.pick(dtoU3, 5, undefined, true).sort()).toEqual(['a', 'b', 'c']);
+      expect(Distribution.pick(dtoU3, 5, ['a'], true).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
       Object.keys(sampleB3Summary).forEach(k => {
@@ -555,6 +541,10 @@ describe('Distribution', () => {
 
       // Multi Pick Masked
       expect(distU3.pick(5, ['a', 'b'])).toEqual(['c', 'c', 'c', 'c', 'c']);
+
+      // Multi Pick Exclusive + Masked
+      expect(distU3.pick(5, undefined, true).sort()).toEqual(['a', 'b', 'c']);
+      expect(distU3.pick(5, ['a'], true).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
       /* Object.keys(sampleB3Summary).forEach(k => {

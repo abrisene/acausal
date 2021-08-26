@@ -36,30 +36,30 @@ const sequenceB2 = ['a', 'b', 'd'];
 const sequenceC1a = ['ocean', 'beach', 'forest'];
 const sequenceC2a = ['ocean', 'beach', 'plains'];
 const sequenceC3a = ['ocean', 'beach', 'town'];
-// const sequenceC4a = ['desert', 'mesa'];
-// const sequenceC5a = ['desert', 'mountains'];
 
-const sequenceC1b = ['ocean', 'beach', 'forest'];
-const sequenceC2b = ['beach', 'plains'];
-const sequenceC3b = ['beach', 'town'];
-// const sequenceC4b = ['desert', 'mesa'];
-// const sequenceC5b = ['desert', 'mountains'];
+// Order Maze
+const sequenceD1 = ['x', 'y', 'z', 'a', 'w'];
+const sequenceD2 = ['a', 'b'];
 
 // Sequences
 const sequencesUnitAB = [sequenceUnitA, sequenceUnitB];
 
 const sequencesA = [sequenceA1, sequenceA2];
 const sequencesB = [sequenceB1, sequenceB2];
-const sequencesCa = [
+const sequencesC = [
   sequenceC1a,
   sequenceC2a,
   sequenceC3a,
   // sequenceC4a,
   // sequenceC5a,
 ];
+const sequencesD = [sequenceD1, sequenceD2];
+for (let i = 0; i < 1000; i += 1) {
+  sequencesD.push(sequenceD2);
+}
 
 const sequencesAB = [...sequencesA, ...sequencesB];
-const sequencesABC = [...sequencesAB, ...sequencesCa];
+const sequencesABC = [...sequencesAB, ...sequencesC];
 
 // DTOs
 const dtoDefault = {
@@ -71,6 +71,11 @@ const dtoDefault = {
   grams: {},
 };
 
+const dtoMin = {
+  sequences: [],
+  grams: {},
+};
+
 // Unit DTOs
 const dtoUnitEmpty = MarkovChain.new(undefined, 1);
 const dtoUnitA = MarkovChain.new([sequenceUnitA], 1);
@@ -78,15 +83,18 @@ const dtoUnitB = MarkovChain.new([sequenceUnitB], 1);
 const dtoUnitAB = MarkovChain.new(sequencesUnitAB, 1);
 
 // Standard DTOs
-const dtoEmpty = MarkovChain.new();
+// const dtoEmpty = MarkovChain.new();
+
 const dtoUA = MarkovChain.new([sequenceUnitA]);
 const dtoUB = MarkovChain.new([sequenceUnitB]);
 const dtoUAB = MarkovChain.new(sequencesUnitAB);
 
 const dtoA1 = MarkovChain.new([sequenceA1]);
 const dtoSeqA = MarkovChain.new(sequencesA);
+const dtoSeqALoop = MarkovChain.new(sequencesA, CONSTANTS.MC_MAX_ORDER_DEFAULT, 'middle');
 const dtoSeqB = MarkovChain.new(sequencesB);
-const dtoSeqC = MarkovChain.new(sequencesCa);
+const dtoSeqC = MarkovChain.new(sequencesC);
+const dtoSeqD = MarkovChain.new(sequencesD);
 const dtoSeqAB = MarkovChain.new(sequencesAB);
 const dtoSeqABC = MarkovChain.new(sequencesABC);
 
@@ -97,7 +105,8 @@ const dtoSeqABC = MarkovChain.new(sequencesABC);
 describe('Markov Chain', () => {
   describe('static methods', () => {
     it('can create new markov chains.', () => {
-      // Empty
+      // Default
+      const dtoEmpty = MarkovChain.new();
       expect(dtoEmpty).toEqual(dtoDefault);
       expect(dtoEmpty).toHaveProperty('maxOrder');
       expect(dtoEmpty).toHaveProperty('delimiter');
@@ -137,8 +146,7 @@ describe('Markov Chain', () => {
 
         expect(gram.id).toEqual(k);
         expect(gram.order).toBeGreaterThan(0);
-        if (dtoSeqA.maxOrder !== undefined)
-          expect(gram.order).toBeLessThanOrEqual(dtoSeqA.maxOrder);
+        if (dtoSeqA.maxOrder !== undefined) expect(gram.order).toBeLessThanOrEqual(dtoSeqA.maxOrder);
         expect(Object.keys(gram.next).length).toBeGreaterThan(0);
         expect(Object.keys(gram.last).length).toBeGreaterThan(0);
       });
@@ -168,15 +176,16 @@ describe('Markov Chain', () => {
 
         expect(gram.id).toEqual(k);
         expect(gram.order).toBeGreaterThan(0);
-        if (dtoUnitAB.maxOrder !== undefined)
-          expect(gram.order).toBeLessThanOrEqual(dtoUnitAB.maxOrder);
+        if (dtoUnitAB.maxOrder !== undefined) expect(gram.order).toBeLessThanOrEqual(dtoUnitAB.maxOrder);
         expect(Object.keys(gram.next).length).toBeGreaterThan(0);
         expect(Object.keys(gram.last).length).toBeGreaterThan(0);
       });
     });
     it('can clone existing markov chains', () => {
       // Direct Clones
+      expect(MarkovChain.clone(MarkovChain.new(), false)).toEqual(dtoDefault);
       expect(MarkovChain.clone(dtoDefault, false)).toEqual(dtoDefault);
+      expect(MarkovChain.clone(dtoMin, false)).toEqual(dtoMin);
       expect(MarkovChain.clone(dtoSeqA, false)).toEqual(dtoSeqA);
       expect(MarkovChain.clone(dtoSeqB, false)).toEqual(dtoSeqB);
       expect(MarkovChain.clone(dtoSeqC, false)).toEqual(dtoSeqC);
@@ -203,9 +212,7 @@ describe('Markov Chain', () => {
       cloneB.delimiter = '.';
       cloneB.startDelimiter = '>>';
       cloneB.endDelimiter = '<<';
-      cloneB.sequences = cloneB.sequences
-        ? [...cloneB.sequences, ['x']]
-        : [['x']];
+      cloneB.sequences = cloneB.sequences ? [...cloneB.sequences, ['x']] : [['x']];
       cloneB.grams.xk = {
         id: '-.-.-.-',
         last: { source: {}, normal: {} },
@@ -222,31 +229,19 @@ describe('Markov Chain', () => {
     });
     it('can add sequences to existing markov chains', () => {
       // Single Sequence with Cloning
-      expect(
-        MarkovChain.addSequence(dtoEmpty, sequenceUnitA, false, true)
-      ).toEqual(dtoUA);
-      expect(
-        MarkovChain.addSequence(dtoUA, sequenceUnitB, false, true)
-      ).toEqual(dtoUAB);
-      expect(
-        MarkovChain.addSequence(dtoEmpty, sequenceA1, false, true)
-      ).toEqual(dtoA1);
-      expect(MarkovChain.addSequence(dtoA1, sequenceA2, false, true)).toEqual(
-        dtoSeqA
-      );
+      expect(MarkovChain.addSequence(dtoDefault, sequenceUnitA, false, true)).toEqual(dtoUA);
+      expect(MarkovChain.addSequence(dtoUA, sequenceUnitB, false, true)).toEqual(dtoUAB);
+      expect(MarkovChain.addSequence(dtoDefault, sequenceA1, false, true)).toEqual(dtoA1);
+      expect(MarkovChain.addSequence(dtoA1, sequenceA2, false, true)).toEqual(dtoSeqA);
 
       // Single Sequence without Cloning
-      const dtoCloneSeqA = MarkovChain.clone(
-        dtoEmpty
-      ) as MarkovChainSequenceDTO;
+      const dtoCloneSeqA = MarkovChain.clone(dtoDefault) as MarkovChainSequenceDTO;
       MarkovChain.addSequence(dtoCloneSeqA, sequenceA1, false, false);
       expect(dtoCloneSeqA).toEqual(dtoA1);
       MarkovChain.addSequence(dtoCloneSeqA, sequenceA2, false, false);
       expect(dtoCloneSeqA).toEqual(dtoSeqA);
 
-      const dtoCloneSeqAB = MarkovChain.clone(
-        dtoEmpty
-      ) as MarkovChainSequenceDTO;
+      const dtoCloneSeqAB = MarkovChain.clone(dtoDefault) as MarkovChainSequenceDTO;
       MarkovChain.addSequence(dtoCloneSeqAB, sequenceA1, false, false);
       MarkovChain.addSequence(dtoCloneSeqAB, sequenceA2, false, false);
       expect(dtoCloneSeqAB).toEqual(dtoSeqA);
@@ -255,76 +250,46 @@ describe('Markov Chain', () => {
       expect(dtoCloneSeqAB).toEqual(dtoSeqAB);
 
       // Multiple Sequences with Cloning
-      expect(
-        MarkovChain.addSequences(dtoEmpty, sequencesA, false, true)
-      ).toEqual(dtoSeqA);
-      expect(
-        MarkovChain.addSequences(dtoSeqA, sequencesB, false, true)
-      ).toEqual(dtoSeqAB);
+      expect(MarkovChain.addSequences(dtoDefault, sequencesA, false, true)).toEqual(dtoSeqA);
+      expect(MarkovChain.addSequences(dtoSeqA, sequencesB, false, true)).toEqual(dtoSeqAB);
 
       // Multiple Sequences without Cloning
-      const dtoCloneABC = MarkovChain.clone(dtoEmpty) as MarkovChainSequenceDTO;
+      const dtoCloneABC = MarkovChain.clone(dtoDefault) as MarkovChainSequenceDTO;
       MarkovChain.addSequences(dtoCloneABC, sequencesA, false, false);
       expect(dtoCloneABC).toEqual(dtoSeqA);
       MarkovChain.addSequences(dtoCloneABC, sequencesB, false, false);
       expect(dtoCloneABC).toEqual(dtoSeqAB);
-      MarkovChain.addSequences(dtoCloneABC, sequencesCa, false, false);
+      MarkovChain.addSequences(dtoCloneABC, sequencesC, false, false);
       expect(dtoCloneABC).toEqual(dtoSeqABC);
-
-      // TODO - TEST INSERTION
     });
     it('can insert sequences into an existing markov chain', () => {
-      // Middle
-      const dtoInsertMiddleA = MarkovChain.new(
-        [sequenceA1, sequenceA2],
-        2,
-        true
-      );
-      const dtoInsertMiddleB = MarkovChain.new(
-        [sequenceA1, sequenceA2],
-        2,
-        'middle'
-      );
+      // Middle with Cloning
+      const dtoInsertMiddleA = MarkovChain.new([sequenceA1, sequenceA2], 2, true);
+      const dtoInsertMiddleB = MarkovChain.new([sequenceA1, sequenceA2], 2, 'middle');
       expect(dtoInsertMiddleA).toEqual(dtoInsertMiddleB);
       expect(dtoInsertMiddleA).not.toEqual(dtoSeqA);
       expect(dtoInsertMiddleB).not.toEqual(dtoSeqA);
-      expect(
-        MarkovChain.getGram(dtoInsertMiddleA, [CONSTANTS.MC_START_DELIMITER])
-      ).toBeUndefined();
-      expect(
-        MarkovChain.getGram(dtoInsertMiddleA, [CONSTANTS.MC_END_DELIMITER])
-      ).toBeUndefined();
+      expect(MarkovChain.getGram(dtoInsertMiddleA, [CONSTANTS.MC_START_DELIMITER])).toBeUndefined();
+      expect(MarkovChain.getGram(dtoInsertMiddleA, [CONSTANTS.MC_END_DELIMITER])).toBeUndefined();
+
+      // Middle without Cloning
+      const dtoInsertMiddleA2 = MarkovChain.new();
 
       // Start
-      const dtoInsertStart = MarkovChain.new(
-        [sequenceA1, sequenceA2],
-        2,
-        'start'
-      );
+      const dtoInsertStart = MarkovChain.new([sequenceA1, sequenceA2], 2, 'start');
       expect(dtoInsertStart).not.toEqual(dtoSeqA);
-      expect(
-        MarkovChain.getGram(dtoInsertStart, [CONSTANTS.MC_START_DELIMITER])
-      ).toBeDefined();
-      expect(
-        MarkovChain.getGram(dtoInsertStart, [CONSTANTS.MC_END_DELIMITER])
-      ).toBeUndefined();
+      expect(MarkovChain.getGram(dtoInsertStart, [CONSTANTS.MC_START_DELIMITER])).toBeDefined();
+      expect(MarkovChain.getGram(dtoInsertStart, [CONSTANTS.MC_END_DELIMITER])).toBeUndefined();
 
       // End
       const dtoInsertEnd = MarkovChain.new([sequenceA1, sequenceA2], 2, 'end');
       expect(dtoInsertEnd).not.toEqual(dtoSeqA);
-      expect(
-        MarkovChain.getGram(dtoInsertEnd, [CONSTANTS.MC_START_DELIMITER])
-      ).toBeUndefined();
-      expect(
-        MarkovChain.getGram(dtoInsertEnd, [CONSTANTS.MC_END_DELIMITER])
-      ).toBeDefined();
+      expect(MarkovChain.getGram(dtoInsertEnd, [CONSTANTS.MC_START_DELIMITER])).toBeUndefined();
+      expect(MarkovChain.getGram(dtoInsertEnd, [CONSTANTS.MC_END_DELIMITER])).toBeDefined();
     });
     it('can add an edge to an existing markov chain', () => {
       // Adding an edge with Cloning
-      let dtoUnitABCloneIterative = MarkovChain.clone(
-        dtoUnitA,
-        true
-      ) as MarkovChainSequenceDTO;
+      let dtoUnitABCloneIterative = MarkovChain.clone(dtoUnitA, true) as MarkovChainSequenceDTO;
       dtoUnitABCloneIterative = MarkovChain.addEdge(
         dtoUnitABCloneIterative,
         CONSTANTS.MC_START_DELIMITER,
@@ -350,23 +315,11 @@ describe('Markov Chain', () => {
         true
       );
       // We need to strip sequences, because this function does not update them.
-      expect(dtoUnitABCloneIterative).toEqual(
-        MarkovChain.clone(dtoUnitAB, true)
-      );
+      expect(dtoUnitABCloneIterative).toEqual(MarkovChain.clone(dtoUnitAB, true));
 
       // Adding an edge without Cloning
-      dtoUnitABCloneIterative = MarkovChain.clone(
-        dtoUnitA,
-        true
-      ) as MarkovChainSequenceDTO;
-      MarkovChain.addEdge(
-        dtoUnitABCloneIterative,
-        CONSTANTS.MC_START_DELIMITER,
-        undefined,
-        'b',
-        1,
-        false
-      );
+      dtoUnitABCloneIterative = MarkovChain.clone(dtoUnitA, true) as MarkovChainSequenceDTO;
+      MarkovChain.addEdge(dtoUnitABCloneIterative, CONSTANTS.MC_START_DELIMITER, undefined, 'b', 1, false);
       MarkovChain.addEdge(
         dtoUnitABCloneIterative,
         'b',
@@ -375,31 +328,16 @@ describe('Markov Chain', () => {
         1,
         false
       );
-      MarkovChain.addEdge(
-        dtoUnitABCloneIterative,
-        CONSTANTS.MC_END_DELIMITER,
-        'b',
-        undefined,
-        1,
-        false
-      );
+      MarkovChain.addEdge(dtoUnitABCloneIterative, CONSTANTS.MC_END_DELIMITER, 'b', undefined, 1, false);
       // We need to strip sequences, because this function does not update them.
-      expect(dtoUnitABCloneIterative).toEqual(
-        MarkovChain.clone(dtoUnitAB, true)
-      );
+      expect(dtoUnitABCloneIterative).toEqual(MarkovChain.clone(dtoUnitAB, true));
     });
     it('can pick values from the chain', () => {
       // Next
       const engA = new Random({ ...engineA.serialize() });
       const pickAN = MarkovChain.pick(engA, dtoSeqB, ['a'], true, undefined);
       const pickBN = MarkovChain.pick(engA, dtoSeqB, ['b'], true, undefined);
-      const pickCN = MarkovChain.pick(
-        engA,
-        dtoSeqB,
-        ['a', 'b'],
-        true,
-        undefined
-      );
+      const pickCN = MarkovChain.pick(engA, dtoSeqB, ['a', 'b'], true, undefined);
       expect([sequenceB1[1], sequenceB2[1]]).toContain(pickAN);
       expect([sequenceB1[2], sequenceB2[2]]).toContain(pickBN);
       expect([sequenceB1[2], sequenceB2[2]]).toContain(pickCN);
@@ -414,13 +352,7 @@ describe('Markov Chain', () => {
       // Last
       const pickAL = MarkovChain.pick(engA, dtoSeqB, ['b'], false, undefined);
       const pickBL = MarkovChain.pick(engA, dtoSeqB, ['c'], false, undefined);
-      const pickCL = MarkovChain.pick(
-        engA,
-        dtoSeqB,
-        ['b', 'c'],
-        false,
-        undefined
-      );
+      const pickCL = MarkovChain.pick(engA, dtoSeqB, ['b', 'c'], false, undefined);
 
       expect([sequenceB1[0], sequenceB2[0]]).toContain(pickAL);
       expect([sequenceB1[1], sequenceB2[1]]).toContain(pickBL);
@@ -435,13 +367,7 @@ describe('Markov Chain', () => {
 
       // Masks
       for (let i = 0; i < 20; i += 1) {
-        const pickM = MarkovChain.pick(
-          engA,
-          dtoSeqC,
-          ['ocean', 'beach'],
-          true,
-          ['forest', 'plains']
-        );
+        const pickM = MarkovChain.pick(engA, dtoSeqC, ['ocean', 'beach'], true, ['forest', 'plains']);
         expect(pickM).toBe('town');
       }
     });
@@ -449,64 +375,145 @@ describe('Markov Chain', () => {
       const engA = new Random({ ...engineA.serialize() });
 
       // Trim
-      const genTrimTrue = MarkovChain.generate(
-        engA,
-        dtoA1,
-        [],
-        1,
-        1,
-        25,
-        true,
-        true
-      );
+      const genTrimTrue = MarkovChain.generate(engA, dtoA1, [], 1, 1, 25, true, true);
       expect(genTrimTrue[0] !== CONSTANTS.MC_START_DELIMITER).toEqual(true);
-      expect(
-        genTrimTrue[genTrimTrue.length - 1] !== CONSTANTS.MC_END_DELIMITER
-      ).toEqual(true);
+      expect(genTrimTrue[genTrimTrue.length - 1] !== CONSTANTS.MC_END_DELIMITER).toEqual(true);
 
-      const genTrimFalse = MarkovChain.generate(
-        engA,
-        dtoA1,
-        [],
-        1,
-        1,
-        25,
-        true,
-        false
-      );
+      const genTrimFalse = MarkovChain.generate(engA, dtoA1, [], 1, 1, 25, true, false);
       expect(genTrimFalse[0] === CONSTANTS.MC_START_DELIMITER).toEqual(true);
-      expect(
-        genTrimFalse[genTrimFalse.length - 1] === CONSTANTS.MC_END_DELIMITER
-      ).toEqual(true);
+      expect(genTrimFalse[genTrimFalse.length - 1] === CONSTANTS.MC_END_DELIMITER).toEqual(true);
+
+      const genTrimTrueLength = MarkovChain.generate(engA, dtoSeqA, ['a'], 1, 25, 25, true, true);
+
+      const genTrimFalseLength = MarkovChain.generate(engA, dtoSeqA, ['a'], 1, 25, 25, true, false);
+
+      expect(genTrimTrueLength.length).toEqual(25);
+      expect(genTrimFalseLength.length).toEqual(25 + 2);
 
       // From Start
-      const genSA = MarkovChain.generate(engA, dtoA1, [], 1, 1, 25, true);
-      // console.log(genSA);
+      const genSA = MarkovChain.generate(engA, dtoA1, [], 1, 1, 25, true, true);
 
       // From Prepopulated
 
-      // Order 1
+      // Strict Order 1 & n
+      const genO1Dist = { w: 0, b: 0, error: 0 };
+      for (let i = 0; i < 1000; i += 1) {
+        // It shouldn't be possible to get final result 'b' if we're using greater than order 1.
+        const genO1 = MarkovChain.generate(engA, dtoSeqD, ['x'], 1, 1, 25, true, true);
+        if (genO1 !== undefined) {
+          const result = genO1.pop();
+          switch (result) {
+            case 'w':
+              genO1Dist.w += 1;
+              break;
+            case 'b':
+              genO1Dist.b += 1;
+              break;
+            default:
+              genO1Dist.error += 1;
+              break;
+          }
+        } else {
+          genO1Dist.error += 1;
+        }
+      }
 
-      // Order n
+      expect(genO1Dist.w).toBeLessThan(genO1Dist.b);
+      expect(genO1Dist.b).toBeGreaterThan(990);
+      expect(genO1Dist.error).toEqual(0);
 
-      // Min / Max Length
+      // Strict Order n
+      const genONDist = { w: 0, b: 0, error: 0 };
+      for (let i = 0; i < 1000; i += 1) {
+        // It shouldn't be possible to get final result 'b' if we're using greater than order 1.
+        const genON = MarkovChain.generate(engA, dtoSeqD, ['x'], 4, 1, 25, true, true);
+        if (genON !== undefined) {
+          const result = genON.pop();
+          switch (result) {
+            case 'w':
+              genONDist.w += 1;
+              break;
+            case 'b':
+              genONDist.b += 1;
+              break;
+            default:
+              genONDist.error += 1;
+              break;
+          }
+        } else {
+          genONDist.error += 1;
+        }
+      }
+
+      expect(genONDist.w).toEqual(1000);
+      expect(genONDist.b).toEqual(0);
+      expect(genONDist.error).toEqual(0);
+
+      // Variable Order (Non-Strict)
+      const genOVDistA = { w: 0, b: 0, error: 0 };
+      const genOVDistB = { w: 0, b: 0, error: 0 };
+      for (let i = 0; i < 1000; i += 1) {
+        // It shouldn't be possible to get final result 'b' if we're using greater than order 1,
+        // but we can use the starting sequence to force down to order 1.
+        const genOVA = MarkovChain.generate(engA, dtoSeqD, ['x', 'y', 'a'], 4, 1, 25, false, true);
+        if (genOVA !== undefined) {
+          const result = genOVA.pop();
+          switch (result) {
+            case 'w':
+              genOVDistA.w += 1;
+              break;
+            case 'b':
+              genOVDistA.b += 1;
+              break;
+            default:
+              genOVDistA.error += 1;
+              break;
+          }
+        } else {
+          genOVDistA.error += 1;
+        }
+
+        const genOVB = MarkovChain.generate(engA, dtoSeqD, ['x'], 4, 1, 25, false, true);
+        if (genOVB !== undefined) {
+          const result = genOVB.pop();
+          switch (result) {
+            case 'w':
+              genOVDistB.w += 1;
+              break;
+            case 'b':
+              genOVDistB.b += 1;
+              break;
+            default:
+              genOVDistB.error += 1;
+              break;
+          }
+        } else {
+          genOVDistB.error += 1;
+        }
+      }
+
+      expect(genOVDistA.w).toBeLessThan(genOVDistA.b);
+      expect(genOVDistA.b).toBeGreaterThan(990);
+      expect(genOVDistA.error).toEqual(0);
+
+      expect(genOVDistB.w).toEqual(1000);
+      expect(genOVDistB.b).toEqual(0);
+      expect(genOVDistB.error).toEqual(0);
+      // console.log(genO1Dist);
+      // console.log(genONDist);
+      // console.log(genOVDistA);
+      // console.log(genOVDistB);
 
       // Infinite Loops & Min / Max Length
-      const genIA = MarkovChain.generate(
-        engA,
-        dtoSeqA,
-        [],
-        1,
-        1,
-        25,
-        true,
-        true
-      );
-      // console.log(genIA);
-      // console.log(genIA.length);
-      // console.log(JSON.stringify(dtoSeqA));
+      for (let i = 1; i < 200; i += 1) {
+        const genMaxA = MarkovChain.generate(engA, dtoSeqALoop, ['a'], 1, 1, i, true, true);
+        expect(genMaxA.length).toEqual(i);
 
-      // Strict Order
+        const genMinA = MarkovChain.generate(engA, dtoSeqA, ['a'], 1, i, i + 100, true, true);
+        expect(genMinA.length >= i).toEqual(true);
+      }
+
+      // Mask
     });
   });
 

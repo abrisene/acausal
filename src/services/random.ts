@@ -24,7 +24,6 @@ export interface RandomDTO {
  # Constants
  */
 
-// const MT_PREWARM = 2000;
 const defaultDTO: RandomDTO = {};
 
 /**
@@ -36,14 +35,11 @@ export class Random {
   private _engine: randomjs.MersenneTwister19937;
 
   constructor(config: RandomDTO) {
-    this._seed =
-      config.seed !== undefined ? config.seed : randomjs.createEntropy();
+    this._seed = config.seed !== undefined ? config.seed : randomjs.createEntropy();
     this._engine = Array.isArray(this._seed)
       ? randomjs.MersenneTwister19937.seedWithArray(this._seed)
       : randomjs.MersenneTwister19937.seed(this._seed);
-    this._engine.discard(
-      config.uses !== undefined ? config.uses : CONSTANTS.MT_PREWARM
-    );
+    this._engine.discard(config.uses !== undefined ? config.uses : CONSTANTS.MT_PREWARM);
   }
 
   get seed() {
@@ -75,10 +71,7 @@ export class Random {
    * @param {object} object   An object containing normalized number values.
    * @param {array}  mask     Array of keys to be ignored while evaluating.
    */
-  public pickWeighted(
-    object: WeightedDistribution,
-    mask?: string[]
-  ): string | undefined {
+  public pickWeighted(object: WeightedDistribution, mask?: string[]): string | undefined {
     const value = this.real(0, 1);
     let lastValid: string;
     let result: string | undefined = undefined;
@@ -101,15 +94,15 @@ export class Random {
     return result;
   }
 
+  public clone(useCount?: number) {
+    return new Random({ seed: this._seed, uses: useCount || this.uses });
+  }
+
   public serialize(): RandomDTO {
     return {
       seed: this._seed,
       uses: this.uses,
     };
-  }
-
-  public clone(useCount?: number) {
-    return new Random({ seed: this._seed, uses: useCount || this.uses });
   }
 
   public static new(seed?: number | number[], uses?: number) {

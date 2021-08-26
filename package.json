@@ -1,6 +1,6 @@
 {
   "name": "acausal",
-  "version": "2.0.0",
+  "version": "2.0.0-beta.0",
   "description": "Procedural generation toolset.",
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
   "homepage": "https://github.com/abrisene/acausal#readme",
