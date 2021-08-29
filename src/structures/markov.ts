@@ -3,7 +3,7 @@
  # Markov Chain Class
  */
 
- /*
+/*
  # Specification
  */
 
@@ -98,10 +98,10 @@ const defaultDTO: MarkovChainDTO = {
  # Utility Functions
  */
 
- /**
-  * We define these here because scope of immutability depends on the
-  * scope of the function's changes.
-  **/
+/**
+ * We define these here because scope of immutability depends on the
+ * scope of the function's changes.
+ **/
 
 /**
  * Formats a sequence for addition or insertion into a gram dictionary.
@@ -112,7 +112,6 @@ const defaultDTO: MarkovChainDTO = {
 function formatGramSequence(gramSequence: string[], insert: MCInsertOption, delimiters: MCDelimitersShort) {
   let result;
   switch (insert) {
-
     case 'start':
       result = [delimiters[0][0], ...gramSequence];
       break;
@@ -148,18 +147,6 @@ function getDelimiters(data: MarkovChainDTO): MCDelimitersShort {
   return [data.startDelimiter[0], data.delimiter[0], data.endDelimiter[0]];
 }
 
-/* function addSequences(
-  grams: GramDictionary,
-  sequences: string[][],
-  insert: MCInsertOption,
-  weight: number,
-  maxOrder: number,
-  delimiters: MCDelimitersShort,
-) {
-
-  return grams;
-} */
-
 /**
  * Breaks down a sequence into Grams and adds them plus any edges to
  * the gram dictionary.
@@ -176,7 +163,7 @@ function addSequence(
   insert: MCInsertOption,
   weight: number,
   maxOrder: number,
-  delimiters: MCDelimitersShort,
+  delimiters: MCDelimitersShort
 ) {
   // Format the sequence for addition or insertion.
   const seq = formatGramSequence(sequence, insert, delimiters);
@@ -223,7 +210,7 @@ function addEdge(
   gramId: string,
   lastId: string | undefined,
   nextId: string | undefined,
-  weight: number,
+  weight: number
   // order: number,
 ) {
   // Add the gram to the dictionary if it doesn't exist.
@@ -237,7 +224,6 @@ function addEdge(
   if (lastId !== undefined) {
     if (!gram.last.normal[lastId]) gram.degreeIn += 1;
     addEdgeWeight(gram, lastId, weight, 'last');
-
   }
 
   if (nextId !== undefined) {
@@ -253,12 +239,7 @@ function addEdge(
  * @param weight    The weight to add to the edge.
  * @param direction The direction of the edge in the chain.
  */
-function addEdgeWeight(
-  source: Gram,
-  targetId: string,
-  weight: number,
-  direction: MCDirectionOption,
-) {
+function addEdgeWeight(source: Gram, targetId: string, weight: number, direction: MCDirectionOption) {
   source[direction] = Distribution.addSourceValue(source[direction], targetId, weight);
 }
 
@@ -269,7 +250,7 @@ function addEdgeWeight(
  * @param order   The order of the Gram.
  */
 function addGram(grams: GramDictionary, gramId: string, order: number) {
-  const result = grams[gramId] = {
+  const result = (grams[gramId] = {
     id: gramId,
     order,
     last: Distribution.new(),
@@ -277,11 +258,9 @@ function addGram(grams: GramDictionary, gramId: string, order: number) {
     degreeIn: 0,
     degreeOut: 0,
     frequency: 0,
-  };
+  });
   return result;
 }
-
-
 
 /**
  # Class
@@ -353,11 +332,7 @@ export class MarkovChain {
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    * @param copy      Whether or not an immutable deep copy of the dto should be returned.
    */
-  static addSequences(
-    data: MarkovChainDTO,
-    sequences: string[][],
-    insert: MCInsertOption = false,
-  ): MarkovChainDTO {
+  static addSequences(data: MarkovChainDTO, sequences: string[][], insert: MCInsertOption = false): MarkovChainDTO {
     // Clone the Markov Chain DTO.
     const m = MarkovChain.clone(data);
     const delimiters = getDelimiters(m);
@@ -382,11 +357,7 @@ export class MarkovChain {
    *                  "start" or setting true will only prepend the start delimiter, while
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    */
-  static addSequence(
-    data: MarkovChainDTO,
-    sequence: string[],
-    insert: MCInsertOption = false,
-  ): MarkovChainDTO {
+  static addSequence(data: MarkovChainDTO, sequence: string[], insert: MCInsertOption = false): MarkovChainDTO {
     // Clone the Markov Chain DTO.
     const m = MarkovChain.clone(data);
     const delimiters = getDelimiters(m);
@@ -410,7 +381,7 @@ export class MarkovChain {
     data: MarkovChainDTO,
     gram: string | string[],
     lastId: string | undefined,
-    nextId: string | undefined,
+    nextId: string | undefined
   ) {
     // Clone the Markov Chain DTO.
     const m = MarkovChain.clone(data);
@@ -427,8 +398,9 @@ export class MarkovChain {
 
   // static removeEdge() {}
 
-  static pick(engine: Random, model: MarkovChainDTO, gramSequence: string[], next = true, mask?: string[]) {
-    const gram = MarkovChain.getGram(model, gramSequence);
+  static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
+    const seq = gramSequence ? gramSequence : [model.startDelimiter];
+    const gram = MarkovChain.getGram(model, seq);
     let result;
     if (gram !== undefined) {
       const distribution = next ? gram.next : gram.last;
@@ -439,11 +411,11 @@ export class MarkovChain {
     return result;
   }
 
-  static next(engine: Random, model: MarkovChainDTO, gramSequence: string[], mask?: string[]) {
+  static next(engine: Random, model: MarkovChainDTO, gramSequence?: string[], mask?: string[]) {
     return MarkovChain.pick(engine, model, gramSequence, true, mask);
   }
 
-  static last(engine: Random, model: MarkovChainDTO, gramSequence: string[], mask?: string[]) {
+  static last(engine: Random, model: MarkovChainDTO, gramSequence?: string[], mask?: string[]) {
     return MarkovChain.pick(engine, model, gramSequence, false, mask);
   }
 
@@ -456,8 +428,7 @@ export class MarkovChain {
     max = 100,
     strict = false,
     trim = true
-  ) {
-  }
+  ) {}
 
   /**
    * Creates a new Markov Chain data transfer object.
@@ -472,7 +443,7 @@ export class MarkovChain {
     sequences?: string[][],
     maxOrder = defaultOptions.maxOrder,
     insert: MCInsertOption = false,
-    stripSequences = false,
+    stripSequences = false
   ): MarkovChainDTO {
     // Determine whether to store sequences or not.
     const dto = stripSequences ? { ...defaultOptions, maxOrder, grams: {} } : { ...defaultDTO, maxOrder };

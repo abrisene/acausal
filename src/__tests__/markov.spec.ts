@@ -10,7 +10,6 @@
 import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, GramDictionary, Random, CONSTANTS } from '..';
 // import { MarkovChainSequenceDTO } from '../structures';
 
-
 /**
  # Constants
  */
@@ -51,7 +50,7 @@ function validateDTO(m: MarkovChainDTO, ref = defaultDTO) {
 
 function validateGrams(m: MarkovChainDTO) {
   const grams = m.grams;
-  Object.keys(grams).forEach((key) => {
+  Object.keys(grams).forEach(key => {
     const gram = grams[key];
     expect(gram).toHaveProperty('id');
     expect(gram.id).toEqual(key);
@@ -65,13 +64,9 @@ function validateGrams(m: MarkovChainDTO) {
     const expectLSum = gram.degreeIn > 0 ? 1 : 0;
     const expectNSum = gram.degreeOut > 0 ? 1 : 0;
 
-    expect(Object.values(gram.last.normal)
-      .reduce((a, b) => a + b, 0))
-      .toBeCloseTo(expectLSum);
+    expect(Object.values(gram.last.normal).reduce((a, b) => a + b, 0)).toBeCloseTo(expectLSum);
 
-    expect(Object.values(gram.next.normal)
-      .reduce((a, b) => a + b, 0))
-      .toBeCloseTo(expectNSum);
+    expect(Object.values(gram.next.normal).reduce((a, b) => a + b, 0)).toBeCloseTo(expectNSum);
 
     expect(gram.order).toBeLessThanOrEqual(m.maxOrder);
     expect(gram.order).toBeGreaterThan(0);
@@ -84,20 +79,23 @@ function validateGrams(m: MarkovChainDTO) {
  */
 
 // Engine
-const engineA = new Random({ seed: 25 });
+const engine = new Random({ seed: 25 });
 
 // Gram Sequences
 const gU1 = ['a'];
 const gU2 = ['a', 'b'];
 const gU3 = ['a', 'b', 'c'];
 
-const gA1 = ['a','l','i','c','e'];
-const gA2 = ['a','n','n','a'];
-const gA3 = ['a','l','i','s','a'];
+const gA1 = ['a', 'l', 'i', 'c', 'e'];
+const gA2 = ['a', 'n', 'n', 'a'];
+const gA3 = ['a', 'l', 'i', 's', 'a'];
 
-const gB1 = ['1', '2', '3'];
-const gB2 = ['a', 'b', 'c'];
+const gB1 = ['a', 'b', 'c'];
+const gB2 = ['1', '2', '3'];
 const gB3 = ['@', '$', '%'];
+
+const gC1 = ['a', '+', 'y'];
+const gC2 = ['b', '+', 'z'];
 
 // Sequences
 const sU = [gU1, gU2, gU3];
@@ -110,16 +108,59 @@ const sB1 = [gB1];
 const sB2 = [gB1, gB2];
 const sB3 = [gB1, gB2, gB3];
 
+// const sC1 = [gC1];
+const sC2 = [gC1, gC2];
+
 // DTOs
 
 const dtoGU3IExpected = {
   ...defaultGramDTO2,
   grams: {
-    a: { id: 'a', order: 1, last: { source: {}, normal: {} }, next: { source: { b: 1 }, normal: { b: 1 } }, degreeIn: 0, degreeOut: 1, frequency: 0 },
-    b: { id: 'b', order: 1, last: { source: { a: 1 }, normal: { a: 1 } }, next: { source: { c: 1 }, normal: { c: 1 } }, degreeIn: 1, degreeOut: 1, frequency: 0 },
-    c: { id: 'c', order: 1, last: { source: { b: 1 }, normal: { b: 1 } }, next: { source: {}, normal: {} }, degreeIn: 1, degreeOut: 0, frequency: 0 },
-    'a⏐b': { id: 'a⏐b', order: 2, last: { source: {}, normal: {} }, next: { source: { c: 1 }, normal: { c: 1 } }, degreeIn: 0, degreeOut: 1, frequency: 0 },
-    'b⏐c': { id: 'b⏐c', order: 2, last: { source: { a: 1 }, normal: { a: 1 } }, next: { source: {}, normal: {} }, degreeIn: 1, degreeOut: 0, frequency: 0 },
+    a: {
+      id: 'a',
+      order: 1,
+      last: { source: {}, normal: {} },
+      next: { source: { b: 1 }, normal: { b: 1 } },
+      degreeIn: 0,
+      degreeOut: 1,
+      frequency: 0,
+    },
+    b: {
+      id: 'b',
+      order: 1,
+      last: { source: { a: 1 }, normal: { a: 1 } },
+      next: { source: { c: 1 }, normal: { c: 1 } },
+      degreeIn: 1,
+      degreeOut: 1,
+      frequency: 0,
+    },
+    c: {
+      id: 'c',
+      order: 1,
+      last: { source: { b: 1 }, normal: { b: 1 } },
+      next: { source: {}, normal: {} },
+      degreeIn: 1,
+      degreeOut: 0,
+      frequency: 0,
+    },
+    'a⏐b': {
+      id: 'a⏐b',
+      order: 2,
+      last: { source: {}, normal: {} },
+      next: { source: { c: 1 }, normal: { c: 1 } },
+      degreeIn: 0,
+      degreeOut: 1,
+      frequency: 0,
+    },
+    'b⏐c': {
+      id: 'b⏐c',
+      order: 2,
+      last: { source: { a: 1 }, normal: { a: 1 } },
+      next: { source: {}, normal: {} },
+      degreeIn: 1,
+      degreeOut: 0,
+      frequency: 0,
+    },
   },
 };
 
@@ -139,6 +180,9 @@ const dtoB3 = MarkovChain.new(sB3);
 // const dtoIB1 = MarkovChain.new(sB1, 4, 'start');
 // const dtoIB2 = MarkovChain.new(sB2, 4, 'middle');
 // const dtoIB3 = MarkovChain.new(sB3, 4, 'end');
+
+// const dtoC1 = MarkovChain.new(sC1);
+const dtoC2 = MarkovChain.new(sC2);
 
 /**
  # Tests
@@ -267,9 +311,11 @@ describe('Markov Chain', () => {
     /* it('can remove an edge from an existing markov chain', () => {}); */
     it('can add a sequence to an existing markov chain', () => {
       // Standard Addition
+      const mA0 = MarkovChain.addSequence(defaultDTO, gA1);
       const mA1 = MarkovChain.addSequence(defaultDTO, gA1, false);
       const mA2 = MarkovChain.addSequence(mA1, gA2, false);
       const mA3 = MarkovChain.addSequence(mA2, gA3, false);
+      expect(mA0).toEqual(dtoA1);
       expect(mA1).toEqual(dtoA1);
       expect(mA2).toEqual(dtoA2);
       expect(mA3).toEqual(dtoA3);
@@ -289,8 +335,10 @@ describe('Markov Chain', () => {
     /* it('can remove a sequence to an existing markov chain', () => {}); */
     it('can add sequences to existing markov chains', () => {
       // Standard Addition
+      const m0 = MarkovChain.addSequences(defaultDTO, sA3);
       const mA = MarkovChain.addSequences(defaultDTO, sA3, false);
       const mB = MarkovChain.addSequences(defaultDTO, sB3, false);
+      expect(m0).toEqual(dtoA3);
       expect(mA).toEqual(dtoA3);
       expect(mB).toEqual(dtoB3);
 
@@ -304,17 +352,54 @@ describe('Markov Chain', () => {
     });
     /* it('can remove sequences from existing markov chains', () => {}); */
     it('can pick values from a markov chain', () => {
+      const eng = engine.clone();
 
+      for (let i = 0; i < 20; i += 1) {
+        // Standard Pick
+        const pickStandard = MarkovChain.pick(eng, dtoB1);
+        expect(pickStandard).toEqual(gB1[0]);
+
+        // Next
+        const pickSNext = MarkovChain.pick(eng, dtoB1, [gB1[0]]);
+        const pickNext1 = MarkovChain.next(eng, dtoB1, [gB1[0]]);
+        const pickNext2 = MarkovChain.next(eng, dtoC2, ['+']);
+        expect(pickSNext).toEqual(gB1[1]);
+        expect(pickNext1).toEqual(pickSNext);
+        expect([gC1[2], gC2[2]]).toContain(pickNext2);
+
+        // Last
+        const pickSLast = MarkovChain.pick(eng, dtoB1, [gB1[1]], false);
+        const pickLast = MarkovChain.last(eng, dtoB1, [gB1[1]]);
+        const pickLast2 = MarkovChain.last(eng, dtoC2, ['+']);
+        expect(pickSLast).toEqual(gB1[0]);
+        expect(pickLast).toEqual(pickSLast);
+        expect([gC1[0], gC2[0]]).toContain(pickLast2);
+
+        // Masks
+        const pickMask1 = MarkovChain.pick(eng, dtoC2, ['+'], true, ['a', 'y']);
+        const pickMask2 = MarkovChain.next(eng, dtoC2, ['+'], ['a', 'y']);
+        const pickMask3 = MarkovChain.last(eng, dtoC2, ['+'], ['a', 'y']);
+        expect(pickMask1).toEqual('z');
+        expect(pickMask2).toEqual(pickMask1);
+        expect(pickMask3).toEqual('b');
+      }
     });
     it('can generate sequences a markov chain', () => {
-
+      const eng = engine.clone();
     });
     it('are immutable', () => {
+      const mOriginal = MarkovChain.clone(dtoA3);
+      const mClone = MarkovChain.clone(mOriginal);
+      expect(mOriginal).toEqual(mClone);
 
+      MarkovChain.addEdge(mClone, 'b', 'a', 'c');
+      expect(mOriginal).toEqual(mClone);
+      MarkovChain.addSequence(mClone, gB2);
+      expect(mOriginal).toEqual(mClone);
+      MarkovChain.addSequences(mClone, sB3);
+      expect(mOriginal).toEqual(mClone);
     });
   });
 
-  describe('class methods', () => {
-
-  });
+  describe('class methods', () => {});
 });
