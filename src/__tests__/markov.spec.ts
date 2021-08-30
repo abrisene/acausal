@@ -7,96 +7,192 @@
  # Module Dependencies
  */
 
-import { MarkovChain, Random, CONSTANTS } from '..';
-import { MarkovChainSequenceDTO } from '../structures';
-
-/**
- # Utility Functions
- */
+import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, GramDictionary, Random, CONSTANTS } from '..';
+// import { MarkovChainSequenceDTO } from '../structures';
 
 /**
  # Constants
  */
 
-// Engine
-const engineA = new Random({ seed: 4 });
-const engineB = new Random({ ...engineA.serialize() });
-
-// Sequence
-const sequenceUnitA = ['a'];
-const sequenceUnitB = ['b'];
-
-const sequenceA1 = ['a', 'b'];
-const sequenceA2 = ['b', 'a'];
-
-const sequenceB1 = ['a', 'b', 'c'];
-const sequenceB2 = ['a', 'b', 'd'];
-
-// Maze
-const sequenceC1a = ['ocean', 'beach', 'forest'];
-const sequenceC2a = ['ocean', 'beach', 'plains'];
-const sequenceC3a = ['ocean', 'beach', 'town'];
-
-// Order Maze
-const sequenceD1 = ['x', 'y', 'z', 'a', 'w'];
-const sequenceD2 = ['a', 'b'];
-
-// Sequences
-const sequencesUnitAB = [sequenceUnitA, sequenceUnitB];
-
-const sequencesA = [sequenceA1, sequenceA2];
-const sequencesB = [sequenceB1, sequenceB2];
-const sequencesC = [
-  sequenceC1a,
-  sequenceC2a,
-  sequenceC3a,
-  // sequenceC4a,
-  // sequenceC5a,
-];
-const sequencesD = [sequenceD1, sequenceD2];
-for (let i = 0; i < 1000; i += 1) {
-  sequencesD.push(sequenceD2);
-}
-
-const sequencesAB = [...sequencesA, ...sequencesB];
-const sequencesABC = [...sequencesAB, ...sequencesC];
-
-// DTOs
-const dtoDefault = {
-  maxOrder: CONSTANTS.MC_MAX_ORDER_DEFAULT,
+const defaultOptions = {
+  maxOrder: 4,
   delimiter: CONSTANTS.MC_GRAM_DELIMITER,
   startDelimiter: CONSTANTS.MC_START_DELIMITER,
   endDelimiter: CONSTANTS.MC_END_DELIMITER,
-  sequences: [],
-  grams: {},
 };
 
-const dtoMin = {
-  sequences: [],
-  grams: {},
+const defaultDTO: MarkovChainDTO = { ...defaultOptions, sequences: [], grams: {} };
+const defaultDTO1 = { ...defaultDTO, maxOrder: 1, sequences: [], grams: {} };
+const defaultDTO2 = { ...defaultDTO, maxOrder: 2, sequences: [], grams: {} };
+const defaultDTO6 = { ...defaultDTO, maxOrder: 6, sequences: [], grams: {} };
+
+const defaultGramDTO: MarkovChainGramDTO = { ...defaultOptions, grams: {} };
+const defaultGramDTO1 = { ...defaultGramDTO, maxOrder: 1, grams: {} };
+const defaultGramDTO2 = { ...defaultGramDTO, maxOrder: 2, grams: {} };
+const defaultGramDTO6 = { ...defaultGramDTO, maxOrder: 6, grams: {} };
+
+/**
+ # Utility Functions
+ */
+
+function stripSequences(m: MarkovChainDTO) {
+  const { sequences, ...dto } = m;
+  return dto;
+}
+
+function validateDTO(m: MarkovChainDTO, ref = defaultDTO) {
+  expect(Object.keys(m).sort()).toEqual(Object.keys(ref).sort());
+  expect(m.maxOrder).toEqual(ref.maxOrder);
+  expect(m.delimiter).toEqual(ref.delimiter);
+  expect(m.startDelimiter).toEqual(ref.startDelimiter);
+  // We don't check sequences or grams.
+}
+
+function validateInstance(m: MarkovChain, ref = defaultDTO) {
+  const data = m.serialize();
+  expect(m.maxOrder).toEqual(ref.maxOrder);
+  expect(m.delimiter).toEqual(ref.delimiter);
+  expect(m.startDelimiter).toEqual(ref.startDelimiter);
+  expect(m).toHaveProperty('sequences');
+  expect(m).toHaveProperty('grams');
+  validateDTO(data, ref);
+}
+
+function validateGrams(m: MarkovChainDTO) {
+  const grams = m.grams;
+  Object.keys(grams).forEach(key => {
+    const gram = grams[key];
+    expect(gram).toHaveProperty('id');
+    expect(gram.id).toEqual(key);
+    expect(gram).toHaveProperty('last');
+    expect(gram).toHaveProperty('next');
+    expect(gram).toHaveProperty('order');
+    expect(gram).toHaveProperty('frequency');
+    expect(gram).toHaveProperty('degreeIn');
+    expect(gram).toHaveProperty('degreeOut');
+
+    const expectLSum = gram.degreeIn > 0 ? 1 : 0;
+    const expectNSum = gram.degreeOut > 0 ? 1 : 0;
+
+    expect(Object.values(gram.last.normal).reduce((a, b) => a + b, 0)).toBeCloseTo(expectLSum);
+
+    expect(Object.values(gram.next.normal).reduce((a, b) => a + b, 0)).toBeCloseTo(expectNSum);
+
+    expect(gram.order).toBeLessThanOrEqual(m.maxOrder);
+    expect(gram.order).toBeGreaterThan(0);
+    expect(gram.order).toEqual(gram.id.split(m.delimiter).length);
+  });
+}
+
+/**
+ # Test Constants
+ */
+
+// Engine
+const engine = new Random({ seed: 25 });
+
+// Gram Sequences
+const gU1 = ['a'];
+const gU2 = ['a', 'b'];
+const gU3 = ['a', 'b', 'c'];
+
+const gA1 = ['a', 'l', 'i', 'c', 'e'];
+const gA2 = ['a', 'n', 'n', 'a'];
+const gA3 = ['a', 'l', 'i', 's', 'a'];
+
+const gB1 = ['a', 'b', 'c'];
+const gB2 = ['1', '2', '3'];
+const gB3 = ['@', '$', '%'];
+
+const gC1 = ['a', '+', 'y'];
+const gC2 = ['b', '+', 'z'];
+
+// Sequences
+const sU = [gU1, gU2, gU3];
+
+const sA1 = [gA1];
+const sA2 = [gA1, gA2];
+const sA3 = [gA1, gA2, gA3];
+
+const sB1 = [gB1];
+const sB2 = [gB1, gB2];
+const sB3 = [gB1, gB2, gB3];
+
+// const sC1 = [gC1];
+const sC2 = [gC1, gC2];
+
+// DTOs
+
+const dtoGU3IExpected = {
+  ...defaultGramDTO2,
+  grams: {
+    a: {
+      id: 'a',
+      order: 1,
+      last: { source: {}, normal: {} },
+      next: { source: { b: 1 }, normal: { b: 1 } },
+      degreeIn: 0,
+      degreeOut: 1,
+      frequency: 0,
+    },
+    b: {
+      id: 'b',
+      order: 1,
+      last: { source: { a: 1 }, normal: { a: 1 } },
+      next: { source: { c: 1 }, normal: { c: 1 } },
+      degreeIn: 1,
+      degreeOut: 1,
+      frequency: 0,
+    },
+    c: {
+      id: 'c',
+      order: 1,
+      last: { source: { b: 1 }, normal: { b: 1 } },
+      next: { source: {}, normal: {} },
+      degreeIn: 1,
+      degreeOut: 0,
+      frequency: 0,
+    },
+    'a⏐b': {
+      id: 'a⏐b',
+      order: 2,
+      last: { source: {}, normal: {} },
+      next: { source: { c: 1 }, normal: { c: 1 } },
+      degreeIn: 0,
+      degreeOut: 1,
+      frequency: 0,
+    },
+    'b⏐c': {
+      id: 'b⏐c',
+      order: 2,
+      last: { source: { a: 1 }, normal: { a: 1 } },
+      next: { source: {}, normal: {} },
+      degreeIn: 1,
+      degreeOut: 0,
+      frequency: 0,
+    },
+  },
 };
 
-// Unit DTOs
-const dtoUnitEmpty = MarkovChain.new(undefined, 1);
-const dtoUnitA = MarkovChain.new([sequenceUnitA], 1);
-const dtoUnitB = MarkovChain.new([sequenceUnitB], 1);
-const dtoUnitAB = MarkovChain.new(sequencesUnitAB, 1);
+const dtoU = MarkovChain.new(sU);
+const dtoGU = MarkovChain.new(sU, defaultOptions.maxOrder, false, true);
+const dto6U = MarkovChain.new(sU, 6, false, false);
+const dto6GU = MarkovChain.new(sU, 6, false, true);
 
-// Standard DTOs
-// const dtoEmpty = MarkovChain.new();
+const dtoA1 = MarkovChain.new(sA1);
+const dtoA2 = MarkovChain.new(sA2);
+const dtoA3 = MarkovChain.new(sA3);
 
-const dtoUA = MarkovChain.new([sequenceUnitA]);
-const dtoUB = MarkovChain.new([sequenceUnitB]);
-const dtoUAB = MarkovChain.new(sequencesUnitAB);
+const dtoB1 = MarkovChain.new(sB1);
+const dtoB2 = MarkovChain.new(sB2);
+const dtoB3 = MarkovChain.new(sB3);
 
-const dtoA1 = MarkovChain.new([sequenceA1]);
-const dtoSeqA = MarkovChain.new(sequencesA);
-const dtoSeqALoop = MarkovChain.new(sequencesA, CONSTANTS.MC_MAX_ORDER_DEFAULT, 'middle');
-const dtoSeqB = MarkovChain.new(sequencesB);
-const dtoSeqC = MarkovChain.new(sequencesC);
-const dtoSeqD = MarkovChain.new(sequencesD);
-const dtoSeqAB = MarkovChain.new(sequencesAB);
-const dtoSeqABC = MarkovChain.new(sequencesABC);
+// const dtoIB1 = MarkovChain.new(sB1, 4, 'start');
+// const dtoIB2 = MarkovChain.new(sB2, 4, 'middle');
+// const dtoIB3 = MarkovChain.new(sB3, 4, 'end');
+
+// const dtoC1 = MarkovChain.new(sC1);
+const dtoC2 = MarkovChain.new(sC2);
 
 /**
  # Tests
@@ -104,116 +200,87 @@ const dtoSeqABC = MarkovChain.new(sequencesABC);
 
 describe('Markov Chain', () => {
   describe('static methods', () => {
-    it('can create new markov chains.', () => {
-      // Default
-      const dtoEmpty = MarkovChain.new();
-      expect(dtoEmpty).toEqual(dtoDefault);
-      expect(dtoEmpty).toHaveProperty('maxOrder');
-      expect(dtoEmpty).toHaveProperty('delimiter');
-      expect(dtoEmpty).toHaveProperty('startDelimiter');
-      expect(dtoEmpty).toHaveProperty('endDelimiter');
-      expect(dtoEmpty).toHaveProperty('sequences');
-      expect(dtoEmpty).toHaveProperty('grams');
-      expect(dtoEmpty.maxOrder).toEqual(CONSTANTS.MC_MAX_ORDER_DEFAULT);
-      expect(dtoEmpty.delimiter).toEqual(CONSTANTS.MC_GRAM_DELIMITER);
-      expect(dtoEmpty.startDelimiter).toEqual(CONSTANTS.MC_START_DELIMITER);
-      expect(dtoEmpty.endDelimiter).toEqual(CONSTANTS.MC_END_DELIMITER);
-      expect(dtoEmpty.sequences).toEqual([]);
-      expect(dtoEmpty.grams).toEqual({});
+    it('can create new markov chain', () => {
+      // Empty DTO
+      const mEmpty = MarkovChain.new();
+      expect(mEmpty).toEqual(defaultDTO);
 
-      // With Values
-      expect(dtoSeqA).toHaveProperty('maxOrder');
-      expect(dtoSeqA).toHaveProperty('delimiter');
-      expect(dtoSeqA).toHaveProperty('startDelimiter');
-      expect(dtoSeqA).toHaveProperty('endDelimiter');
-      expect(dtoSeqA).toHaveProperty('sequences');
-      expect(dtoSeqA).toHaveProperty('grams');
-      expect(dtoSeqA.maxOrder).toEqual(CONSTANTS.MC_MAX_ORDER_DEFAULT);
-      expect(dtoSeqA.delimiter).toEqual(CONSTANTS.MC_GRAM_DELIMITER);
-      expect(dtoSeqA.startDelimiter).toEqual(CONSTANTS.MC_START_DELIMITER);
-      expect(dtoSeqA.endDelimiter).toEqual(CONSTANTS.MC_END_DELIMITER);
-      expect(dtoSeqA.sequences).toEqual(sequencesA);
+      // Default DTOs
+      const mU1a = MarkovChain.new([gU1]);
+      const mU2a = MarkovChain.new([gU2]);
+      const mU3a = MarkovChain.new([gU3]);
+      const mU4a = MarkovChain.new(sU);
+      validateDTO(mU1a);
+      validateDTO(mU2a);
+      validateDTO(mU3a);
+      validateDTO(mU4a);
+      validateGrams(mU1a);
+      validateGrams(mU2a);
+      validateGrams(mU3a);
+      validateGrams(mU4a);
 
-      Object.keys(dtoSeqA.grams).forEach(k => {
-        const gram = dtoSeqA.grams[k];
-        expect(gram).toHaveProperty('id');
-        expect(gram).toHaveProperty('order');
-        expect(gram).toHaveProperty('last');
-        expect(gram).toHaveProperty('next');
-        expect(gram).toHaveProperty('degreeIn');
-        expect(gram).toHaveProperty('degreeOut');
-        expect(gram).toHaveProperty('frequency');
+      // With Max Order Set
+      const mU1b = MarkovChain.new([gU1], 6, false, false);
+      const mU2b = MarkovChain.new([gU2], 6, false, false);
+      const mU3b = MarkovChain.new([gU3], 6, false, false);
+      const mU4b = MarkovChain.new(sU, 6, false, false);
+      validateDTO(mU1b, defaultDTO6);
+      validateDTO(mU2b, defaultDTO6);
+      validateDTO(mU3b, defaultDTO6);
+      validateDTO(mU4b, defaultDTO6);
+      validateGrams(mU1b);
+      validateGrams(mU2b);
+      validateGrams(mU3b);
+      validateGrams(mU4b);
 
-        expect(gram.id).toEqual(k);
-        expect(gram.order).toBeGreaterThan(0);
-        if (dtoSeqA.maxOrder !== undefined) expect(gram.order).toBeLessThanOrEqual(dtoSeqA.maxOrder);
-        expect(Object.keys(gram.next).length).toBeGreaterThan(0);
-        expect(Object.keys(gram.last).length).toBeGreaterThan(0);
-      });
+      // We test insertion later.
 
-      // With Max Order Defined
-      expect(dtoUnitAB).toHaveProperty('maxOrder');
-      expect(dtoUnitAB).toHaveProperty('delimiter');
-      expect(dtoUnitAB).toHaveProperty('startDelimiter');
-      expect(dtoUnitAB).toHaveProperty('endDelimiter');
-      expect(dtoUnitAB).toHaveProperty('sequences');
-      expect(dtoUnitAB).toHaveProperty('grams');
-      expect(dtoUnitAB.maxOrder).toEqual(1);
-      expect(dtoUnitAB.delimiter).toEqual(CONSTANTS.MC_GRAM_DELIMITER);
-      expect(dtoUnitAB.startDelimiter).toEqual(CONSTANTS.MC_START_DELIMITER);
-      expect(dtoUnitAB.endDelimiter).toEqual(CONSTANTS.MC_END_DELIMITER);
-      expect(dtoUnitAB.sequences).toEqual(sequencesUnitAB);
-
-      Object.keys(dtoUnitAB.grams).forEach(k => {
-        const gram = dtoUnitAB.grams[k];
-        expect(gram).toHaveProperty('id');
-        expect(gram).toHaveProperty('order');
-        expect(gram).toHaveProperty('last');
-        expect(gram).toHaveProperty('next');
-        expect(gram).toHaveProperty('degreeIn');
-        expect(gram).toHaveProperty('degreeOut');
-        expect(gram).toHaveProperty('frequency');
-
-        expect(gram.id).toEqual(k);
-        expect(gram.order).toBeGreaterThan(0);
-        if (dtoUnitAB.maxOrder !== undefined) expect(gram.order).toBeLessThanOrEqual(dtoUnitAB.maxOrder);
-        expect(Object.keys(gram.next).length).toBeGreaterThan(0);
-        expect(Object.keys(gram.last).length).toBeGreaterThan(0);
-      });
+      // With Sequences Stripped
+      const mU1c = MarkovChain.new([gU1], 4, false, true);
+      const mU2c = MarkovChain.new([gU2], 4, false, true);
+      const mU3c = MarkovChain.new([gU3], 4, false, true);
+      const mU4c = MarkovChain.new(sU, 4, false, true);
+      validateDTO(mU1c, defaultGramDTO);
+      validateDTO(mU2c, defaultGramDTO);
+      validateDTO(mU3c, defaultGramDTO);
+      validateDTO(mU4c, defaultGramDTO);
+      validateGrams(mU1c);
+      validateGrams(mU2c);
+      validateGrams(mU3c);
+      validateGrams(mU4c);
     });
     it('can clone existing markov chains', () => {
       // Direct Clones
-      expect(MarkovChain.clone(MarkovChain.new(), false)).toEqual(dtoDefault);
-      expect(MarkovChain.clone(dtoDefault, false)).toEqual(dtoDefault);
-      expect(MarkovChain.clone(dtoMin, false)).toEqual(dtoMin);
-      expect(MarkovChain.clone(dtoSeqA, false)).toEqual(dtoSeqA);
-      expect(MarkovChain.clone(dtoSeqB, false)).toEqual(dtoSeqB);
-      expect(MarkovChain.clone(dtoSeqC, false)).toEqual(dtoSeqC);
+      expect(MarkovChain.clone(MarkovChain.new(), false)).toEqual(defaultDTO);
+      expect(MarkovChain.clone(defaultDTO, false)).toEqual(defaultDTO);
+      expect(MarkovChain.clone(defaultGramDTO, false)).toEqual(defaultGramDTO);
+      expect(MarkovChain.clone(dtoU, false)).toEqual(dtoU);
+      expect(MarkovChain.clone(dto6U, false)).toEqual(dto6U);
+      expect(MarkovChain.clone(dtoGU, false)).toEqual(dtoGU);
+      expect(MarkovChain.clone(dto6GU, false)).toEqual(dto6GU);
 
-      // Stripping Sequences
-      const defaultStripped = { ...dtoDefault, sequences: undefined };
-      const seqAStripped = { ...dtoSeqA, sequences: undefined };
-      const seqBStripped = { ...dtoSeqB, sequences: undefined };
-      const seqCStripped = { ...dtoSeqC, sequences: undefined };
-
-      expect(MarkovChain.clone(dtoDefault, true)).toEqual(defaultStripped);
-      expect(MarkovChain.clone(dtoSeqA, true)).toEqual(seqAStripped);
-      expect(MarkovChain.clone(dtoSeqB, true)).toEqual(seqBStripped);
-      expect(MarkovChain.clone(dtoSeqC, true)).toEqual(seqCStripped);
+      // Clones with Sequences Stripped
+      expect(MarkovChain.clone(MarkovChain.new(), true)).toEqual(stripSequences(defaultDTO));
+      expect(MarkovChain.clone(defaultDTO, true)).toEqual(stripSequences(defaultDTO));
+      expect(MarkovChain.clone(defaultGramDTO, true)).toEqual(stripSequences(defaultGramDTO));
+      expect(MarkovChain.clone(dtoU, true)).toEqual(stripSequences(dtoU));
+      expect(MarkovChain.clone(dto6U, true)).toEqual(stripSequences(dto6U));
+      expect(MarkovChain.clone(dtoGU, true)).toEqual(stripSequences(dtoGU));
+      expect(MarkovChain.clone(dto6GU, true)).toEqual(stripSequences(dto6GU));
     });
-    it('creates immutable clones', () => {
-      const cloneA = MarkovChain.new([sequenceUnitB], 4);
-      const cloneB = MarkovChain.clone(cloneA);
-      const cloneC = MarkovChain.clone(cloneB);
+    it('create immutable clones', () => {
+      const mA = MarkovChain.new(sU, 4, false, false);
+      const mB = MarkovChain.clone(mA);
+      const mC = MarkovChain.clone(mB);
 
-      cloneB.seed = 50;
-      cloneB.uses = 250;
-      cloneB.maxOrder = 10;
-      cloneB.delimiter = '.';
-      cloneB.startDelimiter = '>>';
-      cloneB.endDelimiter = '<<';
-      cloneB.sequences = cloneB.sequences ? [...cloneB.sequences, ['x']] : [['x']];
-      cloneB.grams.xk = {
+      mB.seed = 50;
+      mB.uses = 250;
+      mB.maxOrder = 10;
+      mB.delimiter = '.';
+      mB.startDelimiter = '>>';
+      mB.endDelimiter = '<<';
+      mB.sequences = mB.sequences ? [...mB.sequences, ['x']] : [['x']];
+      mB.grams.xk = {
         id: '-.-.-.-',
         last: { source: {}, normal: {} },
         next: { source: {}, normal: {} },
@@ -223,301 +290,267 @@ describe('Markov Chain', () => {
         degreeOut: 0,
       };
 
-      expect(cloneA).toEqual(dtoUB);
-      expect(cloneB).toHaveProperty('grams.xk');
-      expect(cloneC).toEqual(cloneA);
-    });
-    it('can add sequences to existing markov chains', () => {
-      // Single Sequence with Cloning
-      expect(MarkovChain.addSequence(dtoDefault, sequenceUnitA, false, true)).toEqual(dtoUA);
-      expect(MarkovChain.addSequence(dtoUA, sequenceUnitB, false, true)).toEqual(dtoUAB);
-      expect(MarkovChain.addSequence(dtoDefault, sequenceA1, false, true)).toEqual(dtoA1);
-      expect(MarkovChain.addSequence(dtoA1, sequenceA2, false, true)).toEqual(dtoSeqA);
-
-      // Single Sequence without Cloning
-      const dtoCloneSeqA = MarkovChain.clone(dtoDefault) as MarkovChainSequenceDTO;
-      MarkovChain.addSequence(dtoCloneSeqA, sequenceA1, false, false);
-      expect(dtoCloneSeqA).toEqual(dtoA1);
-      MarkovChain.addSequence(dtoCloneSeqA, sequenceA2, false, false);
-      expect(dtoCloneSeqA).toEqual(dtoSeqA);
-
-      const dtoCloneSeqAB = MarkovChain.clone(dtoDefault) as MarkovChainSequenceDTO;
-      MarkovChain.addSequence(dtoCloneSeqAB, sequenceA1, false, false);
-      MarkovChain.addSequence(dtoCloneSeqAB, sequenceA2, false, false);
-      expect(dtoCloneSeqAB).toEqual(dtoSeqA);
-      MarkovChain.addSequence(dtoCloneSeqAB, sequenceB1, false, false);
-      MarkovChain.addSequence(dtoCloneSeqAB, sequenceB2, false, false);
-      expect(dtoCloneSeqAB).toEqual(dtoSeqAB);
-
-      // Multiple Sequences with Cloning
-      expect(MarkovChain.addSequences(dtoDefault, sequencesA, false, true)).toEqual(dtoSeqA);
-      expect(MarkovChain.addSequences(dtoSeqA, sequencesB, false, true)).toEqual(dtoSeqAB);
-
-      // Multiple Sequences without Cloning
-      const dtoCloneABC = MarkovChain.clone(dtoDefault) as MarkovChainSequenceDTO;
-      MarkovChain.addSequences(dtoCloneABC, sequencesA, false, false);
-      expect(dtoCloneABC).toEqual(dtoSeqA);
-      MarkovChain.addSequences(dtoCloneABC, sequencesB, false, false);
-      expect(dtoCloneABC).toEqual(dtoSeqAB);
-      MarkovChain.addSequences(dtoCloneABC, sequencesC, false, false);
-      expect(dtoCloneABC).toEqual(dtoSeqABC);
-    });
-    it('can insert sequences into an existing markov chain', () => {
-      // Middle with Cloning
-      const dtoInsertMiddleA = MarkovChain.new([sequenceA1, sequenceA2], 2, true);
-      const dtoInsertMiddleB = MarkovChain.new([sequenceA1, sequenceA2], 2, 'middle');
-      expect(dtoInsertMiddleA).toEqual(dtoInsertMiddleB);
-      expect(dtoInsertMiddleA).not.toEqual(dtoSeqA);
-      expect(dtoInsertMiddleB).not.toEqual(dtoSeqA);
-      expect(MarkovChain.getGram(dtoInsertMiddleA, [CONSTANTS.MC_START_DELIMITER])).toBeUndefined();
-      expect(MarkovChain.getGram(dtoInsertMiddleA, [CONSTANTS.MC_END_DELIMITER])).toBeUndefined();
-
-      // Middle without Cloning
-      const dtoInsertMiddleA2 = MarkovChain.new();
-
-      // Start
-      const dtoInsertStart = MarkovChain.new([sequenceA1, sequenceA2], 2, 'start');
-      expect(dtoInsertStart).not.toEqual(dtoSeqA);
-      expect(MarkovChain.getGram(dtoInsertStart, [CONSTANTS.MC_START_DELIMITER])).toBeDefined();
-      expect(MarkovChain.getGram(dtoInsertStart, [CONSTANTS.MC_END_DELIMITER])).toBeUndefined();
-
-      // End
-      const dtoInsertEnd = MarkovChain.new([sequenceA1, sequenceA2], 2, 'end');
-      expect(dtoInsertEnd).not.toEqual(dtoSeqA);
-      expect(MarkovChain.getGram(dtoInsertEnd, [CONSTANTS.MC_START_DELIMITER])).toBeUndefined();
-      expect(MarkovChain.getGram(dtoInsertEnd, [CONSTANTS.MC_END_DELIMITER])).toBeDefined();
+      expect(mA).toEqual(dtoU);
+      expect(mB).toHaveProperty('grams.xk');
+      expect(mC).toEqual(mA);
     });
     it('can add an edge to an existing markov chain', () => {
-      // Adding an edge with Cloning
-      let dtoUnitABCloneIterative = MarkovChain.clone(dtoUnitA, true) as MarkovChainSequenceDTO;
-      dtoUnitABCloneIterative = MarkovChain.addEdge(
-        dtoUnitABCloneIterative,
-        CONSTANTS.MC_START_DELIMITER,
-        undefined,
-        'b',
-        1,
-        true
-      );
-      dtoUnitABCloneIterative = MarkovChain.addEdge(
-        dtoUnitABCloneIterative,
-        'b',
-        CONSTANTS.MC_START_DELIMITER,
-        CONSTANTS.MC_END_DELIMITER,
-        1,
-        true
-      );
-      dtoUnitABCloneIterative = MarkovChain.addEdge(
-        dtoUnitABCloneIterative,
-        CONSTANTS.MC_END_DELIMITER,
-        'b',
-        undefined,
-        1,
-        true
-      );
-      // We need to strip sequences, because this function does not update them.
-      expect(dtoUnitABCloneIterative).toEqual(MarkovChain.clone(dtoUnitAB, true));
+      let m1 = MarkovChain.clone(defaultGramDTO2);
+      m1 = MarkovChain.addEdge(m1, 'a', undefined, 'b');
+      m1 = MarkovChain.addEdge(m1, 'b', 'a', 'c');
+      m1 = MarkovChain.addEdge(m1, 'c', 'b', undefined);
+      m1 = MarkovChain.addEdge(m1, ['a', 'b'], undefined, 'c');
+      m1 = MarkovChain.addEdge(m1, ['b', 'c'], 'a', undefined);
 
-      // Adding an edge without Cloning
-      dtoUnitABCloneIterative = MarkovChain.clone(dtoUnitA, true) as MarkovChainSequenceDTO;
-      MarkovChain.addEdge(dtoUnitABCloneIterative, CONSTANTS.MC_START_DELIMITER, undefined, 'b', 1, false);
-      MarkovChain.addEdge(
-        dtoUnitABCloneIterative,
-        'b',
-        CONSTANTS.MC_START_DELIMITER,
-        CONSTANTS.MC_END_DELIMITER,
-        1,
-        false
-      );
-      MarkovChain.addEdge(dtoUnitABCloneIterative, CONSTANTS.MC_END_DELIMITER, 'b', undefined, 1, false);
-      // We need to strip sequences, because this function does not update them.
-      expect(dtoUnitABCloneIterative).toEqual(MarkovChain.clone(dtoUnitAB, true));
+      // DTO and edge degrees match expected results.
+      expect(m1).toEqual(dtoGU3IExpected);
+      expect(m1.grams.a.degreeOut).toBe(1);
+      expect(m1.grams.a.degreeIn).toBe(0);
+      expect(m1.grams.b.degreeOut).toBe(1);
+      expect(m1.grams.b.degreeIn).toBe(1);
+      expect(m1.grams.c.degreeOut).toBe(0);
+      expect(m1.grams.c.degreeIn).toBe(1);
+
+      let m2 = MarkovChain.addEdge(m1, 'x', undefined, 'b');
+      m2 = MarkovChain.addEdge(m2, 'b', 'x', undefined);
+      m2 = MarkovChain.addEdge(m2, 'b', undefined, 'a');
+      m2 = MarkovChain.addEdge(m2, 'b', undefined, 'a');
+      expect(m2.grams.b.degreeIn).toBe(2);
+      expect(m2.grams.b.degreeOut).toBe(2);
     });
-    it('can pick values from the chain', () => {
-      // Next
-      const engA = new Random({ ...engineA.serialize() });
-      const pickAN = MarkovChain.pick(engA, dtoSeqB, ['a'], true, undefined);
-      const pickBN = MarkovChain.pick(engA, dtoSeqB, ['b'], true, undefined);
-      const pickCN = MarkovChain.pick(engA, dtoSeqB, ['a', 'b'], true, undefined);
-      expect([sequenceB1[1], sequenceB2[1]]).toContain(pickAN);
-      expect([sequenceB1[2], sequenceB2[2]]).toContain(pickBN);
-      expect([sequenceB1[2], sequenceB2[2]]).toContain(pickCN);
+    /* it('can remove an edge from an existing markov chain', () => {}); */
+    it('can add a sequence to an existing markov chain', () => {
+      // Standard Addition
+      const mA0 = MarkovChain.addSequence(defaultDTO, gA1);
+      const mA1 = MarkovChain.addSequence(defaultDTO, gA1, false);
+      const mA2 = MarkovChain.addSequence(mA1, gA2, false);
+      const mA3 = MarkovChain.addSequence(mA2, gA3, false);
+      expect(mA0).toEqual(dtoA1);
+      expect(mA1).toEqual(dtoA1);
+      expect(mA2).toEqual(dtoA2);
+      expect(mA3).toEqual(dtoA3);
+    });
+    it('can insert a sequence into an existing markov chain', () => {
+      // dtoGU3IExpected
+      expect(MarkovChain.addSequence(defaultGramDTO2, gU3, true)).toEqual(dtoGU3IExpected);
 
-      const nextA = MarkovChain.next(engA, dtoSeqB, ['a'], undefined);
-      const nextB = MarkovChain.next(engA, dtoSeqB, ['b'], undefined);
-      const nextC = MarkovChain.next(engA, dtoSeqB, ['a', 'b'], undefined);
-      expect([sequenceB1[1], sequenceB2[1]]).toContain(nextA);
-      expect([sequenceB1[2], sequenceB2[2]]).toContain(nextB);
-      expect([sequenceB1[2], sequenceB2[2]]).toContain(nextC);
+      // Insertion
+      const mIB1 = MarkovChain.addSequence(defaultDTO, gB1, 'start');
+      const mIB2 = MarkovChain.addSequence(defaultDTO, gB1, 'middle');
+      const mIB3 = MarkovChain.addSequence(defaultDTO, gB1, 'end');
+      expect(Object.keys(mIB1.grams)).not.toContain(mIB1.endDelimiter);
+      expect(Object.keys(mIB2.grams)).not.toContain([mIB2.startDelimiter, mIB2.endDelimiter]);
+      expect(Object.keys(mIB3.grams)).not.toContain(mIB3.startDelimiter);
+    });
+    /* it('can remove a sequence to an existing markov chain', () => {}); */
+    it('can add sequences to existing markov chains', () => {
+      // Standard Addition
+      const m0 = MarkovChain.addSequences(defaultDTO, sA3);
+      const mA = MarkovChain.addSequences(defaultDTO, sA3, false);
+      const mB = MarkovChain.addSequences(defaultDTO, sB3, false);
+      expect(m0).toEqual(dtoA3);
+      expect(mA).toEqual(dtoA3);
+      expect(mB).toEqual(dtoB3);
 
-      // Last
-      const pickAL = MarkovChain.pick(engA, dtoSeqB, ['b'], false, undefined);
-      const pickBL = MarkovChain.pick(engA, dtoSeqB, ['c'], false, undefined);
-      const pickCL = MarkovChain.pick(engA, dtoSeqB, ['b', 'c'], false, undefined);
+      // Insertion
+      const mIB1 = MarkovChain.addSequences(defaultDTO, sB3, 'start');
+      const mIB2 = MarkovChain.addSequences(defaultDTO, sB3, 'middle');
+      const mIB3 = MarkovChain.addSequences(defaultDTO, sB3, 'end');
+      expect(Object.keys(mIB1.grams)).not.toContain(mIB1.endDelimiter);
+      expect(Object.keys(mIB2.grams)).not.toContain([mIB2.startDelimiter, mIB2.endDelimiter]);
+      expect(Object.keys(mIB3.grams)).not.toContain(mIB3.startDelimiter);
+    });
+    /* it('can remove sequences from existing markov chains', () => {}); */
+    it('can pick values from a markov chain', () => {
+      const eng = engine.clone();
 
-      expect([sequenceB1[0], sequenceB2[0]]).toContain(pickAL);
-      expect([sequenceB1[1], sequenceB2[1]]).toContain(pickBL);
-      expect([sequenceB1[0], sequenceB2[0]]).toContain(pickCL);
-
-      const lastA = MarkovChain.last(engA, dtoSeqB, ['b'], undefined);
-      const lastB = MarkovChain.last(engA, dtoSeqB, ['c'], undefined);
-      const lastC = MarkovChain.last(engA, dtoSeqB, ['b', 'c'], undefined);
-      expect([sequenceB1[0], sequenceB2[0]]).toContain(lastA);
-      expect([sequenceB1[1], sequenceB2[1]]).toContain(lastB);
-      expect([sequenceB1[0], sequenceB2[0]]).toContain(lastC);
-
-      // Masks
       for (let i = 0; i < 20; i += 1) {
-        const pickM = MarkovChain.pick(engA, dtoSeqC, ['ocean', 'beach'], true, ['forest', 'plains']);
-        expect(pickM).toBe('town');
+        // Standard Pick
+        const pickStandard = MarkovChain.pick(eng, dtoB1);
+        expect(pickStandard).toEqual(gB1[0]);
+
+        // Next
+        const pickSNext = MarkovChain.pick(eng, dtoB1, [gB1[0]]);
+        const pickNext1 = MarkovChain.next(eng, dtoB1, [gB1[0]]);
+        const pickNext2 = MarkovChain.next(eng, dtoC2, ['+']);
+        expect(pickSNext).toEqual(gB1[1]);
+        expect(pickNext1).toEqual(pickSNext);
+        expect([gC1[2], gC2[2]]).toContain(pickNext2);
+
+        // Last
+        const pickSLast = MarkovChain.pick(eng, dtoB1, [gB1[1]], false);
+        const pickLast = MarkovChain.last(eng, dtoB1, [gB1[1]]);
+        const pickLast2 = MarkovChain.last(eng, dtoC2, ['+']);
+        expect(pickSLast).toEqual(gB1[0]);
+        expect(pickLast).toEqual(pickSLast);
+        expect([gC1[0], gC2[0]]).toContain(pickLast2);
+
+        // Masks
+        const pickMask1 = MarkovChain.pick(eng, dtoC2, ['+'], true, ['a', 'y']);
+        const pickMask2 = MarkovChain.next(eng, dtoC2, ['+'], ['a', 'y']);
+        const pickMask3 = MarkovChain.last(eng, dtoC2, ['+'], ['a', 'y']);
+        expect(pickMask1).toEqual('z');
+        expect(pickMask2).toEqual(pickMask1);
+        expect(pickMask3).toEqual('b');
       }
     });
-    it('can generate sequences from a chain', () => {
-      const engA = new Random({ ...engineA.serialize() });
+    it('can generate sequences a markov chain', () => {
+      const eng = engine.clone();
+    });
+    it('are immutable', () => {
+      const mOriginal = MarkovChain.clone(dtoA3);
+      const mClone = MarkovChain.clone(mOriginal);
+      expect(mOriginal).toEqual(mClone);
 
-      // Trim
-      const genTrimTrue = MarkovChain.generate(engA, dtoA1, [], 1, 1, 25, true, true);
-      expect(genTrimTrue[0] !== CONSTANTS.MC_START_DELIMITER).toEqual(true);
-      expect(genTrimTrue[genTrimTrue.length - 1] !== CONSTANTS.MC_END_DELIMITER).toEqual(true);
-
-      const genTrimFalse = MarkovChain.generate(engA, dtoA1, [], 1, 1, 25, true, false);
-      expect(genTrimFalse[0] === CONSTANTS.MC_START_DELIMITER).toEqual(true);
-      expect(genTrimFalse[genTrimFalse.length - 1] === CONSTANTS.MC_END_DELIMITER).toEqual(true);
-
-      const genTrimTrueLength = MarkovChain.generate(engA, dtoSeqA, ['a'], 1, 25, 25, true, true);
-
-      const genTrimFalseLength = MarkovChain.generate(engA, dtoSeqA, ['a'], 1, 25, 25, true, false);
-
-      expect(genTrimTrueLength.length).toEqual(25);
-      expect(genTrimFalseLength.length).toEqual(25 + 2);
-
-      // From Start
-      const genSA = MarkovChain.generate(engA, dtoA1, [], 1, 1, 25, true, true);
-
-      // From Prepopulated
-
-      // Strict Order 1 & n
-      const genO1Dist = { w: 0, b: 0, error: 0 };
-      for (let i = 0; i < 1000; i += 1) {
-        // It shouldn't be possible to get final result 'b' if we're using greater than order 1.
-        const genO1 = MarkovChain.generate(engA, dtoSeqD, ['x'], 1, 1, 25, true, true);
-        if (genO1 !== undefined) {
-          const result = genO1.pop();
-          switch (result) {
-            case 'w':
-              genO1Dist.w += 1;
-              break;
-            case 'b':
-              genO1Dist.b += 1;
-              break;
-            default:
-              genO1Dist.error += 1;
-              break;
-          }
-        } else {
-          genO1Dist.error += 1;
-        }
-      }
-
-      expect(genO1Dist.w).toBeLessThan(genO1Dist.b);
-      expect(genO1Dist.b).toBeGreaterThan(990);
-      expect(genO1Dist.error).toEqual(0);
-
-      // Strict Order n
-      const genONDist = { w: 0, b: 0, error: 0 };
-      for (let i = 0; i < 1000; i += 1) {
-        // It shouldn't be possible to get final result 'b' if we're using greater than order 1.
-        const genON = MarkovChain.generate(engA, dtoSeqD, ['x'], 4, 1, 25, true, true);
-        if (genON !== undefined) {
-          const result = genON.pop();
-          switch (result) {
-            case 'w':
-              genONDist.w += 1;
-              break;
-            case 'b':
-              genONDist.b += 1;
-              break;
-            default:
-              genONDist.error += 1;
-              break;
-          }
-        } else {
-          genONDist.error += 1;
-        }
-      }
-
-      expect(genONDist.w).toEqual(1000);
-      expect(genONDist.b).toEqual(0);
-      expect(genONDist.error).toEqual(0);
-
-      // Variable Order (Non-Strict)
-      const genOVDistA = { w: 0, b: 0, error: 0 };
-      const genOVDistB = { w: 0, b: 0, error: 0 };
-      for (let i = 0; i < 1000; i += 1) {
-        // It shouldn't be possible to get final result 'b' if we're using greater than order 1,
-        // but we can use the starting sequence to force down to order 1.
-        const genOVA = MarkovChain.generate(engA, dtoSeqD, ['x', 'y', 'a'], 4, 1, 25, false, true);
-        if (genOVA !== undefined) {
-          const result = genOVA.pop();
-          switch (result) {
-            case 'w':
-              genOVDistA.w += 1;
-              break;
-            case 'b':
-              genOVDistA.b += 1;
-              break;
-            default:
-              genOVDistA.error += 1;
-              break;
-          }
-        } else {
-          genOVDistA.error += 1;
-        }
-
-        const genOVB = MarkovChain.generate(engA, dtoSeqD, ['x'], 4, 1, 25, false, true);
-        if (genOVB !== undefined) {
-          const result = genOVB.pop();
-          switch (result) {
-            case 'w':
-              genOVDistB.w += 1;
-              break;
-            case 'b':
-              genOVDistB.b += 1;
-              break;
-            default:
-              genOVDistB.error += 1;
-              break;
-          }
-        } else {
-          genOVDistB.error += 1;
-        }
-      }
-
-      expect(genOVDistA.w).toBeLessThan(genOVDistA.b);
-      expect(genOVDistA.b).toBeGreaterThan(990);
-      expect(genOVDistA.error).toEqual(0);
-
-      expect(genOVDistB.w).toEqual(1000);
-      expect(genOVDistB.b).toEqual(0);
-      expect(genOVDistB.error).toEqual(0);
-      // console.log(genO1Dist);
-      // console.log(genONDist);
-      // console.log(genOVDistA);
-      // console.log(genOVDistB);
-
-      // Infinite Loops & Min / Max Length
-      for (let i = 1; i < 200; i += 1) {
-        const genMaxA = MarkovChain.generate(engA, dtoSeqALoop, ['a'], 1, 1, i, true, true);
-        expect(genMaxA.length).toEqual(i);
-
-        const genMinA = MarkovChain.generate(engA, dtoSeqA, ['a'], 1, i, i + 100, true, true);
-        expect(genMinA.length >= i).toEqual(true);
-      }
-
-      // Mask
+      MarkovChain.addEdge(mClone, 'b', 'a', 'c');
+      expect(mOriginal).toEqual(mClone);
+      MarkovChain.addSequence(mClone, gB2);
+      expect(mOriginal).toEqual(mClone);
+      MarkovChain.addSequences(mClone, sB3);
+      expect(mOriginal).toEqual(mClone);
     });
   });
 
-  describe('class methods', () => {});
-});
+  describe('class methods', () => {
+    it('can create new markov chains', () => {
+      const eng = engine.clone();
 
-test('Markov Chains can be created functionally.', () => {});
+      // Empty
+      const mE0 = new MarkovChain({});
+      const mE1 = new MarkovChain({ ...defaultDTO });
+      const mE2 = new MarkovChain({ ...defaultDTO, engine: eng });
+      validateInstance(mE0, defaultGramDTO);
+      validateInstance(mE1);
+      validateInstance(mE2);
+
+      // Default DTOs
+      const mU1a = new MarkovChain({ sequences: [gU1] });
+      const mU2a = new MarkovChain({ sequences: [gU2] });
+      const mU3a = new MarkovChain({ sequences: [gU3] });
+      const mU4a = new MarkovChain({ sequences: sU });
+      validateInstance(mU1a);
+      validateInstance(mU2a);
+      validateInstance(mU3a);
+      validateInstance(mU4a);
+      validateGrams(mU1a.serialize());
+      validateGrams(mU2a.serialize());
+      validateGrams(mU3a.serialize());
+      validateGrams(mU4a.serialize());
+
+      // With Max Order Set
+      const mU1b = new MarkovChain({ sequences: [gU1], maxOrder: 6 });
+      const mU2b = new MarkovChain({ sequences: [gU2], maxOrder: 6 });
+      const mU3b = new MarkovChain({ sequences: [gU3], maxOrder: 6 });
+      const mU4b = new MarkovChain({ sequences: sU, maxOrder: 6 });
+      validateInstance(mU1b, defaultDTO6);
+      validateInstance(mU2b, defaultDTO6);
+      validateInstance(mU3b, defaultDTO6);
+      validateInstance(mU4b, defaultDTO6);
+      validateGrams(mU1b.serialize());
+      validateGrams(mU2b.serialize());
+      validateGrams(mU3b.serialize());
+      validateGrams(mU4b.serialize());
+    });
+    it('can clone existing markov chains', () => {});
+    it('create immutable clones', () => {});
+    it('can add an edge to an existing markov chain', () => {
+      const m1 = new MarkovChain({ maxOrder: 2 });
+      m1.addEdge('a', undefined, 'b');
+      m1.addEdge('b', 'a', 'c');
+      m1.addEdge('c', 'b', undefined);
+      m1.addEdge(['a', 'b'], undefined, 'c');
+      m1.addEdge(['b', 'c'], 'a', undefined);
+
+      // DTO and edge degrees match expected results.
+      expect(m1.serialize()).toEqual(dtoGU3IExpected);
+      expect(m1.grams.a.degreeOut).toBe(1);
+      expect(m1.grams.a.degreeIn).toBe(0);
+      expect(m1.grams.b.degreeOut).toBe(1);
+      expect(m1.grams.b.degreeIn).toBe(1);
+      expect(m1.grams.c.degreeOut).toBe(0);
+      expect(m1.grams.c.degreeIn).toBe(1);
+
+      m1.addEdge('b', 'x', undefined);
+      m1.addEdge('b', undefined, 'a');
+      m1.addEdge('b', undefined, 'a');
+      expect(m1.grams.b.degreeIn).toBe(2);
+      expect(m1.grams.b.degreeOut).toBe(2);
+    });
+    /* it('can remove an edge from an existing markov chain', () => {}); */
+    it('can add a sequence to an existing markov chain', () => {
+      // Standard Addition
+      const mA0 = new MarkovChain({ sequences: [] }).addSequence(gA1);
+      const mA1 = new MarkovChain({ sequences: [] }).addSequence(gA1, false);
+      const mA2 = new MarkovChain({ sequences: [] }).addSequence(gA1, false).addSequence(gA2);
+      const mA = new MarkovChain({ sequences: [] }).addSequence(gA1, false).addSequence(gA2).addSequence(gA3);
+
+      expect(mA0.serialize()).toEqual(dtoA1);
+      expect(mA1.serialize()).toEqual(dtoA1);
+      expect(mA2.serialize()).toEqual(dtoA2);
+      expect(mA.serialize()).toEqual(dtoA3);
+    });
+    it('can insert a sequence into an existing markov chain', () => {
+      expect(MarkovChain.addSequence(defaultGramDTO2, gU3, true)).toEqual(dtoGU3IExpected);
+
+      // Insertion
+      const mIB1 = new MarkovChain({ sequences: [] }).addSequence(gB1, 'start');
+      const mIB2 = new MarkovChain({ sequences: [] }).addSequence(gB1, 'middle');
+      const mIB3 = new MarkovChain({ sequences: [] }).addSequence(gB1, 'end');
+      expect(Object.keys(mIB1.grams)).not.toContain(mIB1.endDelimiter);
+      expect(Object.keys(mIB2.grams)).not.toContain([mIB2.startDelimiter, mIB2.endDelimiter]);
+      expect(Object.keys(mIB3.grams)).not.toContain(mIB3.startDelimiter);
+    });
+    it('can add sequences to existing markov chains', () => {
+      // Standard Addition
+      const m0 = new MarkovChain({ sequences: [] }).addSequences(sA3);
+      const mA = new MarkovChain({ sequences: [] }).addSequences(sA3, false);
+      const mB = new MarkovChain({ sequences: [] }).addSequences(sB3, false);
+      expect(m0.serialize()).toEqual(dtoA3);
+      expect(mA.serialize()).toEqual(dtoA3);
+      expect(mB.serialize()).toEqual(dtoB3);
+
+      // Insertion
+      const mIB1 = new MarkovChain({ sequences: [] }).addSequences(sB3, 'start');
+      const mIB2 = new MarkovChain({ sequences: [] }).addSequences(sB3, 'middle');
+      const mIB3 = new MarkovChain({ sequences: [] }).addSequences(sB3, 'end');
+      expect(Object.keys(mIB1.grams)).not.toContain(mIB1.endDelimiter);
+      expect(Object.keys(mIB2.grams)).not.toContain([mIB2.startDelimiter, mIB2.endDelimiter]);
+      expect(Object.keys(mIB3.grams)).not.toContain(mIB3.startDelimiter);
+    });
+    it('can pick values from a markov chain', () => {
+      const mB1 = new MarkovChain(dtoB1);
+      const mC2 = new MarkovChain(dtoC2);
+
+      for (let i = 0; i < 20; i += 1) {
+        // Standard Pick
+        const pickStandard = new MarkovChain(dtoB1).pick();
+        expect(pickStandard).toEqual(gB1[0]);
+
+        // Next
+        const pickSNext = mB1.pick([gB1[0]]);
+        const pickNext1 = mB1.next([gB1[0]]);
+        const pickNext2 = mC2.next(['+']);
+        expect(pickSNext).toEqual(gB1[1]);
+        expect(pickNext1).toEqual(pickSNext);
+        expect([gC1[2], gC2[2]]).toContain(pickNext2);
+
+        // Last
+        const pickSLast = mB1.pick([gB1[1]], false);
+        const pickLast = mB1.last([gB1[1]]);
+        const pickLast2 = mC2.last(['+']);
+        expect(pickSLast).toEqual(gB1[0]);
+        expect(pickLast).toEqual(pickSLast);
+        expect([gC1[0], gC2[0]]).toContain(pickLast2);
+
+        // Masks
+        const pickMask1 = mC2.pick(['+'], true, ['a', 'y']);
+        const pickMask2 = mC2.next(['+'], ['a', 'y']);
+        const pickMask3 = mC2.last(['+'], ['a', 'y']);
+        expect(pickMask1).toEqual('z');
+        expect(pickMask2).toEqual(pickMask1);
+        expect(pickMask3).toEqual('b');
+      }
+    });
+    it('can generate sequences a markov chain', () => {});
+  });
+});
