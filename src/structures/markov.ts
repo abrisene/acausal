@@ -18,7 +18,6 @@ TESTING:
 
 
 TODO:
-- Abstract out deep copy of DTO.
 - Add methods for remove sequence(s), edges and grams.
 - Add methods for editing sequence(s) and grams.
 - Refactor sequences array into weighted dictionary to reduce duplication.
@@ -311,12 +310,28 @@ export class MarkovChain {
     this._startDelimiter = startDelimiter;
     this._endDelimiter = endDelimiter;
 
-    this._sequences = sequences;
-    this._grams = grams || {};
-
-    // If we have sequences and and no grams, construct the grams.
-    if (sequences !== undefined && grams === undefined) {
-      this.addSequences(sequences, insert);
+    // If we have no sequences
+    if (!sequences || sequences.length === 0) {
+      // And we have no grams
+      if (!grams || Object.keys(grams).length === 0) {
+        this._grams = {};
+        this._sequences = [];
+      } else {
+        this._grams = grams;
+        this._sequences = undefined;
+      }
+    } else {
+      // If we have sequences
+      // And no grams, then add them.
+      if (!grams || Object(grams).length === 0) {
+        this._grams = {};
+        this._sequences = [];
+        this.addSequences(this._sequences, insert);
+      } else {
+        // Otherwise, if we have sequences and no grams, add them.
+        this._grams = grams || {};
+        this._sequences = sequences;
+      }
     }
   }
 
@@ -355,7 +370,7 @@ export class MarkovChain {
     this._endDelimiter = dto.endDelimiter;
 
     this._sequences = dto.sequences;
-    this._grams = dto.grams || {};
+    this._grams = dto.grams;
 
     return this;
   }
@@ -429,7 +444,7 @@ export class MarkovChain {
   public generateSequence() {}
 
   /**
-   * Serializes
+   * Serializes a Markov Chain instance into a DTO.
    * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
    */
   public serialize(stripSequences = false): MarkovChainDTO {
@@ -442,6 +457,11 @@ export class MarkovChain {
       grams: {},
     };
 
+    // Copy Sequences
+    if (this._sequences !== undefined && !stripSequences) {
+      data.sequences = this._sequences.map(s => [...s]);
+    }
+
     // Deep Clone Grams
     data.grams = Object.keys(this._grams).reduce((l, k) => {
       const gram = this._grams[k];
@@ -453,12 +473,16 @@ export class MarkovChain {
       return { ...l, [k]: gramClone };
     }, {});
 
-    // Copy Sequences
-    if (this._sequences !== undefined && !stripSequences) data.sequences = this._sequences.map(s => [...s]);
     return data;
   }
 
-  public clone() {}
+  /**
+   * Ceates a clone of the Markov Chain.
+   * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
+   */
+  public clone(stripSequences = false) {
+    return new MarkovChain(this.serialize(stripSequences));
+  }
 
   /**
    *

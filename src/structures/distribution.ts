@@ -400,7 +400,7 @@ export class Distribution {
   public static remove(data: DistributionDTO, keys: string | string[]) {
     // Determine whether we're using the source or the normal distribution.
     const rem = Array.isArray(keys) ? keys : [keys];
-    const ref = data.source || data.normal || {}; // The fallback should be unreachable.
+    const ref = data.source || data.normal;
     const res: WeightedDistribution = {};
 
     // Filter out the keys when creating the new distribution.

@@ -535,6 +535,7 @@ describe('Distribution', () => {
       expect(distU3.pickOne(['a', 'b'])).toBe('c');
 
       // Multi Pick
+      expect(distU3.pick().length).toBe(1);
       expect(distU3.pick(2).length).toBe(2);
       expect(distU3.pick(5).length).toBe(5);
       expect(distU3.pick(20).length).toBe(20);

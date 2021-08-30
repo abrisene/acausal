@@ -419,7 +419,7 @@ describe('Markov Chain', () => {
       const mE0 = new MarkovChain({});
       const mE1 = new MarkovChain({ ...defaultDTO });
       const mE2 = new MarkovChain({ ...defaultDTO, engine: eng });
-      validateInstance(mE0, defaultGramDTO);
+      validateInstance(mE0);
       validateInstance(mE1);
       validateInstance(mE2);
 
@@ -451,8 +451,52 @@ describe('Markov Chain', () => {
       validateGrams(mU3b.serialize());
       validateGrams(mU4b.serialize());
     });
-    it('can clone existing markov chains', () => {});
-    it('create immutable clones', () => {});
+    it('can clone existing markov chains', () => {
+      // Direct Clones
+      const mA0 = new MarkovChain({}).clone();
+      const mA1 = new MarkovChain(defaultDTO).clone();
+      const mA2 = new MarkovChain(defaultGramDTO).clone();
+      const mA3 = new MarkovChain(dtoU).clone();
+      const mA4 = new MarkovChain(dto6U).clone();
+      const mA5 = new MarkovChain(dtoGU).clone();
+      const mA6 = new MarkovChain(dto6GU).clone();
+
+      expect(mA0.serialize()).toEqual(defaultDTO);
+      expect(mA1.serialize()).toEqual(defaultDTO);
+      expect(mA2.serialize()).toEqual(defaultDTO); // Differs from Static
+      expect(mA3.serialize()).toEqual(dtoU);
+      expect(mA4.serialize()).toEqual(dto6U);
+      expect(mA5.serialize()).toEqual(dtoGU);
+      expect(mA6.serialize()).toEqual(dto6GU);
+
+      // Clones with Sequences Stripped
+      // const mB0 = new MarkovChain({}).clone(true); // This won't work.
+      // const mB1 = new MarkovChain(defaultDTO).clone(true);
+      // const mB2 = new MarkovChain(defaultGramDTO).clone(true);
+      // const mB3 = new MarkovChain(dtoU).clone(true);
+      // const mB4 = new MarkovChain(dto6U).clone(true);
+      // const mB5 = new MarkovChain(dtoGU).clone(true);
+      // const mB6 = new MarkovChain(dto6GU).clone(true);
+
+      // expect(mB0.serialize()).toEqual(stripSequences(defaultDTO));
+      // expect(mB1.serialize(true)).toEqual(stripSequences(defaultDTO));
+      // expect(mB2.serialize()).toEqual(stripSequences(defaultGramDTO));
+      // expect(mB3.serialize()).toEqual(stripSequences(dtoU));
+      // expect(mB4.serialize()).toEqual(stripSequences(dto6U));
+      // expect(mB5.serialize()).toEqual(stripSequences(dtoGU));
+      // expect(mB6.serialize()).toEqual(stripSequences(dto6GU));
+    });
+    it('create immutable clones', () => {
+      // const mA = new MarkovChain({ sequences: sU });
+      // const mB = mA.clone();
+      // const mC = mB.clone();
+      // mB.addSequences(sC2);
+      // expect(mA.serialize()).toEqual(dtoU);
+      // expect(mB.serialize()).not.toEqual(dtoU);
+      // expect(mC.serialize()).toEqual(dtoU);
+      // expect(mB.serialize()).not.toEqual(mA.serialize());
+      // expect(mB.serialize()).not.toEqual(mC.serialize());
+    });
     it('can add an edge to an existing markov chain', () => {
       const m1 = new MarkovChain({ maxOrder: 2 });
       m1.addEdge('a', undefined, 'b');
@@ -462,7 +506,7 @@ describe('Markov Chain', () => {
       m1.addEdge(['b', 'c'], 'a', undefined);
 
       // DTO and edge degrees match expected results.
-      expect(m1.serialize()).toEqual(dtoGU3IExpected);
+      expect(m1.serialize(true)).toEqual(dtoGU3IExpected);
       expect(m1.grams.a.degreeOut).toBe(1);
       expect(m1.grams.a.degreeIn).toBe(0);
       expect(m1.grams.b.degreeOut).toBe(1);
