@@ -41,11 +41,21 @@ function stripSequences(m: MarkovChainDTO) {
 }
 
 function validateDTO(m: MarkovChainDTO, ref = defaultDTO) {
-  expect(Object.keys(m)).toEqual(Object.keys(ref));
+  expect(Object.keys(m).sort()).toEqual(Object.keys(ref).sort());
   expect(m.maxOrder).toEqual(ref.maxOrder);
   expect(m.delimiter).toEqual(ref.delimiter);
   expect(m.startDelimiter).toEqual(ref.startDelimiter);
   // We don't check sequences or grams.
+}
+
+function validateInstance(m: MarkovChain, ref = defaultDTO) {
+  const data = m.serialize();
+  expect(m.maxOrder).toEqual(ref.maxOrder);
+  expect(m.delimiter).toEqual(ref.delimiter);
+  expect(m.startDelimiter).toEqual(ref.startDelimiter);
+  expect(m).toHaveProperty('sequences');
+  expect(m).toHaveProperty('grams');
+  validateDTO(data, ref);
 }
 
 function validateGrams(m: MarkovChainDTO) {
@@ -401,5 +411,146 @@ describe('Markov Chain', () => {
     });
   });
 
-  describe('class methods', () => {});
+  describe('class methods', () => {
+    it('can create new markov chains', () => {
+      const eng = engine.clone();
+
+      // Empty
+      const mE0 = new MarkovChain({});
+      const mE1 = new MarkovChain({ ...defaultDTO });
+      const mE2 = new MarkovChain({ ...defaultDTO, engine: eng });
+      validateInstance(mE0, defaultGramDTO);
+      validateInstance(mE1);
+      validateInstance(mE2);
+
+      // Default DTOs
+      const mU1a = new MarkovChain({ sequences: [gU1] });
+      const mU2a = new MarkovChain({ sequences: [gU2] });
+      const mU3a = new MarkovChain({ sequences: [gU3] });
+      const mU4a = new MarkovChain({ sequences: sU });
+      validateInstance(mU1a);
+      validateInstance(mU2a);
+      validateInstance(mU3a);
+      validateInstance(mU4a);
+      validateGrams(mU1a.serialize());
+      validateGrams(mU2a.serialize());
+      validateGrams(mU3a.serialize());
+      validateGrams(mU4a.serialize());
+
+      // With Max Order Set
+      const mU1b = new MarkovChain({ sequences: [gU1], maxOrder: 6 });
+      const mU2b = new MarkovChain({ sequences: [gU2], maxOrder: 6 });
+      const mU3b = new MarkovChain({ sequences: [gU3], maxOrder: 6 });
+      const mU4b = new MarkovChain({ sequences: sU, maxOrder: 6 });
+      validateInstance(mU1b, defaultDTO6);
+      validateInstance(mU2b, defaultDTO6);
+      validateInstance(mU3b, defaultDTO6);
+      validateInstance(mU4b, defaultDTO6);
+      validateGrams(mU1b.serialize());
+      validateGrams(mU2b.serialize());
+      validateGrams(mU3b.serialize());
+      validateGrams(mU4b.serialize());
+    });
+    it('can clone existing markov chains', () => {});
+    it('create immutable clones', () => {});
+    it('can add an edge to an existing markov chain', () => {
+      const m1 = new MarkovChain({ maxOrder: 2 });
+      m1.addEdge('a', undefined, 'b');
+      m1.addEdge('b', 'a', 'c');
+      m1.addEdge('c', 'b', undefined);
+      m1.addEdge(['a', 'b'], undefined, 'c');
+      m1.addEdge(['b', 'c'], 'a', undefined);
+
+      // DTO and edge degrees match expected results.
+      expect(m1.serialize()).toEqual(dtoGU3IExpected);
+      expect(m1.grams.a.degreeOut).toBe(1);
+      expect(m1.grams.a.degreeIn).toBe(0);
+      expect(m1.grams.b.degreeOut).toBe(1);
+      expect(m1.grams.b.degreeIn).toBe(1);
+      expect(m1.grams.c.degreeOut).toBe(0);
+      expect(m1.grams.c.degreeIn).toBe(1);
+
+      m1.addEdge('b', 'x', undefined);
+      m1.addEdge('b', undefined, 'a');
+      m1.addEdge('b', undefined, 'a');
+      expect(m1.grams.b.degreeIn).toBe(2);
+      expect(m1.grams.b.degreeOut).toBe(2);
+    });
+    /* it('can remove an edge from an existing markov chain', () => {}); */
+    it('can add a sequence to an existing markov chain', () => {
+      // Standard Addition
+      const mA0 = new MarkovChain({ sequences: [] }).addSequence(gA1);
+      const mA1 = new MarkovChain({ sequences: [] }).addSequence(gA1, false);
+      const mA2 = new MarkovChain({ sequences: [] }).addSequence(gA1, false).addSequence(gA2);
+      const mA = new MarkovChain({ sequences: [] }).addSequence(gA1, false).addSequence(gA2).addSequence(gA3);
+
+      expect(mA0.serialize()).toEqual(dtoA1);
+      expect(mA1.serialize()).toEqual(dtoA1);
+      expect(mA2.serialize()).toEqual(dtoA2);
+      expect(mA.serialize()).toEqual(dtoA3);
+    });
+    it('can insert a sequence into an existing markov chain', () => {
+      expect(MarkovChain.addSequence(defaultGramDTO2, gU3, true)).toEqual(dtoGU3IExpected);
+
+      // Insertion
+      const mIB1 = new MarkovChain({ sequences: [] }).addSequence(gB1, 'start');
+      const mIB2 = new MarkovChain({ sequences: [] }).addSequence(gB1, 'middle');
+      const mIB3 = new MarkovChain({ sequences: [] }).addSequence(gB1, 'end');
+      expect(Object.keys(mIB1.grams)).not.toContain(mIB1.endDelimiter);
+      expect(Object.keys(mIB2.grams)).not.toContain([mIB2.startDelimiter, mIB2.endDelimiter]);
+      expect(Object.keys(mIB3.grams)).not.toContain(mIB3.startDelimiter);
+    });
+    it('can add sequences to existing markov chains', () => {
+      // Standard Addition
+      const m0 = new MarkovChain({ sequences: [] }).addSequences(sA3);
+      const mA = new MarkovChain({ sequences: [] }).addSequences(sA3, false);
+      const mB = new MarkovChain({ sequences: [] }).addSequences(sB3, false);
+      expect(m0.serialize()).toEqual(dtoA3);
+      expect(mA.serialize()).toEqual(dtoA3);
+      expect(mB.serialize()).toEqual(dtoB3);
+
+      // Insertion
+      const mIB1 = new MarkovChain({ sequences: [] }).addSequences(sB3, 'start');
+      const mIB2 = new MarkovChain({ sequences: [] }).addSequences(sB3, 'middle');
+      const mIB3 = new MarkovChain({ sequences: [] }).addSequences(sB3, 'end');
+      expect(Object.keys(mIB1.grams)).not.toContain(mIB1.endDelimiter);
+      expect(Object.keys(mIB2.grams)).not.toContain([mIB2.startDelimiter, mIB2.endDelimiter]);
+      expect(Object.keys(mIB3.grams)).not.toContain(mIB3.startDelimiter);
+    });
+    it('can pick values from a markov chain', () => {
+      const mB1 = new MarkovChain(dtoB1);
+      const mC2 = new MarkovChain(dtoC2);
+
+      for (let i = 0; i < 20; i += 1) {
+        // Standard Pick
+        const pickStandard = new MarkovChain(dtoB1).pick();
+        expect(pickStandard).toEqual(gB1[0]);
+
+        // Next
+        const pickSNext = mB1.pick([gB1[0]]);
+        const pickNext1 = mB1.next([gB1[0]]);
+        const pickNext2 = mC2.next(['+']);
+        expect(pickSNext).toEqual(gB1[1]);
+        expect(pickNext1).toEqual(pickSNext);
+        expect([gC1[2], gC2[2]]).toContain(pickNext2);
+
+        // Last
+        const pickSLast = mB1.pick([gB1[1]], false);
+        const pickLast = mB1.last([gB1[1]]);
+        const pickLast2 = mC2.last(['+']);
+        expect(pickSLast).toEqual(gB1[0]);
+        expect(pickLast).toEqual(pickSLast);
+        expect([gC1[0], gC2[0]]).toContain(pickLast2);
+
+        // Masks
+        const pickMask1 = mC2.pick(['+'], true, ['a', 'y']);
+        const pickMask2 = mC2.next(['+'], ['a', 'y']);
+        const pickMask3 = mC2.last(['+'], ['a', 'y']);
+        expect(pickMask1).toEqual('z');
+        expect(pickMask2).toEqual(pickMask1);
+        expect(pickMask3).toEqual('b');
+      }
+    });
+    it('can generate sequences a markov chain', () => {});
+  });
 });

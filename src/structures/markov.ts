@@ -18,6 +18,7 @@ TESTING:
 
 
 TODO:
+- Abstract out deep copy of DTO.
 - Add methods for remove sequence(s), edges and grams.
 - Add methods for editing sequence(s) and grams.
 - Refactor sequences array into weighted dictionary to reduce duplication.
@@ -61,10 +62,22 @@ export interface MarkovChainGramDTO extends MarkovChainOptions {
 
 export type MarkovChainDTO = MarkovChainSequenceDTO | MarkovChainGramDTO;
 
-export interface MarkovChainConstructor extends MarkovChainOptions {
+/* export interface MarkovChainConstructor extends MarkovChainOptions {
   engine?: Random;
   sequences?: string[][];
   grams?: GramDictionary;
+  insert?: MCInsertOption;
+} */
+
+export interface MarkovChainConstructor extends RandomDTO {
+  maxOrder?: number;
+  delimiter?: string;
+  startDelimiter?: string;
+  endDelimiter?: string;
+  engine?: Random;
+  sequences?: string[][];
+  grams?: GramDictionary;
+  insert?: MCInsertOption;
 }
 
 export interface Gram {
@@ -274,7 +287,7 @@ export class MarkovChain {
   private _startDelimiter: string;
   private _endDelimiter: string;
 
-  private _sequences: string[][];
+  private _sequences: string[][] | undefined;
   private _grams: { [key: string]: Gram };
 
   constructor({
@@ -287,8 +300,9 @@ export class MarkovChain {
     startDelimiter = CONSTANTS.MC_START_DELIMITER,
     endDelimiter = CONSTANTS.MC_END_DELIMITER,
 
-    sequences = defaultDTO.sequences,
-    grams = defaultDTO.grams,
+    insert = false,
+    sequences,
+    grams,
   }: MarkovChainConstructor) {
     this._engine = engine || new Random({ seed, uses });
 
@@ -297,16 +311,154 @@ export class MarkovChain {
     this._startDelimiter = startDelimiter;
     this._endDelimiter = endDelimiter;
 
-    this._sequences = sequences || [];
+    this._sequences = sequences;
     this._grams = grams || {};
+
+    // If we have sequences and and no grams, construct the grams.
+    if (sequences !== undefined && grams === undefined) {
+      this.addSequences(sequences, insert);
+    }
+  }
+
+  get maxOrder() {
+    return this._maxOrder;
+  }
+
+  get delimiter() {
+    return this._delimiter;
+  }
+
+  get startDelimiter() {
+    return this._startDelimiter;
+  }
+
+  get endDelimiter() {
+    return this._endDelimiter;
+  }
+
+  get sequences() {
+    return this._sequences;
+  }
+
+  get grams() {
+    return this._grams;
   }
 
   /**
-   * Regenerates the markov chain from sequences.
+   * Updates a Markov Chain's members from a DTO.
+   * @param dto
    */
-  /* private regenerate() {
+  private update(dto: MarkovChainDTO) {
+    this._maxOrder = dto.maxOrder;
+    this._delimiter = dto.delimiter;
+    this._startDelimiter = dto.startDelimiter;
+    this._endDelimiter = dto.endDelimiter;
+
+    this._sequences = dto.sequences;
+    this._grams = dto.grams || {};
+
     return this;
-  } */
+  }
+
+  /**
+   * Adds or inserts a list of Sequences into a Markov Chain DTO.
+   * @param sequences  The sequences to be added.
+   * @param insert    Determines how sequences should be inserted. If false, delimiters will be
+   *                  prepended and appended to the sequences.
+   *                  "start" or setting true will only prepend the start delimiter, while
+   *                  "end" will append the end delimiter. "middle" will not add any delimiters.
+   */
+  public addSequences(sequences: string[][], insert: MCInsertOption = false) {
+    this.update(MarkovChain.addSequences(this.serialize(), sequences, insert));
+    return this;
+  }
+
+  /**
+   * Adds or inserts a Sequence into a Markov Chain DTO.
+   * @param sequence  The sequence to be added.
+   * @param insert    Determines how sequences should be inserted. If false, delimiters will be
+   *                  prepended and appended to the sequences.
+   *                  "start" or setting true will only prepend the start delimiter, while
+   *                  "end" will append the end delimiter. "middle" will not add any delimiters.
+   */
+  public addSequence(sequence: string[], insert: MCInsertOption = false) {
+    this.update(MarkovChain.addSequence(this.serialize(), sequence, insert));
+    return this;
+  }
+
+  /**
+   * Adds an edge from a gram to the items before and after it in the sequence.
+   * @param gram    The id of a gram, or the gram sequence.
+   * @param lastId  The id of the previous gram in the sequence.
+   * @param nextId  The id of the next gram in the sequence.
+   */
+  public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined) {
+    this.update(MarkovChain.addEdge(this.serialize(), gram, lastId, nextId));
+    return this;
+  }
+
+  /**
+   * Picks the next or last random value from a Markov Chain.
+   * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
+   * @param next          If true values that come after the gram will be picked.
+   *                      If false values that came before the gram will be picked.
+   * @param mask          A mask containing keys in the chain that should be ignored.
+   */
+  public pick(gramSequence?: string[], next = true, mask?: string[]) {
+    return MarkovChain.pick(this._engine, this.serialize(), gramSequence, next, mask);
+  }
+
+  /**
+   * Picks the next random value from a Markov Chain given a sequence.
+   * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
+   * @param mask          A mask containing keys in the chain that should be ignored.
+   */
+  public next(gramSequence?: string[], mask?: string[]) {
+    return MarkovChain.pick(this._engine, this.serialize(), gramSequence, true, mask);
+  }
+
+  /**
+   * Picks the last random value from a Markov Chain given a sequence.
+   * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
+   * @param mask          A mask containing keys in the chain that should be ignored.
+   */
+  public last(gramSequence?: string[], mask?: string[]) {
+    return MarkovChain.pick(this._engine, this.serialize(), gramSequence, false, mask);
+  }
+
+  public generateSequence() {}
+
+  /**
+   * Serializes
+   * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
+   */
+  public serialize(stripSequences = false): MarkovChainDTO {
+    // Create the DTO
+    const data: MarkovChainDTO = {
+      maxOrder: this._maxOrder,
+      delimiter: this._delimiter,
+      startDelimiter: this._startDelimiter,
+      endDelimiter: this._endDelimiter,
+      grams: {},
+    };
+
+    // Deep Clone Grams
+    data.grams = Object.keys(this._grams).reduce((l, k) => {
+      const gram = this._grams[k];
+      const gramClone = {
+        ...gram,
+        last: { ...gram.last },
+        next: { ...gram.next },
+      };
+      return { ...l, [k]: gramClone };
+    }, {});
+
+    // Copy Sequences
+    if (this._sequences !== undefined && !stripSequences) data.sequences = this._sequences.map(s => [...s]);
+    return data;
+  }
+
+  public clone() {}
 
   /**
    *
@@ -323,14 +475,13 @@ export class MarkovChain {
   }
 
   /**
-   * Adds or inserts a Sequence into a Markov Chain DTO.
+   * Adds or inserts a list of Sequences into a Markov Chain DTO.
    * @param data      A Markov Chain data transfer object.
-   * @param sequence  The sequences to be added.
+   * @param sequences  The sequences to be added.
    * @param insert    Determines how sequences should be inserted. If false, delimiters will be
    *                  prepended and appended to the sequences.
    *                  "start" or setting true will only prepend the start delimiter, while
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
-   * @param copy      Whether or not an immutable deep copy of the dto should be returned.
    */
   static addSequences(data: MarkovChainDTO, sequences: string[][], insert: MCInsertOption = false): MarkovChainDTO {
     // Clone the Markov Chain DTO.
@@ -371,7 +522,6 @@ export class MarkovChain {
 
   /**
    * Adds an edge from a gram to the items before and after it in the sequence.
-   * This
    * @param data    A Markov Chain data transfer object.
    * @param gram    The id of a gram, or the gram sequence.
    * @param lastId  The id of the previous gram in the sequence.
@@ -398,6 +548,15 @@ export class MarkovChain {
 
   // static removeEdge() {}
 
+  /**
+   * Picks the next or last random value from a Markov Chain.
+   * @param engine        A Random engine.
+   * @param model         A Markov Chain data transfer object.
+   * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
+   * @param next          If true values that come after the gram will be picked.
+   *                      If false values that came before the gram will be picked.
+   * @param mask          A mask containing keys in the chain that should be ignored.
+   */
   static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
     const seq = gramSequence ? gramSequence : [model.startDelimiter];
     const gram = MarkovChain.getGram(model, seq);
@@ -411,10 +570,24 @@ export class MarkovChain {
     return result;
   }
 
+  /**
+   * Picks the next random value from a Markov Chain given a sequence.
+   * @param engine        A Random engine.
+   * @param model         A Markov Chain data transfer object.
+   * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
+   * @param mask          A mask containing keys in the chain that should be ignored.
+   */
   static next(engine: Random, model: MarkovChainDTO, gramSequence?: string[], mask?: string[]) {
     return MarkovChain.pick(engine, model, gramSequence, true, mask);
   }
 
+  /**
+   * Picks the last random value from a Markov Chain given a sequence.
+   * @param engine        A Random engine.
+   * @param model         A Markov Chain data transfer object.
+   * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
+   * @param mask          A mask containing keys in the chain that should be ignored.
+   */
   static last(engine: Random, model: MarkovChainDTO, gramSequence?: string[], mask?: string[]) {
     return MarkovChain.pick(engine, model, gramSequence, false, mask);
   }
