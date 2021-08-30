@@ -470,32 +470,32 @@ describe('Markov Chain', () => {
       expect(mA6.serialize()).toEqual(dto6GU);
 
       // Clones with Sequences Stripped
-      // const mB0 = new MarkovChain({}).clone(true); // This won't work.
-      // const mB1 = new MarkovChain(defaultDTO).clone(true);
-      // const mB2 = new MarkovChain(defaultGramDTO).clone(true);
-      // const mB3 = new MarkovChain(dtoU).clone(true);
-      // const mB4 = new MarkovChain(dto6U).clone(true);
-      // const mB5 = new MarkovChain(dtoGU).clone(true);
-      // const mB6 = new MarkovChain(dto6GU).clone(true);
+      const mB0 = new MarkovChain({}).clone(true); // This won't work.
+      const mB1 = new MarkovChain(defaultDTO).clone(true);
+      const mB2 = new MarkovChain(defaultGramDTO).clone(true);
+      const mB3 = new MarkovChain(dtoU).clone(true);
+      const mB4 = new MarkovChain(dto6U).clone(true);
+      const mB5 = new MarkovChain(dtoGU).clone(true);
+      const mB6 = new MarkovChain(dto6GU).clone(true);
 
       // expect(mB0.serialize()).toEqual(stripSequences(defaultDTO));
-      // expect(mB1.serialize(true)).toEqual(stripSequences(defaultDTO));
+      // expect(mB1.serialize()).toEqual(stripSequences(defaultDTO));
       // expect(mB2.serialize()).toEqual(stripSequences(defaultGramDTO));
-      // expect(mB3.serialize()).toEqual(stripSequences(dtoU));
-      // expect(mB4.serialize()).toEqual(stripSequences(dto6U));
-      // expect(mB5.serialize()).toEqual(stripSequences(dtoGU));
-      // expect(mB6.serialize()).toEqual(stripSequences(dto6GU));
+      expect(mB3.serialize()).toEqual(stripSequences(dtoU));
+      expect(mB4.serialize()).toEqual(stripSequences(dto6U));
+      expect(mB5.serialize()).toEqual(stripSequences(dtoGU));
+      expect(mB6.serialize()).toEqual(stripSequences(dto6GU));
     });
     it('create immutable clones', () => {
-      // const mA = new MarkovChain({ sequences: sU });
-      // const mB = mA.clone();
-      // const mC = mB.clone();
-      // mB.addSequences(sC2);
-      // expect(mA.serialize()).toEqual(dtoU);
-      // expect(mB.serialize()).not.toEqual(dtoU);
-      // expect(mC.serialize()).toEqual(dtoU);
-      // expect(mB.serialize()).not.toEqual(mA.serialize());
-      // expect(mB.serialize()).not.toEqual(mC.serialize());
+      const mA = new MarkovChain({ sequences: sU });
+      const mB = mA.clone();
+      const mC = mB.clone();
+      mB.addSequences(sC2);
+      expect(mA.serialize()).toEqual(dtoU);
+      expect(mB.serialize()).not.toEqual(dtoU);
+      expect(mC.serialize()).toEqual(dtoU);
+      expect(mB.serialize()).not.toEqual(mA.serialize());
+      expect(mB.serialize()).not.toEqual(mC.serialize());
     });
     it('can add an edge to an existing markov chain', () => {
       const m1 = new MarkovChain({ maxOrder: 2 });

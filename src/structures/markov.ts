@@ -314,9 +314,11 @@ export class MarkovChain {
     if (!sequences || sequences.length === 0) {
       // And we have no grams
       if (!grams || Object.keys(grams).length === 0) {
+        // console.log('A');
         this._grams = {};
         this._sequences = [];
       } else {
+        // console.log('B');
         this._grams = grams;
         this._sequences = undefined;
       }
@@ -324,10 +326,12 @@ export class MarkovChain {
       // If we have sequences
       // And no grams, then add them.
       if (!grams || Object(grams).length === 0) {
+        // console.log('C');
         this._grams = {};
         this._sequences = [];
-        this.addSequences(this._sequences, insert);
+        this.addSequences(sequences, insert);
       } else {
+        // console.log('D');
         // Otherwise, if we have sequences and no grams, add them.
         this._grams = grams || {};
         this._sequences = sequences;
