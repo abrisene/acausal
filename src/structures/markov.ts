@@ -398,6 +398,36 @@ export class MarkovChain {
   }
 
   /**
+   * Returns the id of a Gram from its sequence.
+   * @param gramSequence  An array containing the Gram sequence.
+   */
+  public getGramId(gramSequence: string[]) {
+    return gramSequence.join(this._model.delimiter);
+  }
+
+  /**
+   * Returns the corresponding Gram from a sequence.
+   * @param gramSequence  An array containing the Gram sequence.
+   */
+  public getGram(gramSequence: string[]) {
+    const id = this.getGramId(gramSequence);
+    return this._model.grams[id];
+  }
+
+  /**
+   * Finds the valid gram of the highest valid order in a sequence.
+   * @param model           A Markov Chain data transfer object.
+   * @param gramSequence    An array containing the Gram sequence.
+   * @param order           The highest order to look for.
+   * @param direction       The direction we are looking for sequences in.
+   *                        "next" will look for grams at the end of the sequence.
+   *                        "last" will look for grams at the beginning of the sequence.
+   */
+  public findGram(gramSequence: string[], order?: number, direction = 'next') {
+    return MarkovChain.findGram(this._model, gramSequence, order, direction);
+  }
+
+  /**
    * Adds or inserts a list of Sequences into a Markov Chain DTO.
    * @param sequences  The sequences to be added.
    * @param insert    Determines how sequences should be inserted. If false, delimiters will be

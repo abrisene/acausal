@@ -634,6 +634,11 @@ describe('Markov Chain', () => {
       expect(mB.dto).not.toEqual(mA.dto);
       expect(mB.dto).not.toEqual(mC.dto);
     });
+    it('can find grams within its model', () => {
+      const mA = new MarkovChain(dtoB3);
+      expect(mA.getGram(['a', 'n'])).toEqual(MarkovChain.getGram(dtoB3, ['a', 'n']));
+      expect(mA.findGram(['a', 'n'])).toEqual(MarkovChain.findGram(dtoB3, ['a', 'n']));
+    });
     it('can add an edge to an existing markov chain', () => {
       const m1 = new MarkovChain({ maxOrder: 2 });
       m1.addEdge('a', undefined, 'b');
