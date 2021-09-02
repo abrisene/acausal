@@ -126,11 +126,11 @@ export class Distribution {
 
   /**
    * Applies a DTO's data to the source and normal distributions.
-   * @param data A Distribution data transfer object.
+   * @param model A Distribution data transfer object.
    */
-  private update(data: DistributionDTO) {
-    this._source = data.source;
-    this._normal = data.normal;
+  private update(model: DistributionDTO) {
+    this._source = model.source;
+    this._normal = model.normal;
     return this;
   }
 
@@ -250,18 +250,18 @@ export class Distribution {
   /**
    * Picks one more values from a Distribution without exclusion.
    * If you just need to pick one value, you should use pickOne instead.
-   * @param data        A Distribution data transfer object.
+   * @param model        A Distribution data transfer object.
    * @param count       The number of picks to make (default 1).
    * @param mask        A mask containing keys in the distribution that should be ignored.
    * @param exclusive   If true picks are considered exclusive and are removed.
    * @param engine      A Random engine. This is created if not provided.
    */
-  public static pick(data: DistributionNormalDTO, count = 1, mask?: string[], exclusive = false, engine?: Random) {
+  public static pick(model: DistributionNormalDTO, count = 1, mask?: string[], exclusive = false, engine?: Random) {
     const eng = engine || new Random({});
     const picks: string[] = [];
     const iMask = mask ? [...mask] : exclusive ? [] : undefined;
     for (let i = 0; i < count; i += 1) {
-      const pick = eng.pickWeighted(data.normal, iMask);
+      const pick = eng.pickWeighted(model.normal, iMask);
       if (pick) {
         picks.push(pick);
         if (exclusive && iMask) iMask.push(pick);
@@ -277,52 +277,52 @@ export class Distribution {
   /**
    * Picks a single value from a Distribution.
    * If you are picking multiple values, use pick instead.
-   * @param data        A Distribution data transfer object.
+   * @param model        A Distribution data transfer object.
    * @param mask        A mask containing keys in the distribution that should be ignored.
    * @param engine      A Random engine. This is created if not provided.
    */
-  public static pickOne(data: DistributionNormalDTO, mask?: string[], engine?: Random) {
+  public static pickOne(model: DistributionNormalDTO, mask?: string[], engine?: Random) {
     const eng = engine || new Random({});
-    return eng.pickWeighted(data.normal, mask);
+    return eng.pickWeighted(model.normal, mask);
   }
 
   /**
    * Adds an object of values to a Distribution's source and renormalizes it.
-   * @param data        A Distribution data transfer object.
+   * @param model        A Distribution data transfer object.
    * @param additions   An object containing additions.
    */
-  public static addSourceValues(data: DistributionSourceDTO, additions: WeightedDistribution): DistributionSourceDTO {
+  public static addSourceValues(model: DistributionSourceDTO, additions: WeightedDistribution): DistributionSourceDTO {
     // Create the new distribution and normalize.
-    const src = addObjects(data.source, additions);
+    const src = addObjects(model.source, additions);
     const nrm = Object.keys(src).length > 0 ? normalizeObject(src) : {};
-    return { ...data, source: src, normal: nrm };
+    return { ...model, source: src, normal: nrm };
   }
 
   /**
    * Adds a key / value pair to a distribution's source and renormalizes it.
    * If a source distribution exists, it will be recalculated based off of the
    * new normal distribution.
-   * @param data  A Distribution data transfer object.
+   * @param model  A Distribution data transfer object.
    * @param key   Key to be added.
    * @param value Value of the key to add.
    */
-  public static addSourceValue(data: DistributionSourceDTO, key: string, value: number): DistributionSourceDTO {
-    return Distribution.addSourceValues(data, { [key]: value });
+  public static addSourceValue(model: DistributionSourceDTO, key: string, value: number): DistributionSourceDTO {
+    return Distribution.addSourceValues(model, { [key]: value });
   }
 
   /**
    * Adds an object of values to a normal Distribution and renormalizes it.
    * If a source distribution exists, it will be recalculated by scaling the
    * new normal distribution to fit its sum.
-   * @param data        A Distribution data transfer object.
+   * @param model        A Distribution data transfer object.
    * @param additions   An object containing additions.
    */
-  public static addNormalValues(data: DistributionDTO, additions: WeightedDistribution): DistributionDTO {
+  public static addNormalValues(model: DistributionDTO, additions: WeightedDistribution): DistributionDTO {
     //  Add the values and then renormalize. We have to strip out the distribution because it'll no longer be valid.
-    const { normal, source, ...dto } = data;
+    const { normal, source, ...dto } = model;
 
     // If we're trying to add an empty object, just return the data.
-    if (Object.keys(additions).length === 0) return data;
+    if (Object.keys(additions).length === 0) return model;
 
     // Calculate the normalized values.
     const nrm = normalizeObject(addObjects(normal, additions));
@@ -344,25 +344,25 @@ export class Distribution {
    * Adds a key / value pair to a normal distribution and renormalizes it.
    * If a source distribution exists, it will be recalculated based off of the
    * new normal distribution.
-   * @param data  A Distribution data transfer object.
+   * @param model  A Distribution data transfer object.
    * @param key   Key to be added.
    * @param value Value of the key to add.
    */
-  public static addNormalValue(data: DistributionDTO, key: string, value: number): DistributionDTO {
-    return Distribution.addNormalValues(data, { [key]: value });
+  public static addNormalValue(model: DistributionDTO, key: string, value: number): DistributionDTO {
+    return Distribution.addNormalValues(model, { [key]: value });
   }
 
   /**
    * Adds an object of values to a Distribution.
    * Will add to the source distribution by default, unless the distribution
    * only has normalized values.
-   * @param data        A Distribution data transfer object.
+   * @param model        A Distribution data transfer object.
    * @param additions   An object containing additions.
    */
-  public static addValues(data: DistributionDTO, additions: WeightedDistribution) {
+  public static addValues(model: DistributionDTO, additions: WeightedDistribution) {
     // Determine whether we're adding to the source or the normal distribution and assign the proper function.
-    const fn = data.source !== undefined ? Distribution.addSourceValues : Distribution.addNormalValues;
-    return fn(data, additions);
+    const fn = model.source !== undefined ? Distribution.addSourceValues : Distribution.addNormalValues;
+    return fn(model, additions);
   }
 
   /**
@@ -385,23 +385,23 @@ export class Distribution {
    * Adds a key / value pair to a Distribution.
    * Will add to the source distribution by default, unless the distribution
    * only has normalized values.
-   * @param data  A Distribution data transfer object.
+   * @param model  A Distribution data transfer object.
    * @param key   Key to be added.
    * @param value Value of the key to add.
    */
-  public static add(data: DistributionDTO, key: string, value: number): DistributionDTO {
-    return Distribution.addValues(data, { [key]: value });
+  public static add(model: DistributionDTO, key: string, value: number): DistributionDTO {
+    return Distribution.addValues(model, { [key]: value });
   }
 
   /**
    * Removes a key or array of keys from a Distribution and renormalizes.
-   * @param data  A Distribution data transfer object.
+   * @param model  A Distribution data transfer object.
    * @param keys  Key or Keys to be removed.
    */
-  public static remove(data: DistributionDTO, keys: string | string[]) {
+  public static remove(model: DistributionDTO, keys: string | string[]) {
     // Determine whether we're using the source or the normal distribution.
     const rem = Array.isArray(keys) ? keys : [keys];
-    const ref = data.source || data.normal;
+    const ref = model.source || model.normal;
     const res: WeightedDistribution = {};
 
     // Filter out the keys when creating the new distribution.
@@ -413,7 +413,7 @@ export class Distribution {
     const normal = Object.keys(res).length > 0 ? normalizeObject(res) : {};
 
     const result: DistributionDTO =
-      data.source !== undefined ? { ...data, source: { ...res }, normal } : { ...data, normal };
+      model.source !== undefined ? { ...model, source: { ...res }, normal } : { ...model, normal };
 
     return result;
   }
@@ -446,12 +446,12 @@ export class Distribution {
 
   /**
    * Creates a clone of a Distribution DTO.
-   * @param data        A Distribution data transfer object.
+   * @param model        A Distribution data transfer object.
    * @param stripSource If true this will strip out the source.
    */
-  public static clone(data: DistributionDTO, stripSource = false): DistributionDTO {
-    const { source, normal, ...dtoData } = data;
-    return stripSource || data.source === undefined
+  public static clone(model: DistributionDTO, stripSource = false): DistributionDTO {
+    const { source, normal, ...dtoData } = model;
+    return stripSource || model.source === undefined
       ? {
           ...dtoData,
           normal: { ...normal },
