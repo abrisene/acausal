@@ -7,7 +7,7 @@
  # Module Dependencies
  */
 
-import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, GramDictionary, Random, CONSTANTS } from '..';
+import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS } from '..';
 import { MCGeneratorOptions, MCDirectionOption, MCGeneratorStaticOptions } from '../structures';
 // import { MarkovChainSequenceDTO } from '../structures';
 
@@ -31,14 +31,14 @@ const defaultGenOptions = {
 };
 
 const defaultDTO: MarkovChainDTO = { ...defaultOptions, sequences: [], grams: {} };
-const defaultDTO1 = { ...defaultDTO, maxOrder: 1, sequences: [], grams: {} };
-const defaultDTO2 = { ...defaultDTO, maxOrder: 2, sequences: [], grams: {} };
+// const defaultDTO1 = { ...defaultDTO, maxOrder: 1, sequences: [], grams: {} };
+// const defaultDTO2 = { ...defaultDTO, maxOrder: 2, sequences: [], grams: {} };
 const defaultDTO6 = { ...defaultDTO, maxOrder: 6, sequences: [], grams: {} };
 
 const defaultGramDTO: MarkovChainGramDTO = { ...defaultOptions, grams: {} };
-const defaultGramDTO1 = { ...defaultGramDTO, maxOrder: 1, grams: {} };
+// const defaultGramDTO1 = { ...defaultGramDTO, maxOrder: 1, grams: {} };
 const defaultGramDTO2 = { ...defaultGramDTO, maxOrder: 2, grams: {} };
-const defaultGramDTO6 = { ...defaultGramDTO, maxOrder: 6, grams: {} };
+// const defaultGramDTO6 = { ...defaultGramDTO, maxOrder: 6, grams: {} };
 
 /**
  # Utility Functions
@@ -102,10 +102,10 @@ function validateGen(model: MarkovChainDTO, output: string[], options: MCGenerat
     expect(output.length).toBeLessThan(options.max || defaultGenOptions.max);
 
     if (options.trim) {
-      expect(output.filter(v => (v === model.startDelimiter || v === model.endDelimiter)).length).toEqual(0);
+      expect(output.filter(v => v === model.startDelimiter || v === model.endDelimiter).length).toEqual(0);
     } else {
       // expect(output.filter(v => (v === model.startDelimiter || v === model.endDelimiter)).length).toBeGreaterThanOrEqual(1);
-      expect(output.filter(v => (v === model.startDelimiter || v === model.endDelimiter)).length).toBeLessThanOrEqual(2);
+      expect(output.filter(v => v === model.startDelimiter || v === model.endDelimiter).length).toBeLessThanOrEqual(2);
     }
   }
 }
@@ -141,7 +141,7 @@ const sA2 = [gA1, gA2];
 const sA3 = [gA1, gA2, gA3];
 
 const sB1 = [gB1];
-const sB2 = [gB1, gB2];
+// const sB2 = [gB1, gB2];
 const sB3 = [gB1, gB2, gB3];
 
 // const sC1 = [gC1];
@@ -210,7 +210,7 @@ const dtoA2 = MarkovChain.new(sA2);
 const dtoA3 = MarkovChain.new(sA3);
 
 const dtoB1 = MarkovChain.new(sB1);
-const dtoB2 = MarkovChain.new(sB2);
+// const dtoB2 = MarkovChain.new(sB2);
 const dtoB3 = MarkovChain.new(sB3);
 
 // const dtoIB1 = MarkovChain.new(sB1, 4, 'start');
@@ -397,8 +397,6 @@ describe('Markov Chain', () => {
       const gsC1 = MarkovChain.findGram(dtoC2, ['+']);
 
       for (let i = 0; i < 20; i += 1) {
-
-
         // Standard Pick
         const pickStandard = MarkovChain.pickGram(eng, gsBS);
         expect(pickStandard).toEqual(gB1[0]);
@@ -492,10 +490,29 @@ describe('Markov Chain', () => {
       validateGen(dtoA3, genS4, optS4);
 
       // Non-Strict Cases
-      const optN1: MCGeneratorStaticOptions = { model: dtoA3, engine: eng, start: ['a', 'a', 'a', 'n'], strict: false, order: 10 };
-      const optN2: MCGeneratorStaticOptions = { model: dtoA3, engine: eng, start: ['n', 'a', 'a', 'a'], strict: false, order: 10, direction: 'last' };
+      const optN1: MCGeneratorStaticOptions = {
+        model: dtoA3,
+        engine: eng,
+        start: ['a', 'a', 'a', 'n'],
+        strict: false,
+        order: 10,
+      };
+      const optN2: MCGeneratorStaticOptions = {
+        model: dtoA3,
+        engine: eng,
+        start: ['n', 'a', 'a', 'a'],
+        strict: false,
+        order: 10,
+        direction: 'last',
+      };
       const optN3: MCGeneratorStaticOptions = { model: dtoA3, engine: eng, start: ['a', 'a', 'a', 'n'], strict: false };
-      const optN4: MCGeneratorStaticOptions = { model: dtoA3, engine: eng, start: ['n', 'a', 'a', 'a'], strict: false, direction: 'last' };
+      const optN4: MCGeneratorStaticOptions = {
+        model: dtoA3,
+        engine: eng,
+        start: ['n', 'a', 'a', 'a'],
+        strict: false,
+        direction: 'last',
+      };
 
       const genN1 = MarkovChain.generate(optN1); // Forward
       const genN2 = MarkovChain.generate(optN2); // Last
@@ -590,9 +607,9 @@ describe('Markov Chain', () => {
       expect(mA6.dto).toEqual(dto6GU);
 
       // Clones with Sequences Stripped
-      const mB0 = new MarkovChain({}).clone(true); // This won't work.
-      const mB1 = new MarkovChain(defaultDTO).clone(true);
-      const mB2 = new MarkovChain(defaultGramDTO).clone(true);
+      // const mB0 = new MarkovChain({}).clone(true); // This won't work.
+      // const mB1 = new MarkovChain(defaultDTO).clone(true);
+      // const mB2 = new MarkovChain(defaultGramDTO).clone(true);
       const mB3 = new MarkovChain(dtoU).clone(true);
       const mB4 = new MarkovChain(dto6U).clone(true);
       const mB5 = new MarkovChain(dtoGU).clone(true);

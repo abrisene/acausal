@@ -24,7 +24,7 @@ export interface RandomDTO {
  # Constants
  */
 
-const defaultDTO: RandomDTO = {};
+// const defaultDTO: RandomDTO = {};
 
 /**
  # Class

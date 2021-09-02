@@ -88,7 +88,7 @@ export interface MCGeneratorOptions {
   min?: number;
   max?: number;
   direction?: MCDirectionOption;
-  mask?: string[],
+  mask?: string[];
   strict?: boolean;
   trim?: boolean;
 }
@@ -339,7 +339,8 @@ export class MarkovChain {
         this._model.grams = grams;
         this._model.sequences = undefined;
       }
-    } else {  // If we have sequences
+    } else {
+      // If we have sequences
       // And we have no grams
       if (!grams || Object(grams).length === 0) {
         // Then add the sequences.
@@ -547,7 +548,7 @@ export class MarkovChain {
   static findGram(model: MarkovChainDTO, gramSequence: string[], order?: number, direction = 'next') {
     // Determine the max order for the pick and our sequence.
     const dirForward = direction === 'next';
-    let curOrder = order || gramSequence.length;
+    const curOrder = order || gramSequence.length;
     let sequence = dirForward ? gramSequence.slice(curOrder * -1) : gramSequence.slice(0, curOrder);
     let gram = MarkovChain.getGram(model, sequence);
 
@@ -681,7 +682,7 @@ export class MarkovChain {
     const gram = MarkovChain.getGram(model, seq);
     return MarkovChain.pickGram(engine, gram, next, mask);
   }
-/*   static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
+  /*   static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
     const seq = gramSequence ? gramSequence : [model.startDelimiter];
     const gram = MarkovChain.getGram(model, seq);
     let result;
@@ -751,7 +752,7 @@ export class MarkovChain {
     const terminator = dirForward ? model.endDelimiter : model.startDelimiter;
 
     // Determine the order
-    const maxOrder = order !== undefined ? order : (start ? start.length : model.maxOrder);
+    const maxOrder = order !== undefined ? order : start ? start.length : model.maxOrder;
     let curOrder = start !== undefined ? start.length : 1;
 
     // Determine the offset for our picks.
@@ -773,7 +774,9 @@ export class MarkovChain {
       const pickMask = picks.length < minPicks ? tempMask : mask;
 
       // Find the gram
-      const gram = strict ? MarkovChain.getGram(model, MarkovChain.getSequence(picks, curOrder, dirForward)) : MarkovChain.findGram(model, picks, curOrder, direction);
+      const gram = strict
+        ? MarkovChain.getGram(model, MarkovChain.getSequence(picks, curOrder, dirForward))
+        : MarkovChain.findGram(model, picks, curOrder, direction);
 
       // If we can't find a gram, then we need to break;
       if (!gram) break;
