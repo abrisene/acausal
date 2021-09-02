@@ -387,6 +387,35 @@ describe('Markov Chain', () => {
       expect(Object.keys(mIB3.grams)).not.toContain(mIB3.startDelimiter);
     });
     /* it('can remove sequences from existing markov chains', () => {}); */
+    it('can pick values from a gram', () => {
+      const eng = engine.clone();
+
+      // Grams
+      const gsBS = MarkovChain.findGram(dtoB1, [dtoB1.startDelimiter]);
+      const gsB0 = MarkovChain.findGram(dtoB1, [gB1[0]]);
+      const gsB1 = MarkovChain.findGram(dtoB1, [gB1[1]]);
+      const gsC1 = MarkovChain.findGram(dtoC2, ['+']);
+
+      for (let i = 0; i < 20; i += 1) {
+
+
+        // Standard Pick
+        const pickStandard = MarkovChain.pickGram(eng, gsBS);
+        expect(pickStandard).toEqual(gB1[0]);
+
+        // Next
+        const pickSNext = MarkovChain.pickGram(eng, gsB0, true);
+        expect(pickSNext).toEqual(gB1[1]);
+
+        // Last
+        const pickSLast = MarkovChain.pickGram(eng, gsB1, false);
+        expect(pickSLast).toEqual(gB1[0]);
+
+        // Masks
+        const pickMask1 = MarkovChain.pickGram(eng, gsC1, true, ['a', 'y']);
+        expect(pickMask1).toEqual('z');
+      }
+    });
     it('can pick values from a markov chain', () => {
       const eng = engine.clone();
 

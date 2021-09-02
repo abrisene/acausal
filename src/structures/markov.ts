@@ -61,13 +61,6 @@ export interface MarkovChainGramDTO extends MarkovChainOptions {
 
 export type MarkovChainDTO = MarkovChainSequenceDTO | MarkovChainGramDTO;
 
-/* export interface MarkovChainConstructor extends MarkovChainOptions {
-  engine?: Random;
-  sequences?: string[][];
-  grams?: GramDictionary;
-  insert?: MCInsertOption;
-} */
-
 export interface MarkovChainConstructor extends RandomDTO {
   maxOrder?: number;
   delimiter?: string;
@@ -306,14 +299,6 @@ export class MarkovChain {
   private _engine: Random;
   private _model: MarkovChainDTO;
 
-  // private _maxOrder: number;
-  // private _delimiter: string;
-  // private _startDelimiter: string;
-  // private _endDelimiter: string;
-
-  // private _sequences: string[][] | undefined;
-  // private _grams: { [key: string]: Gram };
-
   constructor({
     engine,
     seed,
@@ -346,24 +331,24 @@ export class MarkovChain {
     if (!sequences || sequences.length === 0) {
       // And we have no grams
       if (!grams || Object.keys(grams).length === 0) {
-        // console.log('A');
+        // Then create an empty dictionary.
         this._model.grams = {};
         this._model.sequences = [];
       } else {
-        // console.log('B');
+        // If we have grams, set the grams and null out sequences so we know not to add them.
         this._model.grams = grams;
         this._model.sequences = undefined;
       }
-    } else {
-      // If we have sequences
-      // And no grams, then add them.
+    } else {  // If we have sequences
+      // And we have no grams
       if (!grams || Object(grams).length === 0) {
+        // Then add the sequences.
         this._model.grams = {};
         this._model.sequences = [];
         this.addSequences(sequences, insert);
       } else {
-        // Otherwise, if we have sequences and no grams, add them.
-        this._model.grams = grams || {};
+        // Otherwise, if we have sequences and grams, then add them.
+        this._model.grams = grams;
         this._model.sequences = sequences;
       }
     }
@@ -521,31 +506,6 @@ export class MarkovChain {
   public serialize(stripSequences = false): MarkovChainDTO {
     // Create the DTO
     return MarkovChain.clone(this._model, stripSequences);
-    /* const data: MarkovChainDTO = {
-      maxOrder: this._maxOrder,
-      delimiter: this._delimiter,
-      startDelimiter: this._startDelimiter,
-      endDelimiter: this._endDelimiter,
-      grams: {},
-    };
-
-    // Copy Sequences
-    if (this._sequences !== undefined && !stripSequences) {
-      data.sequences = this._sequences.map(s => [...s]);
-    }
-
-    // Deep Clone Grams
-    data.grams = Object.keys(this._grams).reduce((l, k) => {
-      const gram = this._grams[k];
-      const gramClone = {
-        ...gram,
-        last: { ...gram.last },
-        next: { ...gram.next },
-      };
-      return { ...l, [k]: gramClone };
-    }, {});
-
-    return data; */
   }
 
   /**
