@@ -89,6 +89,22 @@ export interface Gram {
   degreeOut: number;
 }
 
+export interface MCGeneratorOptions {
+  start?: string[];
+  order?: number;
+  min?: number;
+  max?: number;
+  direction?: MCDirectionOption;
+  mask?: string[],
+  strict?: boolean;
+  trim?: boolean;
+}
+
+export interface MCGeneratorStaticOptions extends MCGeneratorOptions {
+  model: MarkovChainDTO;
+  engine?: Random;
+}
+
 /**
  # Constants
  */
@@ -104,6 +120,14 @@ const defaultDTO: MarkovChainDTO = {
   ...defaultOptions,
   sequences: [],
   grams: {},
+};
+
+const defaultGenOptions = {
+  min: 1,
+  max: 100,
+  direction: 'next' as MCDirectionOption,
+  strict: true,
+  trim: true,
 };
 
 /**
@@ -280,14 +304,15 @@ function addGram(grams: GramDictionary, gramId: string, order: number) {
 
 export class MarkovChain {
   private _engine: Random;
+  private _model: MarkovChainDTO;
 
-  private _maxOrder: number;
-  private _delimiter: string;
-  private _startDelimiter: string;
-  private _endDelimiter: string;
+  // private _maxOrder: number;
+  // private _delimiter: string;
+  // private _startDelimiter: string;
+  // private _endDelimiter: string;
 
-  private _sequences: string[][] | undefined;
-  private _grams: { [key: string]: Gram };
+  // private _sequences: string[][] | undefined;
+  // private _grams: { [key: string]: Gram };
 
   constructor({
     engine,
@@ -304,63 +329,78 @@ export class MarkovChain {
     grams,
   }: MarkovChainConstructor) {
     this._engine = engine || new Random({ seed, uses });
+    this._model = {
+      ...defaultOptions,
+      maxOrder,
+      delimiter,
+      startDelimiter,
+      endDelimiter,
+      grams: {},
+    };
 
-    this._maxOrder = maxOrder;
-    this._delimiter = delimiter;
-    this._startDelimiter = startDelimiter;
-    this._endDelimiter = endDelimiter;
+    // Add seed / uses to the DTO if we're utilizing them.
+    if (seed) this._model.seed = seed;
+    if (uses) this._model.uses = uses;
 
     // If we have no sequences
     if (!sequences || sequences.length === 0) {
       // And we have no grams
       if (!grams || Object.keys(grams).length === 0) {
         // console.log('A');
-        this._grams = {};
-        this._sequences = [];
+        this._model.grams = {};
+        this._model.sequences = [];
       } else {
         // console.log('B');
-        this._grams = grams;
-        this._sequences = undefined;
+        this._model.grams = grams;
+        this._model.sequences = undefined;
       }
     } else {
       // If we have sequences
       // And no grams, then add them.
       if (!grams || Object(grams).length === 0) {
-        // console.log('C');
-        this._grams = {};
-        this._sequences = [];
+        this._model.grams = {};
+        this._model.sequences = [];
         this.addSequences(sequences, insert);
       } else {
-        // console.log('D');
         // Otherwise, if we have sequences and no grams, add them.
-        this._grams = grams || {};
-        this._sequences = sequences;
+        this._model.grams = grams || {};
+        this._model.sequences = sequences;
       }
     }
+
+    // this._model = this.serialize();
+  }
+
+  get dto() {
+    return this._model;
+  }
+
+  get model() {
+    return this._model;
   }
 
   get maxOrder() {
-    return this._maxOrder;
+    return this._model.maxOrder;
   }
 
   get delimiter() {
-    return this._delimiter;
+    return this._model.delimiter;
   }
 
   get startDelimiter() {
-    return this._startDelimiter;
+    return this._model.startDelimiter;
   }
 
   get endDelimiter() {
-    return this._endDelimiter;
+    return this._model.endDelimiter;
   }
 
   get sequences() {
-    return this._sequences;
+    return this._model.sequences;
   }
 
   get grams() {
-    return this._grams;
+    return this._model.grams;
   }
 
   /**
@@ -368,14 +408,7 @@ export class MarkovChain {
    * @param dto
    */
   private update(dto: MarkovChainDTO) {
-    this._maxOrder = dto.maxOrder;
-    this._delimiter = dto.delimiter;
-    this._startDelimiter = dto.startDelimiter;
-    this._endDelimiter = dto.endDelimiter;
-
-    this._sequences = dto.sequences;
-    this._grams = dto.grams;
-
+    this._model = dto;
     return this;
   }
 
@@ -388,7 +421,7 @@ export class MarkovChain {
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    */
   public addSequences(sequences: string[][], insert: MCInsertOption = false) {
-    this.update(MarkovChain.addSequences(this.serialize(), sequences, insert));
+    this.update(MarkovChain.addSequences(this._model, sequences, insert));
     return this;
   }
 
@@ -401,7 +434,7 @@ export class MarkovChain {
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    */
   public addSequence(sequence: string[], insert: MCInsertOption = false) {
-    this.update(MarkovChain.addSequence(this.serialize(), sequence, insert));
+    this.update(MarkovChain.addSequence(this._model, sequence, insert));
     return this;
   }
 
@@ -412,19 +445,19 @@ export class MarkovChain {
    * @param nextId  The id of the next gram in the sequence.
    */
   public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined) {
-    this.update(MarkovChain.addEdge(this.serialize(), gram, lastId, nextId));
+    this.update(MarkovChain.addEdge(this._model, gram, lastId, nextId));
     return this;
   }
 
   /**
    * Picks the next or last random value from a Markov Chain.
    * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
-   * @param next          If true values that come after the gram will be picked.
-   *                      If false values that came before the gram will be picked.
+   * @param next          If true states that come after the gram will be picked.
+   *                      If false states that came before the gram will be picked.
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
   public pick(gramSequence?: string[], next = true, mask?: string[]) {
-    return MarkovChain.pick(this._engine, this.serialize(), gramSequence, next, mask);
+    return MarkovChain.pick(this._engine, this._model, gramSequence, next, mask);
   }
 
   /**
@@ -433,7 +466,7 @@ export class MarkovChain {
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
   public next(gramSequence?: string[], mask?: string[]) {
-    return MarkovChain.pick(this._engine, this.serialize(), gramSequence, true, mask);
+    return MarkovChain.pick(this._engine, this._model, gramSequence, true, mask);
   }
 
   /**
@@ -442,10 +475,44 @@ export class MarkovChain {
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
   public last(gramSequence?: string[], mask?: string[]) {
-    return MarkovChain.pick(this._engine, this.serialize(), gramSequence, false, mask);
+    return MarkovChain.pick(this._engine, this._model, gramSequence, false, mask);
   }
 
-  public generateSequence() {}
+  /**
+   * Generates a sequence from a Markov Chain.
+   * @param start       The sequence to start with. If this is not defined, the sequence will start from the beginning or end (as appropriate to the direction).
+   * @param order       The desired order (gram length) for the picks. Higher values will reduce randomness. If this is not defined it will default to the model's max order.
+   * @param min         The minimum length of the sequence. This will not prevent early termination if suitable grams or states cannot be found.
+   * @param max         The maximum length of the sequence.
+   * @param direction   The direction of the picks - "next" will pick states after the sequence, "last" will pick states before.
+   * @param mask        A mask containing keys in the chain that should be ignored.
+   * @param strict      If true, order will not be dynamically adjusted to find suitable grams.
+   *                    Order will still be adjusted if the starting sequence provided is less than the max order to get up to the preferred order.
+   * @param trim        If true, delimiters will be trimmed from the chain.
+   */
+  public generate({
+    start,
+    order,
+    min = defaultGenOptions.min,
+    max = defaultGenOptions.max,
+    direction = defaultGenOptions.direction,
+    mask,
+    strict = defaultGenOptions.strict,
+    trim = defaultGenOptions.trim,
+  }: MCGeneratorOptions) {
+    return MarkovChain.generate({
+      model: this._model,
+      start,
+      order,
+      min,
+      max,
+      direction,
+      mask,
+      strict,
+      trim,
+      engine: this._engine,
+    });
+  }
 
   /**
    * Serializes a Markov Chain instance into a DTO.
@@ -453,7 +520,8 @@ export class MarkovChain {
    */
   public serialize(stripSequences = false): MarkovChainDTO {
     // Create the DTO
-    const data: MarkovChainDTO = {
+    return MarkovChain.clone(this._model, stripSequences);
+    /* const data: MarkovChainDTO = {
       maxOrder: this._maxOrder,
       delimiter: this._delimiter,
       startDelimiter: this._startDelimiter,
@@ -477,7 +545,7 @@ export class MarkovChain {
       return { ...l, [k]: gramClone };
     }, {});
 
-    return data;
+    return data; */
   }
 
   /**
@@ -489,31 +557,75 @@ export class MarkovChain {
   }
 
   /**
-   *
-   * @param data
-   * @param gramSequence
+   * Returns the id of a Gram from its sequence.
+   * @param model          A Markov Chain data transfer object.
+   * @param gramSequence  An array containing the Gram sequence.
    */
-  static getGramId(data: MarkovChainDTO, gramSequence: string[]) {
-    return gramSequence.join(data.delimiter);
+  static getGramId(model: MarkovChainDTO, gramSequence: string[]) {
+    return gramSequence.join(model.delimiter);
   }
 
-  static getGram(data: MarkovChainDTO, gramSequence: string[]) {
-    const id = MarkovChain.getGramId(data, gramSequence);
-    return data.grams[id];
+  /**
+   * Returns the corresponding Gram from a sequence.
+   * @param model          A Markov Chain data transfer object.
+   * @param gramSequence  An array containing the Gram sequence.
+   */
+  static getGram(model: MarkovChainDTO, gramSequence: string[]) {
+    const id = MarkovChain.getGramId(model, gramSequence);
+    return model.grams[id];
+  }
+
+  /**
+   * Finds the valid gram of the highest valid order in a sequence.
+   * @param model           A Markov Chain data transfer object.
+   * @param gramSequence    An array containing the Gram sequence.
+   * @param order           The highest order to look for.
+   * @param direction       The direction we are looking for sequences in.
+   *                        "next" will look for grams at the end of the sequence.
+   *                        "last" will look for grams at the beginning of the sequence.
+   */
+  static findGram(model: MarkovChainDTO, gramSequence: string[], order?: number, direction = 'next') {
+    // Determine the max order for the pick and our sequence.
+    const dirForward = direction === 'next';
+    let curOrder = order || gramSequence.length;
+    let sequence = dirForward ? gramSequence.slice(curOrder * -1) : gramSequence.slice(0, curOrder);
+    let gram = MarkovChain.getGram(model, sequence);
+
+    // If we don't find a gram immediately, find a suitable gram by stepping down our current order until we find one.
+    if (!gram) {
+      for (let o = curOrder - 1; o > 0; o -= 1) {
+        sequence = dirForward ? gramSequence.slice(o * -1) : gramSequence.slice(0, o);
+        gram = MarkovChain.getGram(model, sequence);
+        if (gram !== undefined) break;
+      }
+    }
+
+    return gram;
+  }
+
+  /**
+   * Utility function to find a sequence given an order and a direction.
+   * This returns an array containing the first or last elements of an array equal to the order.
+   * @param gramSequence    An array containing the Gram sequence.
+   * @param order           The length of the array to return.
+   * @param next            If true, will find elements at the end. If false will find elements at the beginning.
+   */
+  static getSequence(gramSequence: string[], order: number, next: boolean) {
+    return next ? gramSequence.slice(order * -1) : gramSequence.slice(0, order);
   }
 
   /**
    * Adds or inserts a list of Sequences into a Markov Chain DTO.
-   * @param data      A Markov Chain data transfer object.
+   * @param model      A Markov Chain data transfer object.
    * @param sequences  The sequences to be added.
    * @param insert    Determines how sequences should be inserted. If false, delimiters will be
    *                  prepended and appended to the sequences.
    *                  "start" or setting true will only prepend the start delimiter, while
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    */
-  static addSequences(data: MarkovChainDTO, sequences: string[][], insert: MCInsertOption = false): MarkovChainDTO {
+  static addSequences(model: MarkovChainDTO, sequences: string[][], insert: MCInsertOption = false): MarkovChainDTO {
     // Clone the Markov Chain DTO.
-    const m = MarkovChain.clone(data);
+    const m = MarkovChain.clone(model);
     const delimiters = getDelimiters(m);
 
     // Add the sequences.
@@ -529,16 +641,16 @@ export class MarkovChain {
 
   /**
    * Adds or inserts a Sequence into a Markov Chain DTO.
-   * @param data      A Markov Chain data transfer object.
+   * @param model      A Markov Chain data transfer object.
    * @param sequence  The sequence to be added.
    * @param insert    Determines how sequences should be inserted. If false, delimiters will be
    *                  prepended and appended to the sequences.
    *                  "start" or setting true will only prepend the start delimiter, while
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    */
-  static addSequence(data: MarkovChainDTO, sequence: string[], insert: MCInsertOption = false): MarkovChainDTO {
+  static addSequence(model: MarkovChainDTO, sequence: string[], insert: MCInsertOption = false): MarkovChainDTO {
     // Clone the Markov Chain DTO.
-    const m = MarkovChain.clone(data);
+    const m = MarkovChain.clone(model);
     const delimiters = getDelimiters(m);
 
     // Add the sequence.
@@ -550,19 +662,19 @@ export class MarkovChain {
 
   /**
    * Adds an edge from a gram to the items before and after it in the sequence.
-   * @param data    A Markov Chain data transfer object.
+   * @param model    A Markov Chain data transfer object.
    * @param gram    The id of a gram, or the gram sequence.
    * @param lastId  The id of the previous gram in the sequence.
    * @param nextId  The id of the next gram in the sequence.
    */
   static addEdge(
-    data: MarkovChainDTO,
+    model: MarkovChainDTO,
     gram: string | string[],
     lastId: string | undefined,
     nextId: string | undefined
   ) {
     // Clone the Markov Chain DTO.
-    const m = MarkovChain.clone(data);
+    const m = MarkovChain.clone(model);
     const weight = 1;
 
     // Check to see if we need to calculate the id.
@@ -577,15 +689,39 @@ export class MarkovChain {
   // static removeEdge() {}
 
   /**
+   * Makes a random pick from the next or last state of a given Gram.
+   * @param engine  A Random engine.
+   * @param gram    The starting Gram sequence. If this isn't supplied this defaults to the start.
+   * @param next    If true states that come after the gram will be picked.
+   *                If false states that came before the gram will be picked.
+   * @param mask    A mask containing keys in the chain that should be ignored.
+   */
+  static pickGram(engine: Random, gram: Gram, next = true, mask?: string[]) {
+    let result;
+    if (gram !== undefined) {
+      const distribution = next ? gram.next : gram.last;
+      if (distribution !== undefined) {
+        result = Distribution.pickOne(distribution, mask, engine);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Picks the next or last random value from a Markov Chain.
    * @param engine        A Random engine.
    * @param model         A Markov Chain data transfer object.
    * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
-   * @param next          If true values that come after the gram will be picked.
-   *                      If false values that came before the gram will be picked.
+   * @param next          If true states that come after the gram will be picked.
+   *                      If false states that came before the gram will be picked.
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
   static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
+    const seq = gramSequence ? gramSequence : [model.startDelimiter];
+    const gram = MarkovChain.getGram(model, seq);
+    return MarkovChain.pickGram(engine, gram, next, mask);
+  }
+/*   static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
     const seq = gramSequence ? gramSequence : [model.startDelimiter];
     const gram = MarkovChain.getGram(model, seq);
     let result;
@@ -596,7 +732,7 @@ export class MarkovChain {
       }
     }
     return result;
-  }
+  } */
 
   /**
    * Picks the next random value from a Markov Chain given a sequence.
@@ -620,16 +756,94 @@ export class MarkovChain {
     return MarkovChain.pick(engine, model, gramSequence, false, mask);
   }
 
-  static generate(
-    engine: Random,
-    model: MarkovChainDTO,
-    start: string[] = [],
-    order?: number,
-    min = 4,
-    max = 100,
-    strict = false,
-    trim = true
-  ) {}
+  /**
+   * Generates a sequence from a Markov Chain.
+   * @param model       A Markov Chain data transfer object.
+   * @param start       The sequence to start with. If this is not defined, the sequence will start from the beginning or end (as appropriate to the direction).
+   * @param order       The desired order (gram length) for the picks. Higher values will reduce randomness. If this is not defined it will default to the model's max order.
+   * @param min         The minimum length of the sequence. This will not prevent early termination if suitable grams or states cannot be found.
+   * @param max         The maximum length of the sequence.
+   * @param direction   The direction of the picks - "next" will pick states after the sequence, "last" will pick states before.
+   * @param mask        A mask containing keys in the chain that should be ignored.
+   * @param strict      If true, order will not be dynamically adjusted to find suitable grams.
+   *                    Order will still be adjusted if the starting sequence provided is less than the max order to get up to the preferred order.
+   * @param trim        If true, delimiters will be trimmed from the chain.
+   * @param engine      A Random engine. If one is not provided, a new one will be created for the generation.
+   */
+  static generate({
+    model,
+    start,
+    order,
+    min = defaultGenOptions.min,
+    max = defaultGenOptions.max,
+    direction = defaultGenOptions.direction,
+    mask,
+    strict = defaultGenOptions.strict,
+    trim = defaultGenOptions.trim,
+    engine,
+  }: MCGeneratorStaticOptions) {
+    const eng = engine || new Random({});
+
+    // SETUP
+    // Set the starting sequence and the terminating character.
+    const dirForward = direction === 'next';
+    const picks = start || (dirForward ? [model.startDelimiter] : [model.endDelimiter]);
+    const terminator = dirForward ? model.endDelimiter : model.startDelimiter;
+
+    // Determine the order
+    const maxOrder = order !== undefined ? order : (start ? start.length : model.maxOrder);
+    let curOrder = start !== undefined ? start.length : 1;
+
+    // Determine the offset for our picks.
+    const pickOffset = trim ? 2 : 0;
+    const minPicks = min + pickOffset;
+    const maxPicks = max + pickOffset;
+
+    // Determine the temporary mask to use while sequence is less than min.
+    const tempMask = mask !== undefined ? [terminator, ...mask] : [terminator];
+
+    // Utility function for finding the current sequence given order and direction.
+
+    // MAKE THE PICKS
+    for (let i = 0; picks.length <= maxPicks; i += 1) {
+      // Increase the order if we're below the desired value.
+      if (curOrder < maxOrder) curOrder += 1;
+
+      // Determine which mask we should use.
+      const pickMask = picks.length < minPicks ? tempMask : mask;
+
+      // Find the gram
+      const gram = strict ? MarkovChain.getGram(model, MarkovChain.getSequence(picks, curOrder, dirForward)) : MarkovChain.findGram(model, picks, curOrder, direction);
+
+      // If we can't find a gram, then we need to break;
+      if (!gram) break;
+
+      // Get the Gram sequence.
+      const gramSequence = gram.id.split(model.delimiter);
+
+      // Get the gram sequence and then make the pick.
+      const pick = MarkovChain.pick(eng, model, gramSequence, dirForward, pickMask);
+
+      // If we have a pick, figure out whether we need to add it to the beginning or end of the picks array.
+      if (pick) {
+        if (dirForward) {
+          picks.push(pick);
+        } else {
+          picks.unshift(pick);
+        }
+
+        // If we've picked the terminator, then break.
+        if (pick === terminator) break;
+      } else {
+        // If we don't have a pick, then break.
+        // This could result because of an error in the chain, or because all possible values are masked.
+        break;
+      }
+    }
+
+    // FORMAT THE RESULT
+    return trim ? picks.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v)) : picks;
+  }
 
   /**
    * Creates a new Markov Chain data transfer object.
@@ -653,11 +867,11 @@ export class MarkovChain {
 
   /**
    * Create a deep copy of a Markov Chain DTO.
-   * @param data Markov DTO to clone.
+   * @param model Markov DTO to clone.
    * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
    */
-  static clone(data: MarkovChainDTO, stripSequences = false): MarkovChainDTO {
-    const { sequences, grams, ...dtoData } = data;
+  static clone(model: MarkovChainDTO, stripSequences = false): MarkovChainDTO {
+    const { sequences, grams, ...dtoData } = model;
 
     const sequencesClone = sequences !== undefined && !stripSequences ? sequences.map(s => [...s]) : undefined;
     const gramsClone = Object.keys(grams).reduce((l, k) => {

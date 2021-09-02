@@ -25,7 +25,8 @@ const chain = new MarkovChain({
 });
 
 // chain.addSequences(source);
-const pickA = chain.pick();
+// const pickA = chain.pick();
+const pickA = chain.generate({ start: ['a'], trim: false });
 
 console.log(chain.sequences);
 console.log(pickA);
