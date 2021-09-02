@@ -398,19 +398,19 @@ describe('Markov Chain', () => {
 
       for (let i = 0; i < 20; i += 1) {
         // Standard Pick
-        const pickStandard = MarkovChain.pickGram(eng, gsBS);
+        const pickStandard = MarkovChain.pickGram(gsBS);
         expect(pickStandard).toEqual(gB1[0]);
 
         // Next
-        const pickSNext = MarkovChain.pickGram(eng, gsB0, true);
+        const pickSNext = MarkovChain.pickGram(gsB0, true, undefined, eng);
         expect(pickSNext).toEqual(gB1[1]);
 
         // Last
-        const pickSLast = MarkovChain.pickGram(eng, gsB1, false);
+        const pickSLast = MarkovChain.pickGram(gsB1, false, undefined, eng);
         expect(pickSLast).toEqual(gB1[0]);
 
         // Masks
-        const pickMask1 = MarkovChain.pickGram(eng, gsC1, true, ['a', 'y']);
+        const pickMask1 = MarkovChain.pickGram(gsC1, true, ['a', 'y'], eng);
         expect(pickMask1).toEqual('z');
       }
     });
@@ -419,29 +419,29 @@ describe('Markov Chain', () => {
 
       for (let i = 0; i < 20; i += 1) {
         // Standard Pick
-        const pickStandard = MarkovChain.pick(eng, dtoB1);
+        const pickStandard = MarkovChain.pick(dtoB1);
         expect(pickStandard).toEqual(gB1[0]);
 
         // Next
-        const pickSNext = MarkovChain.pick(eng, dtoB1, [gB1[0]]);
-        const pickNext1 = MarkovChain.next(eng, dtoB1, [gB1[0]]);
-        const pickNext2 = MarkovChain.next(eng, dtoC2, ['+']);
+        const pickSNext = MarkovChain.pick(dtoB1, [gB1[0]], undefined, undefined, eng);
+        const pickNext1 = MarkovChain.next(dtoB1, [gB1[0]], undefined, eng);
+        const pickNext2 = MarkovChain.next(dtoC2, ['+'], undefined, eng);
         expect(pickSNext).toEqual(gB1[1]);
         expect(pickNext1).toEqual(pickSNext);
         expect([gC1[2], gC2[2]]).toContain(pickNext2);
 
         // Last
-        const pickSLast = MarkovChain.pick(eng, dtoB1, [gB1[1]], false);
-        const pickLast = MarkovChain.last(eng, dtoB1, [gB1[1]]);
-        const pickLast2 = MarkovChain.last(eng, dtoC2, ['+']);
+        const pickSLast = MarkovChain.pick(dtoB1, [gB1[1]], false, undefined, eng);
+        const pickLast = MarkovChain.last(dtoB1, [gB1[1]], undefined, eng);
+        const pickLast2 = MarkovChain.last(dtoC2, ['+'], undefined, eng);
         expect(pickSLast).toEqual(gB1[0]);
         expect(pickLast).toEqual(pickSLast);
         expect([gC1[0], gC2[0]]).toContain(pickLast2);
 
         // Masks
-        const pickMask1 = MarkovChain.pick(eng, dtoC2, ['+'], true, ['a', 'y']);
-        const pickMask2 = MarkovChain.next(eng, dtoC2, ['+'], ['a', 'y']);
-        const pickMask3 = MarkovChain.last(eng, dtoC2, ['+'], ['a', 'y']);
+        const pickMask1 = MarkovChain.pick(dtoC2, ['+'], true, ['a', 'y'], eng);
+        const pickMask2 = MarkovChain.next(dtoC2, ['+'], ['a', 'y'], eng);
+        const pickMask3 = MarkovChain.last(dtoC2, ['+'], ['a', 'y'], eng);
         expect(pickMask1).toEqual('z');
         expect(pickMask2).toEqual(pickMask1);
         expect(pickMask3).toEqual('b');

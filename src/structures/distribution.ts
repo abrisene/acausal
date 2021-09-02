@@ -19,6 +19,7 @@ TESTING:
 
 
 TODO:
+- Implement a way to have exclusion with multiple picks (i.e. "There are 4 instances of A").
 - Figure out whether or not we care about negative values.
 *****************/
 

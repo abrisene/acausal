@@ -213,6 +213,7 @@ function addSequence(
       const gramId = getGramId(gramSeq, delimiters[1][0]);
 
       // Add the gram to the dictionary if it doesn't exist.
+      // NOTE: We don't do this here anymore because addEdge does this for us.
       // if (grams[gramId] === undefined) addGram(grams, gramId, gramSeq.length);
 
       // Add the gram and the edges.
@@ -353,8 +354,6 @@ export class MarkovChain {
         this._model.sequences = sequences;
       }
     }
-
-    // this._model = this.serialize();
   }
 
   get dto() {
@@ -407,8 +406,8 @@ export class MarkovChain {
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    */
   public addSequences(sequences: string[][], insert: MCInsertOption = false) {
-    this.update(MarkovChain.addSequences(this._model, sequences, insert));
-    return this;
+    const data = MarkovChain.addSequences(this._model, sequences, insert);
+    return this.update(data);
   }
 
   /**
@@ -420,8 +419,8 @@ export class MarkovChain {
    *                  "end" will append the end delimiter. "middle" will not add any delimiters.
    */
   public addSequence(sequence: string[], insert: MCInsertOption = false) {
-    this.update(MarkovChain.addSequence(this._model, sequence, insert));
-    return this;
+    const data = MarkovChain.addSequence(this._model, sequence, insert);
+    return this.update(data);
   }
 
   /**
@@ -431,8 +430,8 @@ export class MarkovChain {
    * @param nextId  The id of the next gram in the sequence.
    */
   public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined) {
-    this.update(MarkovChain.addEdge(this._model, gram, lastId, nextId));
-    return this;
+    const data = MarkovChain.addEdge(this._model, gram, lastId, nextId);
+    return this.update(data);
   }
 
   /**
@@ -443,7 +442,7 @@ export class MarkovChain {
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
   public pick(gramSequence?: string[], next = true, mask?: string[]) {
-    return MarkovChain.pick(this._engine, this._model, gramSequence, next, mask);
+    return MarkovChain.pick(this._model, gramSequence, next, mask, this._engine);
   }
 
   /**
@@ -452,7 +451,7 @@ export class MarkovChain {
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
   public next(gramSequence?: string[], mask?: string[]) {
-    return MarkovChain.pick(this._engine, this._model, gramSequence, true, mask);
+    return MarkovChain.pick(this._model, gramSequence, true, mask, this._engine);
   }
 
   /**
@@ -461,7 +460,7 @@ export class MarkovChain {
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
   public last(gramSequence?: string[], mask?: string[]) {
-    return MarkovChain.pick(this._engine, this._model, gramSequence, false, mask);
+    return MarkovChain.pick(this._model, gramSequence, false, mask, this._engine);
   }
 
   /**
@@ -651,13 +650,13 @@ export class MarkovChain {
 
   /**
    * Makes a random pick from the next or last state of a given Gram.
-   * @param engine  A Random engine.
    * @param gram    The starting Gram sequence. If this isn't supplied this defaults to the start.
    * @param next    If true states that come after the gram will be picked.
    *                If false states that came before the gram will be picked.
    * @param mask    A mask containing keys in the chain that should be ignored.
+   * @param engine  A Random engine.
    */
-  static pickGram(engine: Random, gram: Gram, next = true, mask?: string[]) {
+  static pickGram(gram: Gram, next = true, mask?: string[], engine?: Random) {
     let result;
     if (gram !== undefined) {
       const distribution = next ? gram.next : gram.last;
@@ -670,30 +669,19 @@ export class MarkovChain {
 
   /**
    * Picks the next or last random value from a Markov Chain.
-   * @param engine        A Random engine.
    * @param model         A Markov Chain data transfer object.
    * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
    * @param next          If true states that come after the gram will be picked.
    *                      If false states that came before the gram will be picked.
    * @param mask          A mask containing keys in the chain that should be ignored.
+   * @param engine  A Random engine.
    */
-  static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
+  static pick(model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[], engine?: Random) {
+    const eng = engine || new Random({});
     const seq = gramSequence ? gramSequence : [model.startDelimiter];
     const gram = MarkovChain.getGram(model, seq);
-    return MarkovChain.pickGram(engine, gram, next, mask);
+    return MarkovChain.pickGram(gram, next, mask, eng);
   }
-  /*   static pick(engine: Random, model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[]) {
-    const seq = gramSequence ? gramSequence : [model.startDelimiter];
-    const gram = MarkovChain.getGram(model, seq);
-    let result;
-    if (gram !== undefined) {
-      const distribution = next ? gram.next : gram.last;
-      if (distribution !== undefined) {
-        result = Distribution.pickOne(distribution, mask, engine);
-      }
-    }
-    return result;
-  } */
 
   /**
    * Picks the next random value from a Markov Chain given a sequence.
@@ -702,8 +690,8 @@ export class MarkovChain {
    * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
-  static next(engine: Random, model: MarkovChainDTO, gramSequence?: string[], mask?: string[]) {
-    return MarkovChain.pick(engine, model, gramSequence, true, mask);
+  static next(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
+    return MarkovChain.pick(model, gramSequence, true, mask, engine);
   }
 
   /**
@@ -713,8 +701,8 @@ export class MarkovChain {
    * @param gramSequence  The starting Gram sequence. If this isn't supplied this defaults to the start.
    * @param mask          A mask containing keys in the chain that should be ignored.
    */
-  static last(engine: Random, model: MarkovChainDTO, gramSequence?: string[], mask?: string[]) {
-    return MarkovChain.pick(engine, model, gramSequence, false, mask);
+  static last(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
+    return MarkovChain.pick(model, gramSequence, false, mask, engine);
   }
 
   /**
@@ -785,7 +773,7 @@ export class MarkovChain {
       const gramSequence = gram.id.split(model.delimiter);
 
       // Get the gram sequence and then make the pick.
-      const pick = MarkovChain.pick(eng, model, gramSequence, dirForward, pickMask);
+      const pick = MarkovChain.pick(model, gramSequence, dirForward, pickMask, eng);
 
       // If we have a pick, figure out whether we need to add it to the beginning or end of the picks array.
       if (pick) {
