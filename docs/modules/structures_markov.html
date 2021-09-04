@@ -65,6 +65,29 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>SUMMARY:</p>
+						<ul>
+							<li>Class definition for markov chain.</li>
+							<li>All static functions should be immutable.</li>
+							<li>All member functions should utilize immutable static functions.</li>
+							<li>Supports source obfuscation by providing optional sequenceless distributions.</li>
+						</ul>
+					</div>
+					<p>TESTING:</p>
+					<p>TODO:</p>
+					<ul>
+						<li>Add methods for remove sequence(s), edges and grams.</li>
+						<li>Add methods for editing sequence(s) and grams.</li>
+						<li>Refactor sequences array into weighted dictionary to reduce duplication.</li>
+						<li>Expose ability to set weight when adding a sequence (dependent on above).</li>
+						<li>Add methods for start / end analysis.</li>
+						<li>Add methods for sequence dictionary reconstruction from GramDTOs.</li>
+					</ul>
+				</div>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -79,6 +102,8 @@
 							<h3>Interfaces</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/structures_markov.gram.html" class="tsd-kind-icon">Gram</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/structures_markov.mcgeneratoroptions.html" class="tsd-kind-icon">MCGenerator<wbr>Options</a></li>
+								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/structures_markov.mcgeneratorstaticoptions.html" class="tsd-kind-icon">MCGenerator<wbr>Static<wbr>Options</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/structures_markov.markovchainconstructor.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>Constructor</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/structures_markov.markovchaingramdto.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>GramDTO</a></li>
 								<li class="tsd-kind-interface tsd-parent-kind-module"><a href="../interfaces/structures_markov.markovchainoptions.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>Options</a></li>
@@ -88,6 +113,10 @@
 						<section class="tsd-index-section ">
 							<h3>Type aliases</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="structures_markov.html#gramdictionary" class="tsd-kind-icon">Gram<wbr>Dictionary</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="structures_markov.html#mcdelimitersshort" class="tsd-kind-icon">MCDelimiters<wbr>Short</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="structures_markov.html#mcdirectionoption" class="tsd-kind-icon">MCDirection<wbr>Option</a></li>
+								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="structures_markov.html#mcinsertoption" class="tsd-kind-icon">MCInsert<wbr>Option</a></li>
 								<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="structures_markov.html#markovchaindto" class="tsd-kind-icon">Markov<wbr>ChainDTO</a></li>
 							</ul>
 						</section>
@@ -97,12 +126,67 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Type aliases</h2>
 				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
+					<a name="gramdictionary" class="tsd-anchor"></a>
+					<h3>Gram<wbr>Dictionary</h3>
+					<div class="tsd-signature tsd-kind-icon">Gram<wbr>Dictionary<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/7d28091/src/structures/markov.ts#L44">structures/markov.ts:44</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><a href="../interfaces/structures_markov.gram.html" class="tsd-signature-type" data-tsd-kind="Interface">Gram</a></h5>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
+					<a name="mcdelimitersshort" class="tsd-anchor"></a>
+					<h3>MCDelimiters<wbr>Short</h3>
+					<div class="tsd-signature tsd-kind-icon">MCDelimiters<wbr>Short<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/7d28091/src/structures/markov.ts#L43">structures/markov.ts:43</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
+					<a name="mcdirectionoption" class="tsd-anchor"></a>
+					<h3>MCDirection<wbr>Option</h3>
+					<div class="tsd-signature tsd-kind-icon">MCDirection<wbr>Option<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;next&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;last&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/7d28091/src/structures/markov.ts#L41">structures/markov.ts:41</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<a href="#types" id="types" style="color: inherit; text-decoration: none;">
+								<h1>Types</h1>
+							</a>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
+					<a name="mcinsertoption" class="tsd-anchor"></a>
+					<h3>MCInsert<wbr>Option</h3>
+					<div class="tsd-signature tsd-kind-icon">MCInsert<wbr>Option<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;start&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;end&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;middle&quot;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/7d28091/src/structures/markov.ts#L42">structures/markov.ts:42</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
 					<a name="markovchaindto" class="tsd-anchor"></a>
 					<h3>Markov<wbr>ChainDTO</h3>
 					<div class="tsd-signature tsd-kind-icon">Markov<wbr>ChainDTO<span class="tsd-signature-symbol">:</span> <a href="../interfaces/structures_markov.markovchainsequencedto.html" class="tsd-signature-type" data-tsd-kind="Interface">MarkovChainSequenceDTO</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/structures_markov.markovchaingramdto.html" class="tsd-signature-type" data-tsd-kind="Interface">MarkovChainGramDTO</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/e32c74a/src/structures/markov.ts#L40">structures/markov.ts:40</a></li>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/7d28091/src/structures/markov.ts#L63">structures/markov.ts:63</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -137,6 +221,12 @@
 						<a href="../interfaces/structures_markov.gram.html" class="tsd-kind-icon">Gram</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/structures_markov.mcgeneratoroptions.html" class="tsd-kind-icon">MCGenerator<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/structures_markov.mcgeneratorstaticoptions.html" class="tsd-kind-icon">MCGenerator<wbr>Static<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/structures_markov.markovchainconstructor.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>Constructor</a>
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
@@ -147,6 +237,18 @@
 					</li>
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="../interfaces/structures_markov.markovchainsequencedto.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>SequenceDTO</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="structures_markov.html#gramdictionary" class="tsd-kind-icon">Gram<wbr>Dictionary</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="structures_markov.html#mcdelimitersshort" class="tsd-kind-icon">MCDelimiters<wbr>Short</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="structures_markov.html#mcdirectionoption" class="tsd-kind-icon">MCDirection<wbr>Option</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="structures_markov.html#mcinsertoption" class="tsd-kind-icon">MCInsert<wbr>Option</a>
 					</li>
 					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 						<a href="structures_markov.html#markovchaindto" class="tsd-kind-icon">Markov<wbr>ChainDTO</a>

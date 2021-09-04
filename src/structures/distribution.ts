@@ -91,9 +91,9 @@ export class Distribution {
   private _source?: WeightedDistribution;
   private _normal: WeightedDistribution;
 
-  constructor(config: DistributionConstructor) {
-    const { engine, source, normal, ...randomConfig } = config;
-    this._engine = engine || new Random(randomConfig);
+  constructor({ engine, seed, uses, source, normal }: DistributionConstructor) {
+    // const { engine, source, normal, ...randomConfig } = config;
+    this._engine = engine || new Random({ seed, uses });
 
     if (source !== undefined) {
       const dto = Distribution.addSourceValues(defaultDTO, source);

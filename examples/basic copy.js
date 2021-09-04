@@ -3,11 +3,12 @@
  # Basic Example
  */
 
-//  import { MarkovChain } from '../';
+//  import { MarkovChain } from '..';
 const { MarkovChain } = require('../lib');
 
 // Prepare Data Source - the class expects an array of arrays.
 const names = ['alice', 'bob', 'erwin'];
+// const names = ['anna', 'alice', 'elsa', 'elise', 'eve'];
 const source = names.map(name => name.split(''));
 
 /* Should result in:
@@ -18,15 +19,23 @@ const source = names.map(name => name.split(''));
 ]
 */
 
+// Create the Markov Chain from the source data.
 const chain = new MarkovChain({
-  seed: 555, // Random Seed - if this is empty it will be generated.
+  seed: 22, // Random Seed - if this is empty it will be generated.
   maxOrder: 1, // Maximum Order - Chain will generate orders up to this value.
   sequences: source, // Source data, expects an array of arrays.
 });
 
-// chain.addSequences(source);
-// const pickA = chain.pick();
-const pickA = chain.generate({ start: ['a'], trim: false });
+// Generate 5 picks.
+for (let i = 0; i < 3; i += 1) {
+  const pick = chain.generate({ max: 5 });
+  console.log(pick.join(''));
+}
 
-console.log(chain.sequences);
-console.log(pickA);
+/* Should print:
+
+    alin
+    bob
+    erwicer
+
+*/

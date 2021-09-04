@@ -61,25 +61,58 @@
 				<a href="#acausal-" id="acausal-" style="color: inherit; text-decoration: none;">
 					<h2>acausal <a href="http://github.com/badges/stability-badges"><img src="http://badges.github.io/stability-badges/dist/stable.svg" alt="stable"></a></h2>
 				</a>
-				<p><a href="https://badge.fury.io/js/acausal"><img src="https://badge.fury.io/js/acausal.svg" alt="npm version"></a> <a href="https://badge.fury.io/gh/abrisene%2Facausal"><img src="https://badge.fury.io/gh/abrisene%2Facausal.svg" alt="GitHub version"></a> <a href="https://travis-ci.com/abrisene/acausal"><img src="https://travis-ci.com/abrisene/acausal.svg?branch=main" alt="Build Status"></a> <a href="https://coveralls.io/github/abrisene/acausal?branch=feature/typescript"><img src="https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=main" alt="Coverage Status"></a></p>
-				<p>Scalr is a lightweight module of pure functions for normalizing and scaling numbers stored within arrays and objects to arbitrary unit lengths.</p>
-				<p>All inputs are treated as immutable.</p>
+				<p><a href="https://badge.fury.io/js/acausal"><img src="https://badge.fury.io/js/acausal.svg" alt="npm version"></a> <a href="https://badge.fury.io/gh/abrisene%2Facausal"><img src="https://badge.fury.io/gh/abrisene%2Facausal.svg" alt="GitHub version"></a> <a href="https://travis-ci.com/abrisene/acausal"><img src="https://travis-ci.com/abrisene/acausal.svg?branch=main" alt="Build Status"></a> <a href="https://coveralls.io/github/abrisene/acausal?branch=feature/typescript"><img src="https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=feature/typescript" alt="Coverage Status"></a></p>
+				<p><strong>Note: This is a beta release. API stability and documentation completeness are not guaranteed.</strong></p>
+				<p><em>acausal</em> makes it easy to create, edit and generate pseudo random data from <strong>Weighted Distributions</strong> and <strong>Markov Chains</strong>.</p>
+				<p>Features:</p>
+				<ul>
+					<li><strong>Immutable:</strong> all classes include static functions which do not mutate state, ensuring that models retain their integrity, and making them easy to use with Redux.</li>
+					<li><strong>Portable:</strong> all classes are easily serializable and deserializable into data transfer objects, making them easy to store and rebuild regardless of whether it&#39;s on the client or the server.</li>
+					<li><strong>Easy to Use:</strong> all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models. All classes impement both Static and Instance methods, allowing developers to choose which method suits them best.</li>
+				</ul>
 				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">MarkovChain</span><span style="color: #000000">, </span><span style="color: #001080">Distribution</span><span style="color: #000000">, </span><span style="color: #001080">Random</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;acausal&#039;</span><span style="color: #000000">;</span>
 
-<span style="color: #008000">// example a</span>
-<span style="color: #008000">// example b</span>
+<span style="color: #008000">// Random Rarity Distribution</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">dist</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Distribution</span><span style="color: #000000">({ </span><span style="color: #001080">seed:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> });</span>
+<span style="color: #001080">dist</span><span style="color: #000000">.</span><span style="color: #795E26">add</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Green&#039;</span><span style="color: #000000">, </span><span style="color: #098658">10</span><span style="color: #000000">);    </span><span style="color: #008000">// Common</span>
+<span style="color: #001080">dist</span><span style="color: #000000">.</span><span style="color: #795E26">add</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Blue&#039;</span><span style="color: #000000">, </span><span style="color: #098658">5</span><span style="color: #000000">);      </span><span style="color: #008000">// Uncommon</span>
+<span style="color: #001080">dist</span><span style="color: #000000">.</span><span style="color: #795E26">add</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Purple&#039;</span><span style="color: #000000">, </span><span style="color: #098658">1</span><span style="color: #000000">);    </span><span style="color: #008000">// Rare</span>
 
-<span style="color: #008000">// example c</span>
-<span style="color: #008000">// examble d</span>
+<span style="color: #001080">dist</span><span style="color: #000000">.</span><span style="color: #795E26">pick</span><span style="color: #000000">(</span><span style="color: #098658">10</span><span style="color: #000000">);</span>
 
-<span style="color: #008000">// example f</span>
-<span style="color: #008000">// example g</span>
+<span style="color: #008000">/* Results in:</span>
+<span style="color: #008000">[</span>
+<span style="color: #008000">  &#039;Green&#039;,  &#039;Green&#039;,  &#039;Green&#039;,  &#039;Blue&#039;,  &#039;Green&#039;,</span>
+<span style="color: #008000">  &#039;Blue&#039;,  &#039;Purple&#039;, &#039;Green&#039;,  &#039;Green&#039;,  &#039;Green&#039;</span>
+<span style="color: #008000">]</span>
+<span style="color: #008000">*/</span>
+
+<span style="color: #008000">// Markov Chain Name Generator</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">mc</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">MarkovChain</span><span style="color: #000000">({ </span><span style="color: #001080">seed:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> });</span>
+<span style="color: #001080">mc</span><span style="color: #000000">.</span><span style="color: #795E26">addSequence</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;alice&#039;</span><span style="color: #000000">.</span><span style="color: #795E26">split</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">));</span>
+<span style="color: #001080">mc</span><span style="color: #000000">.</span><span style="color: #795E26">addSequence</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;bob&#039;</span><span style="color: #000000">.</span><span style="color: #795E26">split</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">));</span>
+<span style="color: #001080">mc</span><span style="color: #000000">.</span><span style="color: #795E26">addSequence</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;erwin&#039;</span><span style="color: #000000">.</span><span style="color: #795E26">split</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">));</span>
+
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">mc</span><span style="color: #000000">.</span><span style="color: #795E26">generate</span><span style="color: #000000">({ </span><span style="color: #001080">order:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> }));</span>
+
+<span style="color: #008000">/* Results in:</span>
+
+<span style="color: #008000">[ &#039;a&#039;, &#039;l&#039;, &#039;i&#039;, &#039;n&#039; ]</span>
+
+<span style="color: #008000">*/</span>
+
+<span style="color: #008000">// Random Numbers</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">rand</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Random</span><span style="color: #000000">({ </span><span style="color: #001080">seed:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> });</span>
+<span style="color: #001080">rand</span><span style="color: #000000">.</span><span style="color: #795E26">integer</span><span style="color: #000000">(</span><span style="color: #098658">1</span><span style="color: #000000">, </span><span style="color: #098658">6</span><span style="color: #000000">); </span><span style="color: #008000">// Roll 1d6</span>
+
+<span style="color: #008000">// Results in: 6</span>
+
 </code></pre>
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
 				</a>
 				<p>Run:</p>
-				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">install</span><span style="color: #000000"> -</span><span style="color: #001080">s</span><span style="color: #000000"> </span><span style="color: #001080">scalr</span>
+				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">install</span><span style="color: #000000"> -</span><span style="color: #001080">s</span><span style="color: #000000"> </span><span style="color: #001080">acausal</span>
 </code></pre>
 				<a href="#gocausal" id="gocausal" style="color: inherit; text-decoration: none;">
 					<h2>Gocausal</h2>
@@ -88,16 +121,139 @@
 				<ul>
 					<li><a href="https://github.com/abrisene/gocausal">Gocausal</a></li>
 				</ul>
+				<a href="#random-distributions" id="random-distributions" style="color: inherit; text-decoration: none;">
+					<h2>Random Distributions</h2>
+				</a>
+				<p>A <strong>Random Distribution</strong> is a simple model which can simulate picks from a weighted distribution of items.</p>
+				<p>This class can be used to</p>
+				<p><strong>Random Distribution Example: Card Deck:</strong></p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Distribution</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;acausal&#039;</span><span style="color: #000000">;</span>
+
+<span style="color: #008000">// Create a Deck of Cards</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">suits</span><span style="color: #000000"> = [</span><span style="color: #A31515">&#039;♣️&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;♦️&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;♥️&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;♠️&#039;</span><span style="color: #000000">];</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">ranks</span><span style="color: #000000"> = [</span><span style="color: #A31515">&#039;A&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;2&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;3&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;4&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;5&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;6&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;7&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;8&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;9&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;10&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;J&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;Q&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;K&#039;</span><span style="color: #000000">];</span>
+
+<span style="color: #008000">// Combine the Suits and Ranks</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">cards</span><span style="color: #000000"> = </span><span style="color: #001080">suits</span><span style="color: #000000">.</span><span style="color: #795E26">reduce</span><span style="color: #000000">((</span><span style="color: #001080">last</span><span style="color: #000000">, </span><span style="color: #001080">suit</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">  </span><span style="color: #AF00DB">return</span><span style="color: #000000"> [...</span><span style="color: #001080">last</span><span style="color: #000000">, ...</span><span style="color: #001080">ranks</span><span style="color: #000000">.</span><span style="color: #795E26">map</span><span style="color: #000000">(</span><span style="color: #001080">rank</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #A31515">`</span><span style="color: #0000FF">${</span><span style="color: #001080">rank</span><span style="color: #0000FF">}${</span><span style="color: #001080">suit</span><span style="color: #0000FF">}</span><span style="color: #A31515">`</span><span style="color: #000000">)];</span>
+<span style="color: #000000">}, []);</span>
+
+<span style="color: #008000">/* Should result in:</span>
+<span style="color: #008000">[</span>
+<span style="color: #008000">  &#039;A♣️&#039;,  &#039;2♣️&#039;,  &#039;3♣️&#039;,  &#039;4♣️&#039;, &#039;5♣️&#039;, &#039;6♣️&#039;, &#039;7♣️&#039;,</span>
+<span style="color: #008000">  &#039;8♣️&#039;,  &#039;9♣️&#039;,  &#039;10♣️&#039;, &#039;J♣️&#039;, &#039;Q♣️&#039;, &#039;K♣️&#039;, &#039;A♦️&#039;,</span>
+<span style="color: #008000">  &#039;2♦️&#039;,  &#039;3♦️&#039;,  &#039;4♦️&#039;,  &#039;5♦️&#039;, &#039;6♦️&#039;, &#039;7♦️&#039;, &#039;8♦️&#039;,</span>
+<span style="color: #008000">  &#039;9♦️&#039;,  &#039;10♦️&#039;, &#039;J♦️&#039;,  &#039;Q♦️&#039;, &#039;K♦️&#039;, &#039;A♥️&#039;, &#039;2♥️&#039;,</span>
+<span style="color: #008000">  &#039;3♥️&#039;,  &#039;4♥️&#039;,  &#039;5♥️&#039;,  &#039;6♥️&#039;, &#039;7♥️&#039;, &#039;8♥️&#039;, &#039;9♥️&#039;,</span>
+<span style="color: #008000">  &#039;10♥️&#039;, &#039;J♥️&#039;,  &#039;Q♥️&#039;,  &#039;K♥️&#039;, &#039;A♠️&#039;, &#039;2♠️&#039;, &#039;3♠️&#039;,</span>
+<span style="color: #008000">  &#039;4♠️&#039;,  &#039;5♠️&#039;,  &#039;6♠️&#039;,  &#039;7♠️&#039;, &#039;8♠️&#039;, &#039;9♠️&#039;, &#039;10♠️&#039;,</span>
+<span style="color: #008000">  &#039;J♠️&#039;,  &#039;Q♠️&#039;,  &#039;K♠️&#039;</span>
+<span style="color: #008000">]</span>
+<span style="color: #008000">*/</span>
+
+<span style="color: #008000">// Create weighted source data for the Distribution</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">src</span><span style="color: #000000"> = </span><span style="color: #001080">cards</span><span style="color: #000000">.</span><span style="color: #795E26">reduce</span><span style="color: #000000">((</span><span style="color: #001080">last</span><span style="color: #000000">, </span><span style="color: #001080">card</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> ({ ...</span><span style="color: #001080">last</span><span style="color: #000000">, </span><span style="color: #001080">[card]:</span><span style="color: #000000"> </span><span style="color: #098658">1</span><span style="color: #000000"> }), {});</span>
+
+<span style="color: #008000">// Add in 2 Jokers</span>
+<span style="color: #001080">src</span><span style="color: #000000">[</span><span style="color: #A31515">&#039;🃏&#039;</span><span style="color: #000000">] = </span><span style="color: #098658">2</span><span style="color: #000000">;</span>
+
+<span style="color: #008000">/* Should result in:</span>
+<span style="color: #008000">{</span>
+<span style="color: #008000">  &#039;A♣️&#039;: 1,</span>
+<span style="color: #008000">  &#039;2♣️&#039;: 1,</span>
+<span style="color: #008000">  &#039;3♣️&#039;: 1,</span>
+<span style="color: #008000">  ...</span>
+<span style="color: #008000">  &#039;J♠️&#039;: 1,</span>
+<span style="color: #008000">  &#039;Q♠️&#039;: 1,</span>
+<span style="color: #008000">  &#039;K♠️&#039;: 1,</span>
+<span style="color: #008000">  &#039;🃏&#039;: 2</span>
+<span style="color: #008000">}</span>
+<span style="color: #008000">*/</span>
+
+<span style="color: #008000">// Create the Distribution from the deck.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">deck</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Distribution</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">seed:</span><span style="color: #000000"> </span><span style="color: #098658">23</span><span style="color: #000000">,       </span><span style="color: #008000">// Random Seed - if this is empty it will be generated.</span>
+<span style="color: #000000">  </span><span style="color: #001080">source:</span><span style="color: #000000"> </span><span style="color: #001080">src</span><span style="color: #000000">,    </span><span style="color: #008000">// The weighted source to generate the normalized Distribution from.</span>
+<span style="color: #000000">});</span>
+
+<span style="color: #008000">// Generate 4 picks from the deck without replacement.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">picks</span><span style="color: #000000"> = </span><span style="color: #001080">deck</span><span style="color: #000000">.</span><span style="color: #795E26">pick</span><span style="color: #000000">(</span><span style="color: #098658">4</span><span style="color: #000000">, </span><span style="color: #0000FF">undefined</span><span style="color: #000000">, </span><span style="color: #0000FF">true</span><span style="color: #000000">);</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">picks</span><span style="color: #000000">);</span>
+
+<span style="color: #008000">/* Should print:</span>
+
+<span style="color: #008000">[ &#039;J♣️&#039;, &#039;10♠️&#039;, &#039;3♦️&#039;, &#039;9♣️&#039; ]</span>
+
+<span style="color: #008000">*/</span>
+</code></pre>
+				<a href="#markov-chains" id="markov-chains" style="color: inherit; text-decoration: none;">
+					<h2>Markov Chains</h2>
+				</a>
+				<p>A <strong>Markov Chain</strong> is a mathematical model of a system in which the future state of the system depends only on its present state.</p>
+				<p>Markov Chains are usually generated by building a statistical model off of sample data, such as a list of names, which can then be used to output sequences which resemble the sampled data. A useful property of this process is that sample data can be &quot;mixed&quot; together like paint to achieve a desired result.</p>
+				<p>For example, if you wanted to generate names which sounded like a mix of Irish and Japanese, you could generate a Markov Chain from a sample of Irish and Japanese names and the resulting model would be able to output names that mixed the two.</p>
+				<p><strong>Markov Chain Example: Name Generator:</strong></p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">MarkovChain</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;acausal&#039;</span><span style="color: #000000">;</span>
+
+<span style="color: #008000">// Sample Data</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">jpNames</span><span style="color: #000000"> = [</span><span style="color: #A31515">&#039;honoka&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;akari&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;himari&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;mei&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;ema&#039;</span><span style="color: #000000">];</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">ieNames</span><span style="color: #000000"> = [</span><span style="color: #A31515">&#039;grace&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;fiadh&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;emily&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;sophie&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;ava&#039;</span><span style="color: #000000">];</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">names</span><span style="color: #000000"> = [...</span><span style="color: #001080">jpNames</span><span style="color: #000000">, ...</span><span style="color: #001080">ieNames</span><span style="color: #000000">];</span>
+
+<span style="color: #008000">// Prepare Data Source - the class expects an array of arrays.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">src</span><span style="color: #000000"> = </span><span style="color: #001080">names</span><span style="color: #000000">.</span><span style="color: #795E26">map</span><span style="color: #000000">(</span><span style="color: #001080">name</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #001080">name</span><span style="color: #000000">.</span><span style="color: #795E26">split</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">));</span>
+
+<span style="color: #008000">/* Should result in:</span>
+<span style="color: #008000">[</span>
+<span style="color: #008000">  [ &#039;h&#039;, &#039;o&#039;, &#039;n&#039;, &#039;o&#039;, &#039;k&#039;, &#039;a&#039; ],</span>
+<span style="color: #008000">  [ &#039;a&#039;, &#039;k&#039;, &#039;a&#039;, &#039;r&#039;, &#039;i&#039; ],</span>
+<span style="color: #008000">  [ &#039;h&#039;, &#039;i&#039;, &#039;m&#039;, &#039;a&#039;, &#039;r&#039;, &#039;i&#039; ],</span>
+<span style="color: #008000">  [ &#039;m&#039;, &#039;e&#039;, &#039;i&#039; ],</span>
+<span style="color: #008000">  [ &#039;e&#039;, &#039;m&#039;, &#039;a&#039; ],</span>
+<span style="color: #008000">  [ &#039;g&#039;, &#039;r&#039;, &#039;a&#039;, &#039;c&#039;, &#039;e&#039; ],</span>
+<span style="color: #008000">  [ &#039;f&#039;, &#039;i&#039;, &#039;a&#039;, &#039;d&#039;, &#039;h&#039; ],</span>
+<span style="color: #008000">  [ &#039;e&#039;, &#039;m&#039;, &#039;i&#039;, &#039;l&#039;, &#039;y&#039; ],</span>
+<span style="color: #008000">  [ &#039;s&#039;, &#039;o&#039;, &#039;p&#039;, &#039;h&#039;, &#039;i&#039;, &#039;e&#039; ],</span>
+<span style="color: #008000">  [ &#039;a&#039;, &#039;v&#039;, &#039;a&#039; ]</span>
+<span style="color: #008000">]</span>
+<span style="color: #008000">*/</span>
+
+<span style="color: #008000">// Create the Markov Chain from the source data.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">chain</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">MarkovChain</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">seed:</span><span style="color: #000000"> </span><span style="color: #098658">33</span><span style="color: #000000">,       </span><span style="color: #008000">// Random Seed - if this is empty it will be generated.</span>
+<span style="color: #000000">  </span><span style="color: #001080">maxOrder:</span><span style="color: #000000"> </span><span style="color: #098658">2</span><span style="color: #000000">,    </span><span style="color: #008000">// Maximum Order - Chain will generate orders up to this value.</span>
+<span style="color: #000000">  </span><span style="color: #001080">sequences:</span><span style="color: #000000"> </span><span style="color: #001080">src</span><span style="color: #000000">, </span><span style="color: #008000">// Source data, expects an array of arrays.</span>
+<span style="color: #000000">});</span>
+
+<span style="color: #008000">// Generate 5 picks.</span>
+<span style="color: #AF00DB">for</span><span style="color: #000000"> (</span><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">i</span><span style="color: #000000"> = </span><span style="color: #098658">0</span><span style="color: #000000">; </span><span style="color: #001080">i</span><span style="color: #000000"> &lt; </span><span style="color: #098658">3</span><span style="color: #000000">; </span><span style="color: #001080">i</span><span style="color: #000000"> += </span><span style="color: #098658">1</span><span style="color: #000000">) {</span>
+<span style="color: #000000">  </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">pick</span><span style="color: #000000"> = </span><span style="color: #001080">chain</span><span style="color: #000000">.</span><span style="color: #795E26">generate</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #001080">min:</span><span style="color: #000000"> </span><span style="color: #098658">4</span><span style="color: #000000">,       </span><span style="color: #008000">// Min Picks - This will force the model to pick at least 4 times.</span>
+<span style="color: #000000">    </span><span style="color: #001080">max:</span><span style="color: #000000"> </span><span style="color: #098658">10</span><span style="color: #000000">,      </span><span style="color: #008000">// Max Picks - Stops generation after 10 picks if no end has been reached.</span>
+<span style="color: #000000">    </span><span style="color: #001080">order:</span><span style="color: #000000"> </span><span style="color: #098658">2</span><span style="color: #000000">,     </span><span style="color: #008000">// Order - The largest gram size used to calculate the next pick.</span>
+<span style="color: #000000">    </span><span style="color: #001080">strict:</span><span style="color: #000000"> </span><span style="color: #0000FF">false</span><span style="color: #000000"> </span><span style="color: #008000">// Strict Order - Dynamically adjusts order up or down each pick if false.</span>
+<span style="color: #000000">  });</span>
+<span style="color: #000000">  </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">pick</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">));</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #008000">/* Should print:</span>
+
+<span style="color: #008000">    sophimari</span>
+<span style="color: #008000">    emari</span>
+<span style="color: #008000">    hie</span>
+
+<span style="color: #008000">*/</span>
+</code></pre>
 				<a href="#api" id="api" style="color: inherit; text-decoration: none;">
 					<h2>API</h2>
 				</a>
-				<a href="#markov-chains" id="markov-chains" style="color: inherit; text-decoration: none;">
+				<a href="#markov-chains-1" id="markov-chains-1" style="color: inherit; text-decoration: none;">
 					<h3>Markov Chains</h3>
 				</a>
 				<a href="#" id="" style="color: inherit; text-decoration: none;">
 					<h4>....</h4>
 				</a>
-				<a href="#random-distributions" id="random-distributions" style="color: inherit; text-decoration: none;">
+				<a href="#random-distributions-1" id="random-distributions-1" style="color: inherit; text-decoration: none;">
 					<h3>Random Distributions</h3>
 				</a>
 				<a href="#-1" id="-1" style="color: inherit; text-decoration: none;">

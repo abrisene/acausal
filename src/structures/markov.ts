@@ -22,6 +22,8 @@ TODO:
 - Add methods for editing sequence(s) and grams.
 - Refactor sequences array into weighted dictionary to reduce duplication.
 - Expose ability to set weight when adding a sequence (dependent on above).
+- Add methods for start / end analysis.
+- Add methods for sequence dictionary reconstruction from GramDTOs.
 *****************/
 
 /**
@@ -31,7 +33,6 @@ TODO:
 import { Random, RandomDTO } from '../services';
 import { Distribution, DistributionSourceDTO } from './distribution';
 import { CONSTANTS } from '..';
-// import { WeightedDistribution } from '../types';
 
 /**
  # Types
@@ -606,12 +607,12 @@ export class MarkovChain {
 
   /**
    * Adds or inserts a list of Sequences into a Markov Chain DTO.
-   * @param model      A Markov Chain data transfer object.
-   * @param sequences  The sequences to be added.
-   * @param insert    Determines how sequences should be inserted. If false, delimiters will be
-   *                  prepended and appended to the sequences.
-   *                  "start" or setting true will only prepend the start delimiter, while
-   *                  "end" will append the end delimiter. "middle" will not add any delimiters.
+   * @param model       A Markov Chain data transfer object.
+   * @param sequences   The sequences to be added.
+   * @param insert      Determines how sequences should be inserted. If false, delimiters will be
+   *                    prepended and appended to the sequences.
+   *                    "start" or setting true will only prepend the start delimiter, while
+   *                    "end" will append the end delimiter. "middle" will not add any delimiters.
    */
   static addSequences(model: MarkovChainDTO, sequences: string[][], insert: MCInsertOption = false): MarkovChainDTO {
     // Clone the Markov Chain DTO.
@@ -797,7 +798,10 @@ export class MarkovChain {
         : MarkovChain.findGram(model, picks, curOrder, direction);
 
       // If we can't find a gram, then we need to break;
-      if (!gram) break;
+      if (gram === undefined) break;
+
+      // Set the current order to the Gram's order.
+      curOrder = gram.order;
 
       // Get the Gram sequence.
       const gramSequence = gram.id.split(model.delimiter);
@@ -828,11 +832,11 @@ export class MarkovChain {
 
   /**
    * Creates a new Markov Chain data transfer object.
-   * @param sequences An optional array of sequences to generate the grams from.
-   * @param maxOrder The maximum gram size of the markov chain.
-   * @param insert Determines how sequences should be inserted. If false, delimiters will be
-   * prepended and appended to the sequences. "start" or setting true will only prepend the start delimiter, while
-   * "end" will append the end delimiter. "middle" will not add any delimiters.
+   * @param sequences   An optional array of sequences to generate the grams from.
+   * @param maxOrder    The maximum gram size of the markov chain.
+   * @param insert      Determines how sequences should be inserted. If false, delimiters will be
+   *                    prepended and appended to the sequences. "start" or setting true will only prepend the start delimiter, while
+   *                    "end" will append the end delimiter. "middle" will not add any delimiters.
    * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
    */
   static new(
@@ -848,8 +852,8 @@ export class MarkovChain {
 
   /**
    * Create a deep copy of a Markov Chain DTO.
-   * @param model Markov DTO to clone.
-   * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
+   * @param model           Markov DTO to clone.
+   * @param stripSequences  If true this will strip out the sequences, removing the chain's source data.
    */
   static clone(model: MarkovChainDTO, stripSequences = false): MarkovChainDTO {
     const { sequences, grams, ...dtoData } = model;
