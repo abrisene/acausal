@@ -359,6 +359,9 @@ describe('Distribution', () => {
       const distUn = new Distribution({ seed: 75, normal: dtoU.normal });
       const distAn = new Distribution({ seed: 100, normal: dtoA.normal });
 
+      // Serialization
+      expect(distU.serialize()).toEqual(dtoU3);
+
       // Direct Clones
       const distUClone = distU.clone();
       expect(distUClone.source).toEqual(distU.source);

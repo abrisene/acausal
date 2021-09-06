@@ -1,44 +1,39 @@
 # Change Log
 
-<a name="1.1.1"></a>
-## [1.1.1](https://github.com/abrisene/scalr/compare/v1.1.0...v1.1.1) (2021-04-12)
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/abrisene/acausal/compare/v2.0.0...v1.0.7) (2021-09-05)
 
 
 ### Features
 
-* Updated unit tests to ensure full coverage.
-* Fixed bug with default options in normalization validation function.
-* Fixed issue with validation failure due to floating point comparison.
-* Updated documentation.
+* Full conversion to Typescript.
+* Rewrote Markov Chain class.
+* Rewrote "Transition Matrix" class, now named "Distribution".
+* Wrote "Random" class, which wraps `random-js`.
+* Rewrote Unit Tests.
+* Test Coverage at > 99%
+* Removed file loading utilities - these should be a separate module, or written ad hoc as needed with implementations.
+* Wrote new readme and quickstart guides for Markov Chains and Distributions.
+* Integration with Travis-CI and Coveralls.
 
-<a name="1.1.0"></a>
-## [1.1.0](https://github.com/abrisene/scalr/compare/v1.0.1...v1.1.0) (2021-04-12)
+<a name="1.0.7"></a>
+## [1.0.7](https://github.com/abrisene/acausal/compare/v1.0.7...v1.0.1) (2021-04-16)
 
 
 ### Features
 
-* Added functions for mathematical operations.
-* Added functions for statistical operations.
-* Added functions for validating normalized and scaled structures.
-* Added unit tests for new functions.
-* Added changelog.
-* Fixed minor typos in comments.
-* Updated type definitions.
-* Updated build scripts.
-* Updated readme.
-* Updated documentation.
+* Minor bugfixes.
+* Updated npm developer dependencies.
+* Added utilities for file loading.
+* Added Unit Tests.
+* Test Coverage at 83%.
 
 <a name="1.0.1"></a>
-## [1.0.1](https://github.com/abrisene/scalr/compare/v1.0.0...v1.0.1) (2021-04-05)
-
-<a name="1.0.0"></a>
-# [1.0.0]() (2021-04-06)
+# [1.0.0]() (2018-09-03)
 
 ### Features
 
-* Initial commit.
-* Added Normalization functions for objects and arrays.
-* Added Scaling functions for objects and arrays.
-* Added readme.
-* Added license.
-* Added support for Travis.
+* Initial Commit
+* Markov Chain class allows creation of Markov Chains.
+* Transition Matrix class allows creation of distributions used by Markov States.
+* Utilities for managing async and creating deep copies.

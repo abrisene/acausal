@@ -218,7 +218,7 @@ function addSequence(
       // if (grams[gramId] === undefined) addGram(grams, gramId, gramSeq.length);
 
       // Add the gram and the edges.
-      addEdge(grams, gramId, lastState, nextState, weight);
+      addEdge(grams, gramId, lastState, nextState, order, weight);
 
       // Break if we've hit the end.
       if (nextState === undefined) break;
@@ -234,6 +234,7 @@ function addSequence(
  * @param gramId  The id of the Gram to add.
  * @param lastId  The id of the last State in the sequence.
  * @param nextId  The id of the next State in the sequence.
+ * @param order   The order of the Gram we're adding.
  * @param weight  The weight to add to the edge.
  */
 function addEdge(
@@ -241,11 +242,12 @@ function addEdge(
   gramId: string,
   lastId: string | undefined,
   nextId: string | undefined,
+  order: number,
   weight: number
   // order: number,
 ) {
   // Add the gram to the dictionary if it doesn't exist.
-  const order = gramId.length > 1 ? Math.ceil(gramId.length / 2) : 1;
+  // const order = gramId.length > 1 ? Math.ceil(gramId.length / 2) : 1;
   if (grams[gramId] === undefined) addGram(grams, gramId, order);
 
   // Add the edges to the distributions.
@@ -365,6 +367,14 @@ export class MarkovChain {
     return this._model;
   }
 
+  get seed() {
+    return this._engine.seed;
+  }
+
+  get uses() {
+    return this._engine.uses;
+  }
+
   get maxOrder() {
     return this._model.maxOrder;
   }
@@ -459,9 +469,10 @@ export class MarkovChain {
    * @param gram    The id of a gram, or the gram sequence.
    * @param lastId  The id of the previous gram in the sequence.
    * @param nextId  The id of the next gram in the sequence.
+   * @param order   The order of the Gram we're adding.
    */
-  public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined) {
-    const data = MarkovChain.addEdge(this._model, gram, lastId, nextId);
+  public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined, order: number) {
+    const data = MarkovChain.addEdge(this._model, gram, lastId, nextId, order);
     return this.update(data);
   }
 
@@ -657,12 +668,14 @@ export class MarkovChain {
    * @param gram    The id of a gram, or the gram sequence.
    * @param lastId  The id of the previous gram in the sequence.
    * @param nextId  The id of the next gram in the sequence.
+   * @param order   The order of the Gram we're adding.
    */
   static addEdge(
     model: MarkovChainDTO,
     gram: string | string[],
     lastId: string | undefined,
-    nextId: string | undefined
+    nextId: string | undefined,
+    order: number
   ) {
     // Clone the Markov Chain DTO.
     const m = MarkovChain.clone(model);
@@ -672,7 +685,7 @@ export class MarkovChain {
     const id = Array.isArray(gram) ? getGramId(gram, m.delimiter[0]) : gram;
 
     // Add the edge.
-    addEdge(m.grams, id, lastId, nextId, weight);
+    addEdge(m.grams, id, lastId, nextId, order, weight);
 
     return m;
   }
@@ -709,7 +722,7 @@ export class MarkovChain {
    */
   static pick(model: MarkovChainDTO, gramSequence?: string[], next = true, mask?: string[], engine?: Random) {
     const eng = engine || new Random({});
-    const seq = gramSequence ? gramSequence : [model.startDelimiter];
+    const seq = gramSequence ? gramSequence : next ? [model.startDelimiter] : [model.endDelimiter];
     const gram = MarkovChain.getGram(model, seq);
     return MarkovChain.pickGram(gram, next, mask, eng);
   }
@@ -775,6 +788,7 @@ export class MarkovChain {
     let curOrder = start !== undefined ? start.length : 1;
 
     // Determine the offset for our picks.
+    // TODO: There's an issue with this which leads to too many picks.
     const pickOffset = trim ? 2 : 0;
     const minPicks = min + pickOffset;
     const maxPicks = max + pickOffset;

@@ -322,11 +322,11 @@ describe('Markov Chain', () => {
     });
     it('can add an edge to an existing markov chain', () => {
       let m1 = MarkovChain.clone(defaultGramDTO2);
-      m1 = MarkovChain.addEdge(m1, 'a', undefined, 'b');
-      m1 = MarkovChain.addEdge(m1, 'b', 'a', 'c');
-      m1 = MarkovChain.addEdge(m1, 'c', 'b', undefined);
-      m1 = MarkovChain.addEdge(m1, ['a', 'b'], undefined, 'c');
-      m1 = MarkovChain.addEdge(m1, ['b', 'c'], 'a', undefined);
+      m1 = MarkovChain.addEdge(m1, 'a', undefined, 'b', 1);
+      m1 = MarkovChain.addEdge(m1, 'b', 'a', 'c', 1);
+      m1 = MarkovChain.addEdge(m1, 'c', 'b', undefined, 1);
+      m1 = MarkovChain.addEdge(m1, ['a', 'b'], undefined, 'c', 2);
+      m1 = MarkovChain.addEdge(m1, ['b', 'c'], 'a', undefined, 2);
 
       // DTO and edge degrees match expected results.
       expect(m1).toEqual(dtoGU3IExpected);
@@ -337,10 +337,10 @@ describe('Markov Chain', () => {
       expect(m1.grams.c.degreeOut).toBe(0);
       expect(m1.grams.c.degreeIn).toBe(1);
 
-      let m2 = MarkovChain.addEdge(m1, 'x', undefined, 'b');
-      m2 = MarkovChain.addEdge(m2, 'b', 'x', undefined);
-      m2 = MarkovChain.addEdge(m2, 'b', undefined, 'a');
-      m2 = MarkovChain.addEdge(m2, 'b', undefined, 'a');
+      let m2 = MarkovChain.addEdge(m1, 'x', undefined, 'b', 1);
+      m2 = MarkovChain.addEdge(m2, 'b', 'x', undefined, 1);
+      m2 = MarkovChain.addEdge(m2, 'b', undefined, 'a', 1);
+      m2 = MarkovChain.addEdge(m2, 'b', undefined, 'a', 1);
       expect(m2.grams.b.degreeIn).toBe(2);
       expect(m2.grams.b.degreeOut).toBe(2);
     });
@@ -539,7 +539,7 @@ describe('Markov Chain', () => {
       const mClone = MarkovChain.clone(mOriginal);
       expect(mOriginal).toEqual(mClone);
 
-      MarkovChain.addEdge(mClone, 'b', 'a', 'c');
+      MarkovChain.addEdge(mClone, 'b', 'a', 'c', 1);
       expect(mOriginal).toEqual(mClone);
       MarkovChain.addSequence(mClone, gB2);
       expect(mOriginal).toEqual(mClone);
@@ -641,11 +641,11 @@ describe('Markov Chain', () => {
     });
     it('can add an edge to an existing markov chain', () => {
       const m1 = new MarkovChain({ maxOrder: 2 });
-      m1.addEdge('a', undefined, 'b');
-      m1.addEdge('b', 'a', 'c');
-      m1.addEdge('c', 'b', undefined);
-      m1.addEdge(['a', 'b'], undefined, 'c');
-      m1.addEdge(['b', 'c'], 'a', undefined);
+      m1.addEdge('a', undefined, 'b', 1);
+      m1.addEdge('b', 'a', 'c', 1);
+      m1.addEdge('c', 'b', undefined, 1);
+      m1.addEdge(['a', 'b'], undefined, 'c', 2);
+      m1.addEdge(['b', 'c'], 'a', undefined, 2);
 
       // DTO and edge degrees match expected results.
       expect(m1.serialize(true)).toEqual(dtoGU3IExpected);
@@ -656,9 +656,9 @@ describe('Markov Chain', () => {
       expect(m1.grams.c.degreeOut).toBe(0);
       expect(m1.grams.c.degreeIn).toBe(1);
 
-      m1.addEdge('b', 'x', undefined);
-      m1.addEdge('b', undefined, 'a');
-      m1.addEdge('b', undefined, 'a');
+      m1.addEdge('b', 'x', undefined, 1);
+      m1.addEdge('b', undefined, 'a', 1);
+      m1.addEdge('b', undefined, 'a', 1);
       expect(m1.grams.b.degreeIn).toBe(2);
       expect(m1.grams.b.degreeOut).toBe(2);
     });

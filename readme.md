@@ -1,17 +1,19 @@
-## acausal [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+# _acausal_ [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 [![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![Build Status](https://travis-ci.com/abrisene/acausal.svg?branch=main)](https://travis-ci.com/abrisene/acausal) [![Coverage Status](https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=feature/typescript)](https://coveralls.io/github/abrisene/acausal?branch=feature/typescript)
 
 **Note: This is a beta release. API stability and documentation completeness are not guaranteed.**
 
-*acausal* makes it easy to create, edit and generate pseudo random data from **Weighted Distributions** and **Markov Chains**.
+*acausal* is a Typescript module that makes it easy to create, edit and generate pseudo random data from **Weighted Random Distributions** and **Markov Chains**.
 
-Features:
-- **Immutable:** all classes include static functions which do not mutate state, ensuring that models retain their integrity, and making them easy to use with Redux.
+
+**Design Philosophy**
+- **Immutable:** all classes are built on top of pure functions which do not mutate state, ensuring that models retain their integrity, and making them easy to use with Redux.
 - **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store and rebuild regardless of whether it's on the client or the server.
-- **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models. All classes impement both Static and Instance methods, allowing developers to choose which method suits them best.
+- **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models.
 
 
+**Basic Examples:**
 ```typescript
 import { MarkovChain, Distribution, Random } from 'acausal';
 
@@ -46,31 +48,47 @@ console.log(mc.generate({ order: 1 }));
 
 // Random Numbers
 const rand = new Random({ seed: 1 });
+
 rand.integer(1, 6); // Roll 1d6
 
 // Results in: 6
 
 ```
 
+## Quick Links
+
+- [_acausal_ Home](https://abrisene.github.io/acausal/)
+- [Random Distribution Quickstart](https://abrisene.github.io/acausal/readme/distribution.md)
+- [Markov Chain Quickstart](https://abrisene.github.io/acausal/readme/markov.md)
+
 ## Installation
 
 Run:
 
-```
+```bash
 npm install -s acausal
 ```
 
-## Gocausal
+### Gocausal
 
-acausal is also implemented in Golang. You can find the module here:
+*acausal* is also implemented in Golang. You can find the module here:
 * [Gocausal](https://github.com/abrisene/gocausal)
 
 ## Random Distributions
 A **Random Distribution** is a simple model which can simulate picks from a weighted distribution of items.
 
-This class can be used to
+Distributions can be used to model random draws from a discrete collection of items, where each item has a different probability of appearing.
 
-**Random Distribution Example: Card Deck:**
+**Example Use Cases:**
+
+- Simulating drawing a hand from a standard deck of cards (see below).
+- Simulating the outcome of a game of roulette (or nearly any casino game).
+- Generating eye or hair color for a fictional person.
+- Generating the spectral class of fictional stars.
+- Modeling how many McDonalds meals you'd need to buy to win Monopoly.
+- Modeling any pseudo-random system through observation.
+
+**Distribution Quickstart Example - Card Deck:**
 ```typescript
 import { Distribution } from 'acausal';
 
@@ -99,9 +117,6 @@ const cards = suits.reduce((last, suit) => {
 // Create weighted source data for the Distribution
 const src = cards.reduce((last, card) => ({ ...last, [card]: 1 }), {});
 
-// Add in 2 Jokers
-src['🃏'] = 2;
-
 /* Should result in:
 {
   'A♣️': 1,
@@ -111,7 +126,6 @@ src['🃏'] = 2;
   'J♠️': 1,
   'Q♠️': 1,
   'K♠️': 1,
-  '🃏': 2
 }
 */
 
@@ -120,6 +134,9 @@ const deck = new Distribution({
   seed: 23,       // Random Seed - if this is empty it will be generated.
   source: src,    // The weighted source to generate the normalized Distribution from.
 });
+
+// Add in 2 Jokers
+deck.add('🃏', 2);
 
 // Generate 4 picks from the deck without replacement.
 const picks = deck.pick(4, undefined, true);
@@ -132,6 +149,9 @@ console.log(picks);
 */
 ```
 
+You can learn more about how to use Random Distributions with _acausal_ in the
+[Random Distribution Quickstart](https://abrisene.github.io/acausal/readme/distribution.md).
+
 ## Markov Chains
 
 A **Markov Chain** is a mathematical model of a system in which the future state of the system depends only on its present state.
@@ -140,7 +160,7 @@ Markov Chains are usually generated by building a statistical model off of sampl
 
 For example, if you wanted to generate names which sounded like a mix of Irish and Japanese, you could generate a Markov Chain from a sample of Irish and Japanese names and the resulting model would be able to output names that mixed the two.
 
-**Markov Chain Example: Name Generator:**
+**Markov Chain Quickstart Example - Name Generator:**
 ```typescript
 import { MarkovChain } from 'acausal';
 
@@ -194,20 +214,9 @@ for (let i = 0; i < 3; i += 1) {
 */
 ```
 
-## API
+You can learn more about how to use Markov Chains with _acausal_ in the  [Markov Chain Quickstart](https://abrisene.github.io/acausal/readme/markov.md).
 
-### Markov Chains
 
-#### ....
+## Extended API Documentation
 
-### Random Distributions
-
-#### ....
-
-### Random Numbers
-
-#### ....
-
-### Other Functions
-
-For documentation of underlying functions, please see the [docs](https://abrisene.github.io/acausal/modules.html).
+For documentation of underlying classes and functions, please see the [docs](https://abrisene.github.io/acausal/modules.html).

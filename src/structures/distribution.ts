@@ -199,11 +199,23 @@ export class Distribution {
   }
 
   /**
+   * Serializes a Distribution instance into a data transfer object.
+   * @param stripSource If true this will strip out the source.
+   */
+  public serialize(stripSource = false): DistributionDTO {
+    const { source, normal } = Distribution.clone({ source: this._source, normal: this._normal }, stripSource);
+    return {
+      source,
+      normal,
+    };
+  }
+
+  /**
    * Creates a clone of a Distribution instance.
    * @param stripSource If true this will strip out the source.
    */
   public clone(stripSource = false) {
-    const { source, normal } = Distribution.clone({ source: this._source, normal: this._normal }, stripSource);
+    const { source, normal } = this.serialize(stripSource);
     return new Distribution({
       seed: this.seed,
       uses: this.uses,

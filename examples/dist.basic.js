@@ -47,8 +47,6 @@ src['🃏'] = 2;
 }
 */
 
-console.log(src);
-
 // Create the Distribution from the deck.
 const deck = new Distribution({
   seed: 23,       // Random Seed - if this is empty it will be generated.
