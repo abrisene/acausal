@@ -7,8 +7,9 @@
 
 **Design Philosophy**
 - **Immutable:** all classes are built on top of pure functions which do not mutate state, ensuring that models retain their integrity, and making them easy to use with Redux.
-- **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store and rebuild regardless of whether it's on the client or the server.
+- **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store, transfer, and rebuild regardless of whether it's on the client or the server.
 - **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models.
+- **Minimal Dependencies**: _acausal_ only depends on [random-js](https://www.npmjs.com/package/random-js) and [scalr](https://www.npmjs.com/package/scalr), (which formerly was part of _acausal_, but separated out for the 2.0.0 release).
 
 
 **Basic Examples:**
@@ -216,4 +217,4 @@ You can learn more about how to use Markov Chains with _acausal_ in the [Markov 
 
 ## Extended API Documentation
 
-For documentation of underlying classes and functions, please see the [API documentation](https://github.com/abrisene/acausal/modules.html).
+For documentation of underlying classes and functions, please see the [API documentation](https://abrisene.github.io/acausal/modules.html).

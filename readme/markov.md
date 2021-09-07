@@ -424,6 +424,6 @@ const s1e = MarkovChain.generate({
 ```
 
 ## Extended Markov API Documentation
-For more documentation of underlying functions, please see the [Markov Chain class documentation](https://github.com/abrisene/acausal/modules/structures_markov.html).
+For more documentation of underlying functions, please see the [Markov Chain class documentation](https://abrisene.github.io/acausal/modules/structures_markov.html).
 
 ## Next: [Home](https://github.com/abrisene/acausal/#readme)

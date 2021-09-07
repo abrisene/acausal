@@ -299,6 +299,6 @@ const p5c = Distribution.pick(jarData, 5, undefined, true, rng);
 ```
 
 ### Extended Distribution API Documentation
-For documentation of underlying classes and functions, please see the [Distribution Class documentation](https://github.com/abrisene/acausal/modules/structures_distribution.html).
+For documentation of underlying classes and functions, please see the [Distribution Class documentation](https://abrisene.github.io/acausal/modules/structures_distribution.html).
 
 ## Next: [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
