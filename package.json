@@ -1,7 +1,7 @@
 {
   "name": "acausal",
   "version": "2.0.0",
-  "description": "Procedural generation toolset.",
+  "description": "Markov Chain and Random Distribution Toolset",
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
   "homepage": "https://github.com/abrisene/acausal#readme",
   "repository": {
@@ -19,7 +19,9 @@
     "random",
     "stochastic",
     "distribution",
-    "random distribution"
+    "random distribution",
+    "name generator",
+    "procedural generation"
   ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
