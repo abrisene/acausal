@@ -1,4 +1,12 @@
 ### Node ###
+# Compiled Distribution
+dist/
+lib/
+
+# Work in Progress
+wip/
+bak/
+
 # Logs
 logs
 *.log

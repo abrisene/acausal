@@ -1,37 +1,57 @@
 {
   "name": "acausal",
-  "version": "1.0.7",
+  "version": "2.0.0",
   "description": "Procedural generation toolset.",
-  "keywords": [
-    "procedural generation",
-    "markov chain",
-    "markov"
-  ],
-  "main": "./lib/index.js",
-  "scripts": {
-    "start": "NODE_ENV=production node ./lib",
-    "dev": "NODE_ENV=development nodemon ./lib",
-    "profile": "NODE_ENV=production node --prof ./lib",
-    "test": "jest"
-  },
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/abrisene/acausal/issues"
-  },
   "homepage": "https://github.com/abrisene/acausal#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/abrisene/acausal.git"
   },
-  "devDependencies": {
-    "eslint": "7.13.0",
-    "eslint-config-airbnb-base": "14.2.1",
-    "eslint-plugin-import": "2.22.1",
-    "jest": "26.6.3",
-    "nodemon": "2.0.6"
+  "bugs": {
+    "url": "https://github.com/abrisene/acausal/issues"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "markov",
+    "markov chain",
+    "markov-chain",
+    "random",
+    "stochastic",
+    "distribution",
+    "random distribution"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "/lib",
+    "/dist"
+  ],
+  "scripts": {
+    "test": "jest",
+    "coverage": "jest --coverage && cat ./coverage/lcov.info | coveralls",
+    "lint": "gts lint",
+    "docs": "npx typedoc",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "preversion": "npm test",
+    "postversion": "npm run docs && npm run coverage",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run lint"
   },
   "dependencies": {
-    "random-js": "2.1.0"
+    "random-js": "2.1.0",
+    "scalr": "1.1.2"
+  },
+  "devDependencies": {
+    "@types/jest": "26.0.22",
+    "@types/node": "14.14.37",
+    "coveralls": "3.1.0",
+    "gts": "3.1.0",
+    "jest": "26.6.3",
+    "ts-jest": "26.5.4",
+    "typescript": "4.0.3"
   }
 }
