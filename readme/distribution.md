@@ -1,11 +1,11 @@
-# acausal [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+# acausal
 
-[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![Build Status](https://travis-ci.com/abrisene/acausal.svg?branch=main)](https://travis-ci.com/abrisene/acausal) [![Coverage Status](https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=feature/typescript)](https://coveralls.io/github/abrisene/acausal?branch=feature/typescript)
+[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![Build Status](https://app.travis-ci.com/abrisene/acausal.svg?branch=master)](https://app.travis-ci.com/abrisene/acausal) [![stability-stable](https://img.shields.io/badge/stability-stable-green.svg)](https://github.com/emersion/stability-badges#stable) [![Coverage Status](https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=master)](https://coveralls.io/github/abrisene/acausal?branch=master)
 
 ## Random Distributions
 
-- [_acausal_ Home](https://abrisene.github.io/acausal/)
-- [Markov Chain Quickstart](https://abrisene.github.io/acausal/readme/markov.md)
+- [_acausal_ Home](https://github.com/abrisene/acausal/#readme)
+- [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
 
 A **Random Distribution** is a simple model which can simulate picks from a weighted distribution of items.
 
@@ -299,6 +299,6 @@ const p5c = Distribution.pick(jarData, 5, undefined, true, rng);
 ```
 
 ### Extended Distribution API Documentation
-For documentation of underlying classes and functions, please see the [Distribution Class documentation](https://abrisene.github.io/acausal/modules/structures_distribution.html).
+For documentation of underlying classes and functions, please see the [Distribution Class documentation](https://github.com/abrisene/acausal/modules/structures_distribution.html).
 
-## Next: [Markov Chain Quickstart](https://abrisene.github.io/acausal/readme/markov.md)
+## Next: [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)

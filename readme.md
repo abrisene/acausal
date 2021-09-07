@@ -1,8 +1,6 @@
-# _acausal_ [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+# acausal
 
-[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![Build Status](https://travis-ci.com/abrisene/acausal.svg?branch=main)](https://travis-ci.com/abrisene/acausal) [![Coverage Status](https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=feature/typescript)](https://coveralls.io/github/abrisene/acausal?branch=feature/typescript)
-
-**Note: This is a beta release. API stability and documentation completeness are not guaranteed.**
+[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![Build Status](https://app.travis-ci.com/abrisene/acausal.svg?branch=master)](https://app.travis-ci.com/abrisene/acausal) [![stability-stable](https://img.shields.io/badge/stability-stable-green.svg)](https://github.com/emersion/stability-badges#stable) [![Coverage Status](https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=master)](https://coveralls.io/github/abrisene/acausal?branch=master)
 
 *acausal* is a Typescript module that makes it easy to create, edit and generate pseudo random data from **Weighted Random Distributions** and **Markov Chains**.
 
@@ -57,9 +55,9 @@ rand.integer(1, 6); // Roll 1d6
 
 ## Quick Links
 
-- [_acausal_ Home](https://abrisene.github.io/acausal/)
-- [Random Distribution Quickstart](https://abrisene.github.io/acausal/readme/distribution.md)
-- [Markov Chain Quickstart](https://abrisene.github.io/acausal/readme/markov.md)
+- [_acausal_ Home](https://github.com/abrisene/acausal/#readme)
+- [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/readme/distribution.md#acausal-)
+- [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
 
 ## Installation
 
@@ -149,8 +147,7 @@ console.log(picks);
 */
 ```
 
-You can learn more about how to use Random Distributions with _acausal_ in the
-[Random Distribution Quickstart](https://abrisene.github.io/acausal/readme/distribution.md).
+You can learn more about how to use Random Distributions with _acausal_ in the [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/readme/distribution.md#acausal-).
 
 ## Markov Chains
 
@@ -214,9 +211,9 @@ for (let i = 0; i < 3; i += 1) {
 */
 ```
 
-You can learn more about how to use Markov Chains with _acausal_ in the  [Markov Chain Quickstart](https://abrisene.github.io/acausal/readme/markov.md).
+You can learn more about how to use Markov Chains with _acausal_ in the [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
 
 
 ## Extended API Documentation
 
-For documentation of underlying classes and functions, please see the [docs](https://abrisene.github.io/acausal/modules.html).
+For documentation of underlying classes and functions, please see the [API documentation](https://github.com/abrisene/acausal/modules.html).
