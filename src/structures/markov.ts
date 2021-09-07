@@ -788,10 +788,11 @@ export class MarkovChain {
     let curOrder = start !== undefined ? start.length : 1;
 
     // Determine the offset for our picks.
-    // TODO: There's an issue with this which leads to too many picks.
-    const pickOffset = trim ? 2 : 0;
-    const minPicks = min + pickOffset;
-    const maxPicks = max + pickOffset;
+    // Removed this because it wasn't necessary and causing a bug.
+    // TODO: Keep as a reminder and then remove if there aren't any long term issues.
+    // const pickOffset = trim ? 0 : 0;
+    // const minPicks = min + pickOffset;
+    // const maxPicks = max + pickOffset;
 
     // Determine the temporary mask to use while sequence is less than min.
     const tempMask = mask !== undefined ? [terminator, ...mask] : [terminator];
@@ -799,12 +800,12 @@ export class MarkovChain {
     // Utility function for finding the current sequence given order and direction.
 
     // MAKE THE PICKS
-    for (let i = 0; picks.length <= maxPicks; i += 1) {
+    for (let i = 0; picks.length <= max; i += 1) {
       // Increase the order if we're below the desired value.
       if (curOrder < maxOrder) curOrder += 1;
 
       // Determine which mask we should use.
-      const pickMask = picks.length < minPicks ? tempMask : mask;
+      const pickMask = picks.length < min ? tempMask : mask;
 
       // Find the gram
       const gram = strict

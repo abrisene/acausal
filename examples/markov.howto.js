@@ -1,5 +1,5 @@
 /*
- # examples/dist.howto.js
+ # examples/markov.howto.js
  # Distribution Howto Example
  */
 

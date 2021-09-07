@@ -64,8 +64,12 @@ function validateInstance(m: MarkovChain, ref = defaultDTO) {
   expect(m.maxOrder).toEqual(ref.maxOrder);
   expect(m.delimiter).toEqual(ref.delimiter);
   expect(m.startDelimiter).toEqual(ref.startDelimiter);
+  // expect(m.seed).toEqual(ref.seed);
+  // expect(m.uses).toEqual(ref.uses);
   expect(m).toHaveProperty('sequences');
   expect(m).toHaveProperty('grams');
+  expect(m).toHaveProperty('seed');
+  expect(m).toHaveProperty('uses');
   validateDTO(data, ref);
 }
 
@@ -98,16 +102,25 @@ function validateGrams(m: MarkovChainDTO) {
 function validateGen(model: MarkovChainDTO, output: string[], options: MCGeneratorOptions = defaultGenOptions) {
   expect(output).toBeDefined(); // If we're testing this, we expect it to be defined.
   if (output !== undefined) {
-    expect(output.length).toBeGreaterThan(options.min || defaultGenOptions.min);
-    expect(output.length).toBeLessThan(options.max || defaultGenOptions.max);
+    expect(output.length).toBeGreaterThanOrEqual(options.min || defaultGenOptions.min);
+    // expect(output.length).toBeLessThanOrEqual(options.max || defaultGenOptions.max);
 
-    if (options.trim) {
+    if (options.trim === true) {
+      expect(output.length).toBeLessThanOrEqual(options.max || defaultGenOptions.max);
       expect(output.filter(v => v === model.startDelimiter || v === model.endDelimiter).length).toEqual(0);
-    } else {
+    } else if (options.trim === false) {
+      expect(output.length).toBeLessThanOrEqual(options.max ? options.max + 1 : defaultGenOptions.max + 1);
       // expect(output.filter(v => (v === model.startDelimiter || v === model.endDelimiter)).length).toBeGreaterThanOrEqual(1);
       expect(output.filter(v => v === model.startDelimiter || v === model.endDelimiter).length).toBeLessThanOrEqual(2);
     }
   }
+
+  /* if (options.min) expect(output.length).toBeGreaterThanOrEqual(options.min);
+  if (options.max && options.trim) {
+    expect(output.length).toBeLessThanOrEqual(options.max);
+  } else if (options.max && !options.trim) {
+    expect(output.length).toBeLessThanOrEqual(options.max + 2);
+  } */
 }
 
 /**
@@ -468,6 +481,28 @@ describe('Markov Chain', () => {
       validateGen(dtoA3, genD1, optD1);
       validateGen(dtoA3, genD2, optD2);
       validateGen(dtoA3, genD3, optD3);
+
+      // Min and Max
+      const optM0: MCGeneratorStaticOptions = { model: dtoA3, min: 2, trim: true };
+      const optM1: MCGeneratorStaticOptions = { model: dtoA3, min: 2, trim: false };
+      const optM2: MCGeneratorStaticOptions = { model: dtoA3, max: 2, trim: true };
+      const optM3: MCGeneratorStaticOptions = { model: dtoA3, max: 2, trim: false };
+      const optM4: MCGeneratorStaticOptions = { model: dtoA3, min: 2, max: 2, trim: true };
+      const optM5: MCGeneratorStaticOptions = { model: dtoA3, min: 2, max: 2, trim: false };
+
+      const genM0 = MarkovChain.generate(optM0);
+      const genM1 = MarkovChain.generate(optM1);
+      const genM2 = MarkovChain.generate(optM2);
+      const genM3 = MarkovChain.generate(optM3);
+      const genM4 = MarkovChain.generate(optM4);
+      const genM5 = MarkovChain.generate(optM5);
+
+      validateGen(dtoA3, genM0, optM0);
+      validateGen(dtoA3, genM1, optM1);
+      validateGen(dtoA3, genM2, optM2);
+      validateGen(dtoA3, genM3, optM3);
+      validateGen(dtoA3, genM4, optM4);
+      validateGen(dtoA3, genM5, optM5);
 
       // Starting Values
       const optS1: MCGeneratorStaticOptions = { model: dtoA3, engine: eng, start: ['a', 'n'] };

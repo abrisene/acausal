@@ -1,6 +1,6 @@
 /*
- # examples/basic.ts
- # Basic Example
+ # examples/mc.basic.ts
+ # Markov Chain Basic Example
  */
 
 //  import { MarkovChain } from '..';
