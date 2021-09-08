@@ -1,5 +1,5 @@
 sudo: false
 language: node_js
 node_js:
-  - "stable"
+  - 16.8
 after_success: npm run coverage

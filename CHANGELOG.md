@@ -1,5 +1,11 @@
 # Change Log
 
+<a name="2.0.1"></a>
+## [2.0.1](https://github.com/abrisene/acausal/compare/v2.0.1...v2.0.0) (2021-09-08)
+* Added "Analyze" function to Markov Chains.
+* Fixed a minor bug which caused the passed "start" sequence to be mutated during Markov generation in some circumstances.
+* Temporary changes to CI version to avoid [node 16.8 issues](https://github.com/nodejs/node/issues/40030).
+
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/abrisene/acausal/compare/v2.0.0...v1.0.7) (2021-09-05)
 
