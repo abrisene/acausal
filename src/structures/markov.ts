@@ -30,6 +30,7 @@ TODO:
  # Module Dependencies
  */
 
+import { normalizeObject } from 'scalr';
 import { Random, RandomDTO } from '../services';
 import { Distribution, DistributionSourceDTO } from './distribution';
 import { CONSTANTS } from '..';
@@ -99,6 +100,19 @@ export interface MCGeneratorStaticOptions extends MCGeneratorOptions {
   engine?: Random;
 }
 
+export interface MCAnalyzeOptions extends MCGeneratorOptions {
+  samples?: number;
+  normalize?: boolean;
+}
+
+export interface MCAnalyzeStaticOptions extends MCAnalyzeOptions, MCGeneratorStaticOptions {}
+
+export interface MCAnalysis {
+  sequence: string[];
+  sources: { [key: string]: number };
+  sinks: { [key: string]: number };
+}
+
 /**
  # Constants
  */
@@ -122,6 +136,12 @@ const defaultGenOptions = {
   direction: 'next' as MCDirectionOption,
   strict: true,
   trim: true,
+};
+
+const defaultAnalyzeOptions = {
+  ...defaultGenOptions,
+  samples: 1000,
+  normalize: true,
 };
 
 /**
@@ -542,6 +562,42 @@ export class MarkovChain {
   }
 
   /**
+   * Analyze's a sequences sources and sinks. Generates a number of samples from a given gram sequence, and gives the resulting
+   * distribution of where the generated sequences terminated both backwards (sources) and forwards (sinks).
+   * @param start       The sequence to start with. If this is not defined, the sequence will start from the beginning or end (as appropriate to the direction).
+   * @param order       The desired order (gram length) for the picks. Higher values will reduce randomness. If this is not defined it will default to the model's max order.
+   * @param samples     The desired number of samples to collect.
+   * @param min         The minimum length of the sequence. This will not prevent early termination if suitable grams or states cannot be found.
+   * @param max         The maximum length of the sequence.
+   * @param mask        A mask containing keys in the chain that should be ignored.
+   * @param strict      If true, order will not be dynamically adjusted to find suitable grams.
+   *                    Order will still be adjusted if the starting sequence provided is less than the max order to get up to the preferred order.
+   */
+  public analyze({
+    start,
+    order,
+    samples = defaultAnalyzeOptions.samples,
+    normalize = true,
+    min = defaultAnalyzeOptions.min,
+    max = defaultAnalyzeOptions.max,
+    mask,
+    strict = defaultAnalyzeOptions.strict,
+  }: MCAnalyzeOptions) {
+    return MarkovChain.analyze({
+      model: this.dto,
+      start,
+      order,
+      samples,
+      normalize,
+      min,
+      max,
+      mask,
+      strict,
+      engine: this._engine,
+    });
+  }
+
+  /**
    * Serializes a Markov Chain instance into a DTO.
    * @param stripSequences If true this will strip out the sequences, removing the chain's source data.
    */
@@ -701,14 +757,8 @@ export class MarkovChain {
    * @param engine  A Random engine.
    */
   static pickGram(gram: Gram, next = true, mask?: string[], engine?: Random) {
-    let result;
-    if (gram !== undefined) {
-      const distribution = next ? gram.next : gram.last;
-      if (distribution !== undefined) {
-        result = Distribution.pickOne(distribution, mask, engine);
-      }
-    }
-    return result;
+    const distribution = next ? gram.next : gram.last;
+    return Distribution.pickOne(distribution, mask, engine);
   }
 
   /**
@@ -780,7 +830,7 @@ export class MarkovChain {
     // SETUP
     // Set the starting sequence and the terminating character.
     const dirForward = direction === 'next';
-    const picks = start || (dirForward ? [model.startDelimiter] : [model.endDelimiter]);
+    const picks = start !== undefined ? [...start] : dirForward ? [model.startDelimiter] : [model.endDelimiter];
     const terminator = dirForward ? model.endDelimiter : model.startDelimiter;
 
     // Determine the order
@@ -843,6 +893,79 @@ export class MarkovChain {
 
     // FORMAT THE RESULT
     return trim ? picks.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v)) : picks;
+  }
+
+  /**
+   * Analyze's a sequences sources and sinks. Generates a number of samples from a given gram sequence, and gives the resulting
+   * distribution of where the generated sequences terminated both backwards (sources) and forwards (sinks).
+   * @param model       A Markov Chain data transfer object.
+   * @param start       The sequence to start with. If this is not defined, the sequence will start from the beginning or end (as appropriate to the direction).
+   * @param order       The desired order (gram length) for the picks. Higher values will reduce randomness. If this is not defined it will default to the model's max order.
+   * @param samples     The desired number of samples to collect.
+   * @param min         The minimum length of the sequence. This will not prevent early termination if suitable grams or states cannot be found.
+   * @param max         The maximum length of the sequence.
+   * @param mask        A mask containing keys in the chain that should be ignored.
+   * @param strict      If true, order will not be dynamically adjusted to find suitable grams.
+   *                    Order will still be adjusted if the starting sequence provided is less than the max order to get up to the preferred order.
+   * @param engine      A Random engine. If one is not provided, a new one will be created for the generation.
+   */
+  static analyze({
+    model,
+    start,
+    order,
+    samples = defaultAnalyzeOptions.samples,
+    normalize = true,
+    min = defaultAnalyzeOptions.min,
+    max = defaultAnalyzeOptions.max,
+    mask,
+    strict = defaultAnalyzeOptions.strict,
+    engine,
+  }: MCAnalyzeStaticOptions) {
+    // Get the starting sequence.
+    const s = start || [model.startDelimiter];
+    const results: MCAnalysis = { sequence: s, sources: {}, sinks: {} };
+
+    // Sample the sequences.
+    for (let i = 0; i < samples; i += 1) {
+      const sink = MarkovChain.generate({
+        model,
+        start: s,
+        order,
+        min,
+        max,
+        direction: 'next',
+        mask,
+        strict,
+        trim: true,
+        engine,
+      });
+
+      const source = MarkovChain.generate({
+        model,
+        start: s,
+        order,
+        min,
+        max,
+        direction: 'last',
+        mask,
+        strict,
+        trim: true,
+        engine,
+      });
+
+      const sinkState = sink[sink.length - 1];
+      const sourceState = source[0];
+
+      if (sink !== undefined && results.sinks[sinkState] === undefined) results.sinks[sinkState] = 0;
+      if (source !== undefined && results.sources[sourceState] === undefined) results.sources[sourceState] = 0;
+
+      results.sinks[sinkState] += 1;
+      results.sources[sourceState] += 1;
+    }
+
+    return normalize
+      ? { sequence: s, sources: normalizeObject(results.sources), sinks: normalizeObject(results.sinks) }
+      : results;
   }
 
   /**

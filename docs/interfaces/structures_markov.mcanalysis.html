@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>MarkovChainOptions | acausal - v2.0.1</title>
+	<title>MCAnalysis | acausal - v2.0.1</title>
 	<meta name="description" content="Documentation for acausal - v2.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -58,10 +58,10 @@
 					<a href="../modules/structures_markov.html">structures/markov</a>
 				</li>
 				<li>
-					<a href="structures_markov.markovchainoptions.html">MarkovChainOptions</a>
+					<a href="structures_markov.mcanalysis.html">MCAnalysis</a>
 				</li>
 			</ul>
-			<h1>Interface MarkovChainOptions</h1>
+			<h1>Interface MCAnalysis</h1>
 		</div>
 	</div>
 </header>
@@ -72,20 +72,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="services_random.randomdto.html" class="tsd-signature-type" data-tsd-kind="Interface">RandomDTO</a>
-						<ul class="tsd-hierarchy">
-							<li>
-								<span class="target">MarkovChainOptions</span>
-								<ul class="tsd-hierarchy">
-									<li>
-										<a href="structures_markov.markovchainsequencedto.html" class="tsd-signature-type" data-tsd-kind="Interface">MarkovChainSequenceDTO</a>
-									</li>
-									<li>
-										<a href="structures_markov.markovchaingramdto.html" class="tsd-signature-type" data-tsd-kind="Interface">MarkovChainGramDTO</a>
-									</li>
-								</ul>
-							</li>
-						</ul>
+						<span class="target">MCAnalysis</span>
 					</li>
 				</ul>
 			</section>
@@ -96,12 +83,9 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="structures_markov.markovchainoptions.html#delimiter" class="tsd-kind-icon">delimiter</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="structures_markov.markovchainoptions.html#enddelimiter" class="tsd-kind-icon">end<wbr>Delimiter</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="structures_markov.markovchainoptions.html#maxorder" class="tsd-kind-icon">max<wbr>Order</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="structures_markov.markovchainoptions.html#seed" class="tsd-kind-icon">seed</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="structures_markov.markovchainoptions.html#startdelimiter" class="tsd-kind-icon">start<wbr>Delimiter</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="structures_markov.markovchainoptions.html#uses" class="tsd-kind-icon">uses</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="structures_markov.mcanalysis.html#sequence" class="tsd-kind-icon">sequence</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="structures_markov.mcanalysis.html#sinks" class="tsd-kind-icon">sinks</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="structures_markov.mcanalysis.html#sources" class="tsd-kind-icon">sources</a></li>
 							</ul>
 						</section>
 					</div>
@@ -110,66 +94,50 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="delimiter" class="tsd-anchor"></a>
-					<h3>delimiter</h3>
-					<div class="tsd-signature tsd-kind-icon">delimiter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="sequence" class="tsd-anchor"></a>
+					<h3>sequence</h3>
+					<div class="tsd-signature tsd-kind-icon">sequence<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/structures/markov.ts#L49">structures/markov.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/structures/markov.ts#L111">structures/markov.ts:111</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="enddelimiter" class="tsd-anchor"></a>
-					<h3>end<wbr>Delimiter</h3>
-					<div class="tsd-signature tsd-kind-icon">end<wbr>Delimiter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<a name="sinks" class="tsd-anchor"></a>
+					<h3>sinks</h3>
+					<div class="tsd-signature tsd-kind-icon">sinks<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/structures/markov.ts#L51">structures/markov.ts:51</a></li>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/structures/markov.ts#L113">structures/markov.ts:113</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">number</span></h5>
+							</li>
+						</ul>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="maxorder" class="tsd-anchor"></a>
-					<h3>max<wbr>Order</h3>
-					<div class="tsd-signature tsd-kind-icon">max<wbr>Order<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="sources" class="tsd-anchor"></a>
+					<h3>sources</h3>
+					<div class="tsd-signature tsd-kind-icon">sources<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/structures/markov.ts#L48">structures/markov.ts:48</a></li>
+							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/structures/markov.ts#L112">structures/markov.ts:112</a></li>
 						</ul>
 					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="seed" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> seed</h3>
-					<div class="tsd-signature tsd-kind-icon">seed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="services_random.randomdto.html">RandomDTO</a>.<a href="services_random.randomdto.html#seed">seed</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/services/random.ts#L19">services/random.ts:19</a></li>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-index-signature">
+								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">number</span></h5>
+							</li>
 						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="startdelimiter" class="tsd-anchor"></a>
-					<h3>start<wbr>Delimiter</h3>
-					<div class="tsd-signature tsd-kind-icon">start<wbr>Delimiter<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/structures/markov.ts#L50">structures/markov.ts:50</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-					<a name="uses" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> uses</h3>
-					<div class="tsd-signature tsd-kind-icon">uses<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="services_random.randomdto.html">RandomDTO</a>.<a href="services_random.randomdto.html#uses">uses</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/abrisene/acausal/blob/438d16a/src/services/random.ts#L20">services/random.ts:20</a></li>
-						</ul>
-					</aside>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -201,9 +169,24 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="structures_markov.gram.html" class="tsd-kind-icon">Gram</a>
 					</li>
-					<li class=" tsd-kind-interface tsd-parent-kind-module">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-interface tsd-parent-kind-module">
 						<a href="structures_markov.mcanalysis.html" class="tsd-kind-icon">MCAnalysis</a>
+						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="structures_markov.mcanalysis.html#sequence" class="tsd-kind-icon">sequence</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="structures_markov.mcanalysis.html#sinks" class="tsd-kind-icon">sinks</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="structures_markov.mcanalysis.html#sources" class="tsd-kind-icon">sources</a>
+							</li>
+						</ul>
 					</li>
+				</ul>
+				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="structures_markov.mcanalyzeoptions.html" class="tsd-kind-icon">MCAnalyze<wbr>Options</a>
 					</li>
@@ -222,33 +205,9 @@
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="structures_markov.markovchaingramdto.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>GramDTO</a>
 					</li>
-				</ul>
-				<ul class="current">
-					<li class="current tsd-kind-interface tsd-parent-kind-module">
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="structures_markov.markovchainoptions.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>Options</a>
-						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="structures_markov.markovchainoptions.html#delimiter" class="tsd-kind-icon">delimiter</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="structures_markov.markovchainoptions.html#enddelimiter" class="tsd-kind-icon">end<wbr>Delimiter</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="structures_markov.markovchainoptions.html#maxorder" class="tsd-kind-icon">max<wbr>Order</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="structures_markov.markovchainoptions.html#seed" class="tsd-kind-icon">seed</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="structures_markov.markovchainoptions.html#startdelimiter" class="tsd-kind-icon">start<wbr>Delimiter</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-								<a href="structures_markov.markovchainoptions.html#uses" class="tsd-kind-icon">uses</a>
-							</li>
-						</ul>
 					</li>
-				</ul>
-				<ul class="after-current">
 					<li class=" tsd-kind-interface tsd-parent-kind-module">
 						<a href="structures_markov.markovchainsequencedto.html" class="tsd-kind-icon">Markov<wbr>Chain<wbr>SequenceDTO</a>
 					</li>

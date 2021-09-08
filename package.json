@@ -1,6 +1,6 @@
 {
   "name": "acausal",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Markov Chain and Random Distribution Toolset",
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
   "homepage": "https://github.com/abrisene/acausal#readme",
