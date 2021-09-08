@@ -569,6 +569,42 @@ describe('Markov Chain', () => {
       expect(genF0).toEqual(optF0.start);
       expect(genF1).toEqual([]);
     });
+    it('can analyze the sources and sinks of a sequence', () => {
+      const eng = engine.clone();
+
+      // Default
+      const a1 = MarkovChain.analyze({ model: dtoC2, engine: eng });
+      expect(a1).toHaveProperty('sequence');
+      expect(a1).toHaveProperty('sources');
+      expect(a1).toHaveProperty('sinks');
+      expect(a1.sequence).toEqual([dtoC2.startDelimiter]);
+      expect(a1.sources).toEqual({ undefined: 1 });
+      Object.values(a1.sinks).forEach(v => {
+        expect(v).toBeCloseTo(0.5, 1);
+      });
+
+      // Samples & Un-Normalized
+      const a2 = MarkovChain.analyze({ model: dtoC2, engine: eng, samples: 500, normalize: false });
+      expect(a2.sequence).toEqual([dtoC2.startDelimiter]);
+      expect(a2.sources).toEqual({ undefined: 500 });
+      expect(Object.values(a2.sinks).reduce((a, b) => a + b)).toEqual(500);
+
+      // Starting Values
+      const a3 = MarkovChain.analyze({ model: dtoC2, engine: eng, start: ['+'] });
+      expect(a3.sequence).toEqual(['+']);
+      Object.values(a3.sources).forEach(v => {
+        expect(v).toBeCloseTo(0.5, 1);
+      });
+      Object.values(a3.sinks).forEach(v => {
+        expect(v).toBeCloseTo(0.5, 1);
+      });
+
+      // These are covered in Generation since they're just passed through.
+      const a4 = MarkovChain.analyze({ model: dtoC2, engine: eng, min: 1, max: 1, order: 2, strict: true });
+      expect(a4).toHaveProperty('sequence');
+      expect(a4).toHaveProperty('sources');
+      expect(a4).toHaveProperty('sinks');
+    });
     it('are immutable', () => {
       const mOriginal = MarkovChain.clone(dtoA3);
       const mClone = MarkovChain.clone(mOriginal);
@@ -756,9 +792,11 @@ describe('Markov Chain', () => {
         expect([gC1[2], gC2[2]]).toContain(pickNext2);
 
         // Last
+        const pickDLast = mB1.pick(undefined, false);
         const pickSLast = mB1.pick([gB1[1]], false);
         const pickLast = mB1.last([gB1[1]]);
         const pickLast2 = mC2.last(['+']);
+        expect(pickDLast).toEqual(gB1[2]);
         expect(pickSLast).toEqual(gB1[0]);
         expect(pickLast).toEqual(pickSLast);
         expect([gC1[0], gC2[0]]).toContain(pickLast2);
@@ -838,6 +876,42 @@ describe('Markov Chain', () => {
 
       expect(genF0).toEqual(optF0.start);
       expect(genF1).toEqual([]);
+    });
+    it('can analyze the sources and sinks of a sequence', () => {
+      const mc = new MarkovChain({ ...dtoC2, seed: engine.seed });
+
+      // Default
+      const a1 = mc.analyze({});
+      expect(a1).toHaveProperty('sequence');
+      expect(a1).toHaveProperty('sources');
+      expect(a1).toHaveProperty('sinks');
+      expect(a1.sequence).toEqual([mc.startDelimiter]);
+      expect(a1.sources).toEqual({ undefined: 1 });
+      Object.values(a1.sinks).forEach(v => {
+        expect(v).toBeCloseTo(0.5, 1);
+      });
+
+      // Samples & Un-Normalized
+      const a2 = mc.analyze({ samples: 500, normalize: false });
+      expect(a2.sequence).toEqual([dtoC2.startDelimiter]);
+      expect(a2.sources).toEqual({ undefined: 500 });
+      expect(Object.values(a2.sinks).reduce((a, b) => a + b)).toEqual(500);
+
+      // Starting Values
+      const a3 = mc.analyze({ start: ['+'] });
+      expect(a3.sequence).toEqual(['+']);
+      Object.values(a3.sources).forEach(v => {
+        expect(v).toBeCloseTo(0.5, 1);
+      });
+      Object.values(a3.sinks).forEach(v => {
+        expect(v).toBeCloseTo(0.5, 1);
+      });
+
+      // These are covered in Generation since they're just passed through.
+      const a4 = mc.analyze({ min: 1, max: 1, order: 2, strict: true });
+      expect(a4).toHaveProperty('sequence');
+      expect(a4).toHaveProperty('sources');
+      expect(a4).toHaveProperty('sinks');
     });
   });
 });
