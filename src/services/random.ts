@@ -1,6 +1,6 @@
 /*
- # normalize.ts
- # Normalization Utilities
+ # random.ts
+ # Random Number Generator Service
  */
 
 /**
