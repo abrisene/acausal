@@ -731,11 +731,11 @@ export class MarkovChain {
     gram: string | string[],
     lastId: string | undefined,
     nextId: string | undefined,
-    order: number
+    order: number,
+    weight = 1
   ) {
     // Clone the Markov Chain DTO.
     const m = MarkovChain.clone(model);
-    const weight = 1;
 
     // Check to see if we need to calculate the id.
     const id = Array.isArray(gram) ? getGramId(gram, m.delimiter[0]) : gram;
