@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "random-js": "2.1.0",
-    "scalr": "1.1.2"
+    "scalr": "1.1.4"
   },
   "devDependencies": {
     "@types/jest": "26.0.22",
