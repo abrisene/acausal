@@ -631,6 +631,25 @@ export class MarkovChain {
   }
 
   /**
+   * Start a batch operation for efficient incremental updates.
+   * All operations are queued and applied in a single clone operation.
+   *
+   * @example
+   * ```ts
+   * const chain = new MarkovChain({ seed: 1 });
+   * const updated = chain.batch()
+   *   .addSequence(['a', 'b', 'c'])
+   *   .addSequence(['d', 'e', 'f'])
+   *   .addEdge(['a', 'b'], 'x', 'y', 2)
+   *   .commit();
+   * ```
+   */
+  public batch(): MarkovChainBatch {
+    // Import is handled at top of file to avoid issues
+    return new MarkovChainBatch(this);
+  }
+
+  /**
    * Returns the id of a Gram from its sequence.
    * @param model          A Markov Chain data transfer object.
    * @param gramSequence  An array containing the Gram sequence.
@@ -1025,17 +1044,23 @@ export class MarkovChain {
   static clone(model: MarkovChainDTO, stripSequences = false): MarkovChainDTO {
     const { sequences, grams, ...dtoData } = model;
 
-    const sequencesClone = sequences !== undefined && !stripSequences ? sequences.map(s => [...s]) : undefined;
-    const gramsClone = Object.keys(grams).reduce((l, k) => {
-      const gram = grams[k];
-      if (!gram) return l;
-      const gramClone = {
+    // Optimized: Use slice() instead of spread operator for arrays
+    const sequencesClone = sequences !== undefined && !stripSequences
+      ? sequences.map(s => s.slice())
+      : undefined;
+
+    // Optimized: Pre-allocate object and mutate instead of spreading accumulator
+    const gramsClone: GramDictionary = {};
+    for (const key in grams) {
+      const gram = grams[key];
+      if (!gram) continue;
+
+      gramsClone[key] = {
         ...gram,
         last: { ...gram.last },
         next: { ...gram.next },
       };
-      return { ...l, [k]: gramClone };
-    }, {});
+    }
 
     return sequencesClone !== undefined
       ? ({
@@ -1044,5 +1069,125 @@ export class MarkovChain {
           grams: gramsClone,
         } as MarkovChainDTO)
       : ({ ...dtoData, grams: gramsClone } as MarkovChainDTO);
+  }
+}
+
+/**
+ # Batch Operations
+ */
+
+type BatchOperation = (model: MarkovChainDTO) => void;
+
+/**
+ * Batch builder for efficient bulk operations on Markov Chains.
+ * All operations are queued and applied in a single clone operation.
+ *
+ * @example
+ * ```ts
+ * const chain = new MarkovChain({ seed: 1 });
+ * const updated = chain.batch()
+ *   .addSequence(['a', 'b', 'c'])
+ *   .addSequence(['d', 'e', 'f'])
+ *   .addEdge(['a', 'b'], 'x', 'y', 2)
+ *   .commit();
+ * ```
+ */
+export class MarkovChainBatch {
+  private _operations: BatchOperation[] = [];
+  private _chain: MarkovChain;
+
+  constructor(chain: MarkovChain) {
+    this._chain = chain;
+  }
+
+  /**
+   * Add a single sequence to the chain.
+   * @param sequence  The sequence to be added.
+   * @param insert    Determines how sequences should be inserted.
+   */
+  public addSequence(sequence: string[], insert: MCInsertOption = false): this {
+    this._operations.push((model) => {
+      // Use the static method's internal logic
+      const updated = MarkovChain.addSequence(model, sequence, insert);
+      // Copy the updated grams and sequences back to the model
+      model.grams = updated.grams;
+      if (model.sequences !== undefined && updated.sequences !== undefined) {
+        model.sequences = updated.sequences;
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Add multiple sequences to the chain.
+   * @param sequences  The sequences to be added.
+   * @param insert     Determines how sequences should be inserted.
+   */
+  public addSequences(sequences: string[][], insert: MCInsertOption = false): this {
+    sequences.forEach(seq => this.addSequence(seq, insert));
+    return this;
+  }
+
+  /**
+   * Add an edge between states in the chain.
+   * @param gram    The id of a gram, or the gram sequence.
+   * @param lastId  The id of the previous gram in the sequence.
+   * @param nextId  The id of the next gram in the sequence.
+   * @param order   The order of the Gram we're adding.
+   * @param weight  The weight to add to the edge (default 1).
+   */
+  public addEdge(
+    gram: string | string[],
+    lastId: string | undefined,
+    nextId: string | undefined,
+    order: number,
+    weight = 1
+  ): this {
+    this._operations.push((model) => {
+      const updated = MarkovChain.addEdge(model, gram, lastId, nextId, order, weight);
+      model.grams = updated.grams;
+    });
+    return this;
+  }
+
+  /**
+   * Commit all queued operations and return a new MarkovChain instance.
+   * This performs a single clone operation for all queued changes.
+   */
+  public commit(): MarkovChain {
+    // If no operations, just return a clone
+    if (this._operations.length === 0) {
+      return this._chain.clone();
+    }
+
+    // Clone the model once
+    const cloned = MarkovChain.clone(this._chain.model);
+
+    // Apply all operations to the cloned model
+    for (const operation of this._operations) {
+      operation(cloned);
+    }
+
+    // Create and return a new MarkovChain instance
+    return new MarkovChain({
+      ...cloned,
+      seed: this._chain.seed,
+      uses: this._chain.uses,
+    });
+  }
+
+  /**
+   * Get the number of pending operations.
+   */
+  public get pending(): number {
+    return this._operations.length;
+  }
+
+  /**
+   * Clear all pending operations without committing.
+   */
+  public clear(): this {
+    this._operations = [];
+    return this;
   }
 }

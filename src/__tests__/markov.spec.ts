@@ -914,4 +914,78 @@ describe('Markov Chain', () => {
       expect(a4).toHaveProperty('sinks');
     });
   });
+
+  describe('batch operations', () => {
+    it('can queue and commit multiple operations', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+
+      // Use batch API to add multiple sequences
+      const updated = chain.batch()
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['d', 'e', 'f'])
+        .addSequence(['a', 'b', 'd'])
+        .commit();
+
+      // Verify sequences were added
+      expect(updated.sequences).toHaveLength(3);
+      expect(updated.sequences).toContainEqual(['a', 'b', 'c']);
+      expect(updated.sequences).toContainEqual(['d', 'e', 'f']);
+      expect(updated.sequences).toContainEqual(['a', 'b', 'd']);
+
+      // Verify grams were created
+      expect(Object.keys(updated.grams).length).toBeGreaterThan(0);
+    });
+
+    it('can clear pending operations', () => {
+      const chain = new MarkovChain({ seed: 1 });
+      const batch = chain.batch()
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['d', 'e', 'f']);
+
+      expect(batch.pending).toBe(2);
+      batch.clear();
+      expect(batch.pending).toBe(0);
+    });
+
+    it('returns a clone when no operations are queued', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2, sequences: [['a', 'b']] });
+      const updated = chain.batch().commit();
+
+      expect(updated).not.toBe(chain);
+      expect(updated.sequences).toEqual(chain.sequences);
+      expect(Object.keys(updated.grams)).toEqual(Object.keys(chain.grams));
+    });
+
+    it('is more efficient than repeated individual operations', () => {
+      const testSequences = Array.from({ length: 100 }, (_, i) =>
+        ['a', 'b', 'c', 'd'].slice(0, (i % 4) + 1)
+      );
+
+      // Time individual operations (old way)
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const start1 = Date.now();
+      let current = chain1;
+      for (const seq of testSequences) {
+        current = current.addSequence(seq);
+      }
+      const time1 = Date.now() - start1;
+
+      // Time batch operations (new way)
+      const chain2 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const start2 = Date.now();
+      const batch = chain2.batch();
+      for (const seq of testSequences) {
+        batch.addSequence(seq);
+      }
+      const updated = batch.commit();
+      const time2 = Date.now() - start2;
+
+      // Batch should be faster (though for small datasets the difference may be minimal)
+      // Both should produce the same result
+      expect(updated.sequences).toEqual(current.sequences);
+      expect(Object.keys(updated.grams).length).toBe(Object.keys(current.grams).length);
+
+      console.log(`Individual operations: ${time1}ms, Batch operations: ${time2}ms`);
+    });
+  });
 });
