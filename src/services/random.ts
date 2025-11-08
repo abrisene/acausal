@@ -78,7 +78,10 @@ export class Random {
     let sum = 0;
 
     Object.keys(object).some(key => {
-      sum += object[key];
+      const weight = object[key];
+      if (weight === undefined) return false;
+
+      sum += weight;
       if (!mask || !mask.includes(key)) {
         if (sum >= value) {
           result = key;
