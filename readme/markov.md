@@ -353,6 +353,187 @@ const behavior = characterChain.generateScaled({ order: 2, length: 10 });
 
 For complete examples, see [examples/scaled-states.ts](../examples/scaled-states.ts).
 
+### Multi-Dimensional Chains (v3.3+)
+
+**MultiDimMarkovChain** preserves the structure of multi-attribute states instead of forcing you to flatten them into strings. Perfect for tile-based procedural generation, game state management, spatial systems, or any scenario with complex structured states.
+
+#### The Problem
+
+Previously, you had to flatten structured states into strings:
+
+```typescript
+// ❌ Old way: lose structure
+interface TileState {
+  terrain: string;
+  x: number;
+  y: number;
+  biome: string;
+}
+
+const state = { terrain: 'forest', x: 2, y: 3, biome: 'woodland' };
+const flattened = `${state.terrain}_${state.x}_${state.y}_${state.biome}`;
+// Now you have a string, not the original structure
+```
+
+#### The Solution
+
+MultiDimMarkovChain preserves your original structured states:
+
+```typescript
+import { MultiDimMarkovChain } from 'acausal';
+
+interface TileState {
+  terrain: string;
+  x: number;
+  y: number;
+  biome: string;
+}
+
+const tileChain = new MultiDimMarkovChain<TileState>({
+  maxOrder: 2,
+  stateKey: (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`
+});
+
+// Add training data with full structured states
+tileChain.addSequence([
+  { terrain: 'grass', x: 0, y: 0, biome: 'plains' },
+  { terrain: 'forest', x: 1, y: 0, biome: 'woodland' },
+  { terrain: 'water', x: 2, y: 0, biome: 'lake' }
+]);
+
+// Generate returns structured states, not strings!
+const tiles = tileChain.generate({ order: 2, length: 5 });
+// Returns: TileState[] with full structure preserved
+console.log(tiles[0].terrain); // ✅ 'grass'
+console.log(tiles[0].x);       // ✅ 0
+```
+
+#### How It Works
+
+The `stateKey` function converts your structured states to unique string keys internally for Markov probability calculations, but the original structured states are preserved and returned to you:
+
+```typescript
+// State key function: converts structure → unique string
+stateKey: (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`
+
+// Internally: stores both the key AND the original structure
+// Externally: you always get back the structured state object
+```
+
+#### Querying State Information
+
+```typescript
+// Get all unique states
+const allStates = tileChain.getStates();
+console.log(allStates); // Returns TileState[] with full structure
+
+// Check if a specific state exists
+const exists = tileChain.hasState({
+  terrain: 'forest',
+  x: 1,
+  y: 0,
+  biome: 'woodland'
+});
+
+// Get statistics
+const stats = tileChain.getStats();
+console.log(`Total grams: ${stats.grams}`);
+console.log(`Unique states: ${stats.categories}`);
+```
+
+#### Practical Examples
+
+**RPG Character State Machine:**
+```typescript
+interface CharacterState {
+  action: string;
+  emotion: string;
+  location: string;
+  timeOfDay: string;
+}
+
+const characterChain = new MultiDimMarkovChain<CharacterState>({
+  maxOrder: 2,
+  stateKey: (s) => `${s.action}_${s.emotion}_${s.location}_${s.timeOfDay}`
+});
+
+characterChain.addSequence([
+  { action: 'sleeping', emotion: 'peaceful', location: 'inn', timeOfDay: 'night' },
+  { action: 'waking', emotion: 'refreshed', location: 'inn', timeOfDay: 'morning' },
+  { action: 'eating', emotion: 'content', location: 'tavern', timeOfDay: 'morning' }
+]);
+
+const story = characterChain.generate({ order: 2, length: 6 });
+// Returns structured states with all attributes preserved
+```
+
+**Spatial Movement Patterns:**
+```typescript
+interface EntityPosition {
+  entityId: string;
+  x: number;
+  y: number;
+  velocity: number;
+}
+
+const movementChain = new MultiDimMarkovChain<EntityPosition>({
+  maxOrder: 2,
+  stateKey: (s) => `${s.entityId}_${s.x}_${s.y}_${s.velocity}`
+});
+
+// Track entity movements
+movementChain.addSequence([
+  { entityId: 'player', x: 0, y: 0, velocity: 0 },
+  { entityId: 'player', x: 1, y: 0, velocity: 1 },
+  { entityId: 'player', x: 2, y: 1, velocity: 2 }
+]);
+
+const movements = movementChain.generate({ order: 2, length: 5 });
+// Returns EntityPosition[] with all properties intact
+```
+
+**Game Event System:**
+```typescript
+interface GameEvent {
+  eventType: string;
+  playerLevel: number;
+  questStage: string;
+  difficulty: string;
+}
+
+const eventChain = new MultiDimMarkovChain<GameEvent>({
+  maxOrder: 1,
+  stateKey: (s) => `${s.eventType}_${s.playerLevel}_${s.questStage}_${s.difficulty}`
+});
+
+// Model game progression
+const events = eventChain.generate({ order: 1, length: 7 });
+// Returns structured events with context preserved
+```
+
+#### All Methods
+
+```typescript
+// Add sequences
+chain.addSequence(sequence: T[]): MultiDimMarkovChain<T>
+chain.addSequences(sequences: T[][]): MultiDimMarkovChain<T>
+
+// Generate
+chain.generate(options): T[]  // Returns structured states
+chain.pick(current?: T[], next?: boolean, mask?: T[]): T | undefined
+
+// Query
+chain.getStates(): T[]  // All unique structured states
+chain.hasState(state: T): boolean
+chain.getStats(): MarkovChainStats
+
+// Utility
+chain.clone(): MultiDimMarkovChain<T>
+chain.serialize(): MultiDimMarkovChainDTO<T>
+```
+
+For complete examples, see [examples/multi-dimensional-chains.ts](../examples/multi-dimensional-chains.ts).
+
 ### Core Concepts
 
 #### States and Dependent Probability

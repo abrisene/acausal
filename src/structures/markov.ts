@@ -1897,3 +1897,213 @@ export class ScaledMarkovChain<T extends string = string> {
     return cloned;
   }
 }
+
+/**
+ * # Multi-Dimensional States
+ */
+
+/**
+ * Function that converts a structured state object to a unique string key
+ */
+export type StateKeyFunction<T> = (state: T) => string;
+
+/**
+ * Options for MultiDimMarkovChain construction
+ */
+export interface MultiDimMarkovChainOptions<T> extends RandomDTO {
+  maxOrder?: number;
+  delimiter?: string;
+  startDelimiter?: string;
+  endDelimiter?: string;
+  engine?: Random;
+  stateKey: StateKeyFunction<T>;
+}
+
+/**
+ * Storage for original structured states indexed by their string keys
+ */
+interface StateStore<T> {
+  [key: string]: T;
+}
+
+/**
+ * MarkovChain for multi-dimensional/structured state spaces.
+ * Solves the problem of having to flatten multi-attribute states into strings.
+ *
+ * Instead of: `${tile}_${x}_${y}` (loses structure)
+ * Use: `{ tile: 'grass', position: [0, 0], neighbors: [...] }`
+ *
+ * Perfect for:
+ * - Tile-based procedural generation (WFC-style)
+ * - States with multiple attributes
+ * - Spatial/coordinate-based systems
+ * - Any structured state space
+ *
+ * @example
+ * ```typescript
+ * interface TileState {
+ *   tile: string;
+ *   x: number;
+ *   y: number;
+ * }
+ *
+ * const chain = new MultiDimMarkovChain<TileState>({
+ *   maxOrder: 2,
+ *   stateKey: (s) => `${s.tile}_${s.x}_${s.y}`
+ * });
+ *
+ * chain.addSequence([
+ *   { tile: 'grass', x: 0, y: 0 },
+ *   { tile: 'water', x: 0, y: 1 },
+ *   { tile: 'grass', x: 0, y: 2 }
+ * ]);
+ *
+ * const generated = chain.generate({ order: 1, length: 5 });
+ * // Returns array of TileState objects with full structure
+ * ```
+ */
+export class MultiDimMarkovChain<T> {
+  private internalChain: MarkovChain<string>;
+  private stateStore: StateStore<T>;
+  private stateKeyFn: StateKeyFunction<T>;
+  private _engine: Random;
+
+  constructor(options: MultiDimMarkovChainOptions<T>) {
+    this._engine = options.engine || new Random({ seed: options.seed, uses: options.uses });
+    this.stateKeyFn = options.stateKey;
+    this.stateStore = {};
+
+    this.internalChain = new MarkovChain<string>({
+      maxOrder: options.maxOrder || 2,
+      delimiter: options.delimiter,
+      startDelimiter: options.startDelimiter,
+      endDelimiter: options.endDelimiter,
+      engine: this._engine,
+      sequences: []
+    });
+  }
+
+  /**
+   * Add a sequence of structured states
+   */
+  public addSequence(sequence: T[]): MultiDimMarkovChain<T> {
+    if (sequence.length === 0) return this;
+
+    // Convert structured states to string keys
+    const keys = sequence.map(state => {
+      const key = this.stateKeyFn(state);
+      // Store the original structured state
+      this.stateStore[key] = state;
+      return key;
+    });
+
+    // Create new internal chain with the key sequence
+    const newInternalChain = this.internalChain.addSequence(keys);
+
+    // Create new instance with updated data
+    const updated = new MultiDimMarkovChain<T>({
+      maxOrder: this.internalChain.model.maxOrder,
+      delimiter: this.internalChain.model.delimiter,
+      startDelimiter: this.internalChain.model.startDelimiter,
+      endDelimiter: this.internalChain.model.endDelimiter,
+      engine: this._engine,
+      stateKey: this.stateKeyFn
+    });
+    updated.internalChain = newInternalChain;
+    updated.stateStore = { ...this.stateStore };
+    updated.stateKeyFn = this.stateKeyFn;
+    updated._engine = this._engine;
+
+    return updated;
+  }
+
+  /**
+   * Add multiple sequences of structured states
+   */
+  public addSequences(sequences: T[][]): MultiDimMarkovChain<T> {
+    let result: MultiDimMarkovChain<T> = this;
+    for (const seq of sequences) {
+      result = result.addSequence(seq);
+    }
+    return result;
+  }
+
+  /**
+   * Generate a sequence of structured states
+   */
+  public generate(options: MCGeneratorOptions = {}): T[] {
+    // Generate keys using internal chain
+    const keys = this.internalChain.generate(options);
+
+    // Map keys back to structured states
+    return keys.map(key => this.stateStore[key]!).filter(state => state !== undefined);
+  }
+
+  /**
+   * Pick a single next structured state
+   */
+  public pick(
+    current?: T[],
+    next: boolean = true,
+    mask?: T[]
+  ): T | undefined {
+    // Convert structured states to keys
+    const currentKeys = current?.map(s => this.stateKeyFn(s));
+    const maskKeys = mask?.map(s => this.stateKeyFn(s));
+
+    // Pick next key
+    const nextKey = this.internalChain.pick(currentKeys, next, maskKeys);
+    if (!nextKey) return undefined;
+
+    // Return structured state
+    return this.stateStore[nextKey];
+  }
+
+  /**
+   * Get statistics about the internal chain
+   */
+  public getStats() {
+    return this.internalChain.getStats();
+  }
+
+  /**
+   * Get all unique states that have been observed
+   */
+  public getStates(): T[] {
+    return Object.values(this.stateStore);
+  }
+
+  /**
+   * Check if a state exists in the chain
+   */
+  public hasState(state: T): boolean {
+    const key = this.stateKeyFn(state);
+    return this.stateStore[key] !== undefined;
+  }
+
+  /**
+   * Get the internal MarkovChain (for advanced use)
+   */
+  public getInternalChain(): MarkovChain<string> {
+    return this.internalChain;
+  }
+
+  /**
+   * Clone this multi-dimensional chain
+   */
+  public clone(): MultiDimMarkovChain<T> {
+    const cloned = new MultiDimMarkovChain<T>({
+      maxOrder: this.internalChain.model.maxOrder,
+      delimiter: this.internalChain.model.delimiter,
+      startDelimiter: this.internalChain.model.startDelimiter,
+      endDelimiter: this.internalChain.model.endDelimiter,
+      engine: this._engine,
+      stateKey: this.stateKeyFn
+    });
+    cloned.internalChain = this.internalChain.clone();
+    cloned.stateStore = { ...this.stateStore };
+    cloned.stateKeyFn = this.stateKeyFn;
+    cloned._engine = this._engine;
+    return cloned;
+  }
+}

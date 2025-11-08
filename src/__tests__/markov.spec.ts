@@ -7,7 +7,7 @@
  # Module Dependencies
  */
 
-import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS, Distribution, ScaledMarkovChain } from '..';
+import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS, Distribution, ScaledMarkovChain, MultiDimMarkovChain } from '..';
 import { MCGeneratorOptions, MCDirectionOption, MCGeneratorStaticOptions } from '../structures';
 // import { MarkovChainSequenceDTO } from '../structures';
 
@@ -1474,6 +1474,277 @@ describe('Markov Chain', () => {
       // All states should have magnitudes
       result.forEach(state => {
         expect(typeof state.magnitude).toBe('number');
+      });
+    });
+  });
+
+  /**
+   * Multi-Dimensional Markov Chain Tests (v3.3)
+   */
+  describe('MultiDimMarkovChain', () => {
+    interface TileState {
+      tile: string;
+      x: number;
+      y: number;
+    }
+
+    test('should create a multi-dimensional chain with structured states', () => {
+      const chain = new MultiDimMarkovChain<TileState>({
+        seed: 1,
+        maxOrder: 2,
+        stateKey: (s) => `${s.tile}_${s.x}_${s.y}`
+      });
+
+      const updated = chain.addSequence([
+        { tile: 'grass', x: 0, y: 0 },
+        { tile: 'water', x: 0, y: 1 },
+        { tile: 'grass', x: 0, y: 2 }
+      ]);
+
+      expect(updated).toBeInstanceOf(MultiDimMarkovChain);
+      expect(updated.hasState({ tile: 'grass', x: 0, y: 0 })).toBe(true);
+      expect(updated.hasState({ tile: 'water', x: 0, y: 1 })).toBe(true);
+    });
+
+    test('should generate sequences of structured states', () => {
+      interface GameState {
+        action: string;
+        health: number;
+      }
+
+      const chain = new MultiDimMarkovChain<GameState>({
+        seed: 2,
+        maxOrder: 1,
+        stateKey: (s) => `${s.action}_${s.health}`
+      });
+
+      const updated = chain.addSequences([
+        [
+          { action: 'walk', health: 100 },
+          { action: 'fight', health: 80 },
+          { action: 'rest', health: 90 }
+        ],
+        [
+          { action: 'walk', health: 100 },
+          { action: 'run', health: 95 },
+          { action: 'fight', health: 75 }
+        ]
+      ]);
+
+      const generated = updated.generate({ order: 1, min: 2, max: 4 });
+
+      expect(generated.length).toBeGreaterThanOrEqual(2);
+      expect(generated.length).toBeLessThanOrEqual(4);
+      generated.forEach(state => {
+        expect(state).toHaveProperty('action');
+        expect(state).toHaveProperty('health');
+        expect(typeof state.action).toBe('string');
+        expect(typeof state.health).toBe('number');
+      });
+    });
+
+    test('should preserve full structure without flattening', () => {
+      interface ComplexState {
+        type: string;
+        position: [number, number];
+        metadata: { color: string };
+      }
+
+      const chain = new MultiDimMarkovChain<ComplexState>({
+        seed: 3,
+        maxOrder: 1,
+        stateKey: (s) => `${s.type}_${s.position[0]}_${s.position[1]}_${s.metadata.color}`
+      });
+
+      const testState: ComplexState = {
+        type: 'building',
+        position: [5, 10],
+        metadata: { color: 'red' }
+      };
+
+      const updated = chain.addSequence([testState]);
+
+      // Get states and verify structure is preserved
+      const states = updated.getStates();
+      expect(states.length).toBeGreaterThan(0);
+
+      const retrievedState = states.find(s =>
+        s.type === 'building' &&
+        s.position[0] === 5 &&
+        s.position[1] === 10
+      );
+
+      expect(retrievedState).toBeDefined();
+      expect(retrievedState!.metadata.color).toBe('red');
+    });
+
+    test('should support picking next state', () => {
+      interface SimpleState {
+        value: string;
+        index: number;
+      }
+
+      const chain = new MultiDimMarkovChain<SimpleState>({
+        seed: 4,
+        maxOrder: 1,
+        stateKey: (s) => `${s.value}_${s.index}`
+      });
+
+      const updated = chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+        { value: 'c', index: 2 }
+      ]);
+
+      const next = updated.pick([{ value: 'a', index: 0 }]);
+
+      expect(next).toBeDefined();
+      expect(next).toHaveProperty('value');
+      expect(next).toHaveProperty('index');
+    });
+
+    test('should get statistics from internal chain', () => {
+      interface CountState {
+        id: string;
+        count: number;
+      }
+
+      const chain = new MultiDimMarkovChain<CountState>({
+        seed: 5,
+        maxOrder: 2,
+        stateKey: (s) => `${s.id}_${s.count}`
+      });
+
+      const updated = chain.addSequences([
+        [
+          { id: 'x', count: 1 },
+          { id: 'y', count: 2 },
+          { id: 'z', count: 3 }
+        ],
+        [
+          { id: 'a', count: 1 },
+          { id: 'b', count: 2 }
+        ]
+      ]);
+
+      const stats = updated.getStats();
+
+      expect(stats).toHaveProperty('gramCount');
+      expect(stats).toHaveProperty('sequenceCount');
+      expect(stats.sequenceCount).toBe(2);
+    });
+
+    test('should get all unique states', () => {
+      interface UniqueState {
+        label: string;
+        value: number;
+      }
+
+      const chain = new MultiDimMarkovChain<UniqueState>({
+        seed: 6,
+        maxOrder: 1,
+        stateKey: (s) => `${s.label}_${s.value}`
+      });
+
+      const updated = chain.addSequence([
+        { label: 'first', value: 10 },
+        { label: 'second', value: 20 },
+        { label: 'first', value: 10 },  // Duplicate - should only store once
+        { label: 'third', value: 30 }
+      ]);
+
+      const states = updated.getStates();
+
+      // Should have 3 unique states (first, second, third)
+      expect(states.length).toBe(3);
+
+      const labels = states.map(s => s.label).sort();
+      expect(labels).toContain('first');
+      expect(labels).toContain('second');
+      expect(labels).toContain('third');
+    });
+
+    test('should clone multi-dimensional chain correctly', () => {
+      interface CloneState {
+        name: string;
+        level: number;
+      }
+
+      const chain = new MultiDimMarkovChain<CloneState>({
+        seed: 7,
+        maxOrder: 1,
+        stateKey: (s) => `${s.name}_${s.level}`
+      });
+
+      const updated = chain.addSequence([
+        { name: 'beginner', level: 1 },
+        { name: 'intermediate', level: 2 }
+      ]);
+
+      const cloned = updated.clone();
+
+      expect(cloned).toBeInstanceOf(MultiDimMarkovChain);
+
+      // Generate from both
+      const original = updated.generate({ order: 1, min: 1, max: 2 });
+      const fromClone = cloned.generate({ order: 1, min: 1, max: 2 });
+
+      // Both should generate valid sequences
+      expect(original.length).toBeGreaterThan(0);
+      expect(fromClone.length).toBeGreaterThan(0);
+
+      // Verify structures are preserved
+      original.forEach(state => {
+        expect(state).toHaveProperty('name');
+        expect(state).toHaveProperty('level');
+      });
+    });
+
+    test('should work with tile-based procedural generation', () => {
+      // Real-world tile generation use case
+      interface TileState {
+        terrain: string;
+        x: number;
+        y: number;
+        biome: string;
+      }
+
+      const chain = new MultiDimMarkovChain<TileState>({
+        seed: 8,
+        maxOrder: 2,
+        stateKey: (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`
+      });
+
+      // Training data from a procedurally generated map
+      const mapData = [
+        [
+          { terrain: 'grass', x: 0, y: 0, biome: 'plains' },
+          { terrain: 'grass', x: 1, y: 0, biome: 'plains' },
+          { terrain: 'water', x: 2, y: 0, biome: 'river' },
+          { terrain: 'grass', x: 3, y: 0, biome: 'plains' }
+        ],
+        [
+          { terrain: 'forest', x: 0, y: 1, biome: 'woods' },
+          { terrain: 'forest', x: 1, y: 1, biome: 'woods' },
+          { terrain: 'grass', x: 2, y: 1, biome: 'plains' }
+        ]
+      ];
+
+      const trained = chain.addSequences(mapData);
+
+      // Generate new map sequence (use order 1 for better generation with limited data)
+      const newMap = trained.generate({ order: 1, min: 3, max: 6 });
+
+      expect(newMap.length).toBeGreaterThanOrEqual(3);
+      expect(newMap.length).toBeLessThanOrEqual(6);
+
+      // Verify all tiles have complete structure
+      newMap.forEach(tile => {
+        expect(tile).toHaveProperty('terrain');
+        expect(tile).toHaveProperty('x');
+        expect(tile).toHaveProperty('y');
+        expect(tile).toHaveProperty('biome');
+        expect(['grass', 'water', 'forest']).toContain(tile.terrain);
       });
     });
   });

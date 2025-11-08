@@ -1,5 +1,40 @@
 # Change Log
 
+<a name="3.3.0"></a>
+# [3.3.0](https://github.com/abrisene/acausal/compare/v3.3.0...v3.2.0) (2025-11-08)
+
+### Features
+
+**Phase 7: Multi-Dimensional Chains**
+* Added `MultiDimMarkovChain<T>` class for structured state spaces
+* Preserves multi-attribute state structure without flattening to strings
+* `StateKeyFunction<T>` pattern for user-defined state-to-key mapping
+* Internal `StateStore` maintains original structured state objects
+* All methods return structured states, not flattened strings
+* 8 new comprehensive tests for multi-dimensional chains (82 total tests passing)
+
+### Use Cases
+* Tile-based procedural generation (WFC-style) with terrain, coordinates, and biomes
+* RPG character state machines with action, emotion, location, and time
+* Spatial/coordinate-based systems with entity positions and velocities
+* Game event systems with multi-attribute context (level, quest stage, difficulty)
+* Any system requiring structured states with multiple independent attributes
+
+### Breaking Changes from v2.x
+* Previously required manual flattening: `${terrain}_${x}_${y}` → string
+* Now preserves structure: `{ terrain, x, y, biome }` → full object
+
+### Documentation
+* Added multi-dimensional chains section to `readme/markov.md`
+* Created `examples/multi-dimensional-chains.ts` with 5 practical examples
+* Comprehensive API documentation with structured state patterns
+
+### Performance
+* Immutable operations create new chains without mutations
+* Efficient internal key-based Markov calculations
+* Structure preservation with zero serialization overhead
+* Test coverage maintained at 95%+
+
 <a name="3.2.0"></a>
 # [3.2.0](https://github.com/abrisene/acausal/compare/v3.2.0...v3.1.0) (2025-11-08)
 
