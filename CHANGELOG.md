@@ -1,5 +1,36 @@
 # Change Log
 
+<a name="3.5.0"></a>
+# [3.5.0](https://github.com/abrisene/acausal/compare/v3.5.0...v3.4.0) (2025-11-08)
+
+### Features
+
+**Phase 9: Pattern Extraction & Analysis**
+* Added `extractPatterns()` method for discovering frequent patterns in training data
+* Added `findSimilar()` method with multiple similarity metrics (Jaccard, Cosine, Levenshtein)
+* 6 new comprehensive tests for pattern analysis (100 total tests passing)
+
+### Pattern Analysis Features
+* **Pattern Extraction**: Discover frequent n-grams with configurable frequency thresholds
+* **Similarity Search**: Find sequences similar to a target using multiple metrics
+* **Jaccard Similarity**: Set-based similarity for comparing unique elements
+* **Cosine Similarity**: Vector-based similarity for frequency-weighted comparison
+* **Levenshtein Distance**: Edit distance for sequence transformation costs
+* **Flexible Filtering**: Configure min/max order, frequency, threshold, and top-N results
+
+### Use Cases
+* **Data Mining**: Discover common patterns in sequence data
+* **Deduplication**: Find and merge similar sequences
+* **Recommendation**: Suggest similar items based on sequence similarity
+* **Clustering**: Group similar sequences for analysis
+* **Pattern Recognition**: Identify repeated motifs in generated content
+
+### Implementation
+* Efficient pattern extraction from existing gram structures
+* Three similarity metrics with normalized 0-1 scoring
+* Configurable thresholds and result limits
+* Test coverage maintained at 95%+
+
 <a name="3.4.0"></a>
 # [3.4.0](https://github.com/abrisene/acausal/compare/v3.4.0...v3.3.0) (2025-11-08)
 

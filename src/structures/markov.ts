@@ -149,6 +149,34 @@ export interface MCRankedSequence extends MCSequenceScore {
   rank: number;
 }
 
+export interface MCPattern {
+  pattern: string[];
+  frequency: number;
+  order: number;
+  probability: number;
+}
+
+export interface MCExtractPatternsOptions {
+  minOrder?: number;
+  maxOrder?: number;
+  minFrequency?: number;
+  topN?: number;
+}
+
+export type SimilarityMetric = 'cosine' | 'jaccard' | 'levenshtein';
+
+export interface MCFindSimilarOptions {
+  metric?: SimilarityMetric;
+  topN?: number;
+  threshold?: number;
+}
+
+export interface MCSimilarSequence {
+  sequence: string[];
+  similarity: number;
+  distance: number;
+}
+
 /**
  # Constants
  */
@@ -862,6 +890,195 @@ export class MarkovChain<T extends string = string> {
   public isAnomaly(sequence: string[], threshold: number = 50, order?: number): boolean {
     const score = this.score(sequence, order);
     return !score.isValid || score.perplexity > threshold;
+  }
+
+  /**
+   * Extract frequent patterns from the Markov Chain.
+   * @param options Options for pattern extraction
+   * @returns Array of patterns sorted by frequency (descending)
+   */
+  public extractPatterns(options: MCExtractPatternsOptions = {}): MCPattern[] {
+    const {
+      minOrder = 2,
+      maxOrder = this._model.maxOrder,
+      minFrequency = 2,
+      topN = 20,
+    } = options;
+
+    const patterns: MCPattern[] = [];
+    const grams = Object.values(this._model.grams);
+
+    for (const gram of grams) {
+      if (gram.order >= minOrder && gram.order <= maxOrder && gram.frequency >= minFrequency) {
+        const pattern = gram.id.split(this._model.delimiter);
+
+        // Calculate probability (normalized frequency)
+        const totalFreq = grams.filter(g => g.order === gram.order).reduce((sum, g) => sum + g.frequency, 0);
+        const probability = totalFreq > 0 ? gram.frequency / totalFreq : 0;
+
+        patterns.push({
+          pattern,
+          frequency: gram.frequency,
+          order: gram.order,
+          probability,
+        });
+      }
+    }
+
+    // Sort by frequency descending
+    patterns.sort((a, b) => b.frequency - a.frequency);
+
+    return patterns.slice(0, topN);
+  }
+
+  /**
+   * Find sequences similar to a target sequence.
+   * @param target The target sequence to compare against
+   * @param options Options for similarity search
+   * @returns Array of similar sequences sorted by similarity (descending)
+   */
+  public findSimilar(target: string[], options: MCFindSimilarOptions = {}): MCSimilarSequence[] {
+    const {
+      metric = 'jaccard',
+      topN = 5,
+      threshold = 0,
+    } = options;
+
+    if (!this._model.sequences || this._model.sequences.length === 0) {
+      return [];
+    }
+
+    const results: MCSimilarSequence[] = [];
+
+    for (const seq of this._model.sequences) {
+      let similarity: number;
+      let distance: number;
+
+      switch (metric) {
+        case 'jaccard':
+          similarity = this.jaccardSimilarity(target, seq);
+          distance = 1 - similarity;
+          break;
+        case 'cosine':
+          similarity = this.cosineSimilarity(target, seq);
+          distance = 1 - similarity;
+          break;
+        case 'levenshtein':
+          distance = this.levenshteinDistance(target, seq);
+          // Normalize to 0-1 range for similarity
+          const maxLen = Math.max(target.length, seq.length);
+          similarity = maxLen > 0 ? 1 - (distance / maxLen) : 1;
+          break;
+        default:
+          similarity = this.jaccardSimilarity(target, seq);
+          distance = 1 - similarity;
+      }
+
+      if (similarity >= threshold) {
+        results.push({
+          sequence: seq,
+          similarity,
+          distance,
+        });
+      }
+    }
+
+    // Sort by similarity descending
+    results.sort((a, b) => b.similarity - a.similarity);
+
+    return results.slice(0, topN);
+  }
+
+  /**
+   * Calculate Jaccard similarity between two sequences.
+   * @private
+   */
+  private jaccardSimilarity(seq1: string[], seq2: string[]): number {
+    const set1 = new Set(seq1);
+    const set2 = new Set(seq2);
+
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const union = new Set([...set1, ...set2]);
+
+    return union.size > 0 ? intersection.size / union.size : 0;
+  }
+
+  /**
+   * Calculate cosine similarity between two sequences.
+   * @private
+   */
+  private cosineSimilarity(seq1: string[], seq2: string[]): number {
+    // Create frequency vectors
+    const allElements = new Set([...seq1, ...seq2]);
+    const vec1: number[] = [];
+    const vec2: number[] = [];
+
+    for (const elem of allElements) {
+      vec1.push(seq1.filter(e => e === elem).length);
+      vec2.push(seq2.filter(e => e === elem).length);
+    }
+
+    // Calculate dot product and magnitudes
+    let dotProduct = 0;
+    let mag1 = 0;
+    let mag2 = 0;
+
+    for (let i = 0; i < vec1.length; i++) {
+      const v1 = vec1[i] ?? 0;
+      const v2 = vec2[i] ?? 0;
+      dotProduct += v1 * v2;
+      mag1 += v1 * v1;
+      mag2 += v2 * v2;
+    }
+
+    mag1 = Math.sqrt(mag1);
+    mag2 = Math.sqrt(mag2);
+
+    return (mag1 > 0 && mag2 > 0) ? dotProduct / (mag1 * mag2) : 0;
+  }
+
+  /**
+   * Calculate Levenshtein distance between two sequences.
+   * @private
+   */
+  private levenshteinDistance(seq1: string[], seq2: string[]): number {
+    const m = seq1.length;
+    const n = seq2.length;
+
+    // Create distance matrix
+    const dp: number[][] = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
+
+    // Initialize base cases
+    for (let i = 0; i <= m; i++) {
+      const row = dp[i];
+      if (row) row[0] = i;
+    }
+    for (let j = 0; j <= n; j++) {
+      const row = dp[0];
+      if (row) row[j] = j;
+    }
+
+    // Fill matrix
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const currentRow = dp[i];
+        const prevRow = dp[i - 1];
+        if (!currentRow || !prevRow) continue;
+
+        if (seq1[i - 1] === seq2[j - 1]) {
+          currentRow[j] = prevRow[j - 1] ?? 0;
+        } else {
+          currentRow[j] = Math.min(
+            (prevRow[j] ?? 0) + 1,      // deletion
+            (currentRow[j - 1] ?? 0) + 1,      // insertion
+            (prevRow[j - 1] ?? 0) + 1   // substitution
+          );
+        }
+      }
+    }
+
+    const lastRow = dp[m];
+    return lastRow ? lastRow[n] ?? 0 : 0;
   }
 
   /**

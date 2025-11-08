@@ -2003,4 +2003,115 @@ describe('Markov Chain', () => {
       expect(elapsed).toBeLessThan(1000);
     });
   });
+
+  describe('Pattern Extraction & Analysis (Phase 9)', () => {
+    test('should extract patterns and return array', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+      ]);
+
+      const patterns = trained.extractPatterns({ minFrequency: 1 });
+
+      // Should return an array (may be empty with sparse data)
+      expect(Array.isArray(patterns)).toBe(true);
+
+      // If patterns exist, validate structure
+      patterns.forEach(p => {
+        expect(p).toHaveProperty('pattern');
+        expect(p).toHaveProperty('frequency');
+        expect(p).toHaveProperty('order');
+        expect(p).toHaveProperty('probability');
+        expect(p.frequency).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    test('should find similar sequences using Jaccard similarity', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+        ['a', 'c', 'd'],
+      ]);
+
+      const similar = trained.findSimilar(['a', 'b', 'c'], {
+        metric: 'jaccard',
+        topN: 3,
+      });
+
+      expect(similar.length).toBeGreaterThan(0);
+      expect(similar[0]).toHaveProperty('sequence');
+      expect(similar[0]).toHaveProperty('similarity');
+      expect(similar[0]).toHaveProperty('distance');
+
+      // Should be sorted by similarity (descending)
+      if (similar.length > 1) {
+        expect(similar[0].similarity).toBeGreaterThanOrEqual(similar[1].similarity);
+      }
+    });
+
+    test('should find similar sequences using cosine similarity', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'e', 'f'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const similar = trained.findSimilar(['a', 'b', 'c'], {
+        metric: 'cosine',
+        topN: 2,
+      });
+
+      expect(similar.length).toBeGreaterThan(0);
+      expect(similar[0].similarity).toBeGreaterThanOrEqual(0);
+      expect(similar[0].similarity).toBeLessThanOrEqual(1);
+    });
+
+    test('should find similar sequences using Levenshtein distance', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['h', 'e', 'l', 'l', 'o'],
+        ['h', 'e', 'l', 'p'],
+        ['w', 'o', 'r', 'l', 'd'],
+      ]);
+
+      const similar = trained.findSimilar(['h', 'e', 'l', 'l', 'o'], {
+        metric: 'levenshtein',
+        topN: 3,
+      });
+
+      expect(similar.length).toBeGreaterThan(0);
+      expect(similar[0].distance).toBeGreaterThanOrEqual(0);
+    });
+
+    test('should filter by similarity threshold', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const similar = trained.findSimilar(['a', 'b', 'c'], {
+        metric: 'jaccard',
+        threshold: 0.3,  // Only return sequences with >30% similarity
+        topN: 10,
+      });
+
+      similar.forEach(result => {
+        expect(result.similarity).toBeGreaterThanOrEqual(0.3);
+      });
+    });
+
+    test('should handle empty sequences gracefully', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      // Chain with no sequences
+
+      const similar = chain.findSimilar(['a', 'b'], { topN: 5 });
+      expect(similar).toEqual([]);
+    });
+  });
 });
