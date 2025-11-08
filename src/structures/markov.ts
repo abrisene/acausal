@@ -89,6 +89,16 @@ export interface Gram {
   degreeOut: number;
 }
 
+export interface MCConstraints {
+  minLength?: number;
+  maxLength?: number;
+  mustContain?: string[];
+  mustNotContain?: string[];
+  pattern?: RegExp;
+  validator?: (sequence: string[]) => boolean;
+  maxRetries?: number;
+}
+
 export interface MCGeneratorOptions {
   start?: string[];
   order?: number;
@@ -98,6 +108,7 @@ export interface MCGeneratorOptions {
   mask?: string[];
   strict?: boolean;
   trim?: boolean;
+  constraints?: MCConstraints;
 }
 
 export interface MCGeneratorStaticOptions extends MCGeneratorOptions {
@@ -124,6 +135,18 @@ export interface MarkovChainStats {
   orderRange: [number, number];
   avgDegreeIn: number;
   avgDegreeOut: number;
+}
+
+export interface MCSequenceScore {
+  sequence: string[];
+  logProb: number;
+  perplexity: number;
+  isValid: boolean;
+  normalized: number;
+}
+
+export interface MCRankedSequence extends MCSequenceScore {
+  rank: number;
 }
 
 /**
@@ -582,6 +605,7 @@ export class MarkovChain<T extends string = string> {
     mask,
     strict = defaultGenOptions.strict,
     trim = defaultGenOptions.trim,
+    constraints,
   }: MCGeneratorOptions) {
     return MarkovChain.generate({
       model: this._model,
@@ -593,6 +617,7 @@ export class MarkovChain<T extends string = string> {
       mask,
       strict,
       trim,
+      constraints,
       engine: this._engine,
     });
   }
@@ -758,6 +783,134 @@ export class MarkovChain<T extends string = string> {
       avgDegreeIn: grams.length > 0 ? grams.reduce((sum, g) => sum + g.degreeIn, 0) / grams.length : 0,
       avgDegreeOut: grams.length > 0 ? grams.reduce((sum, g) => sum + g.degreeOut, 0) / grams.length : 0,
     };
+  }
+
+  /**
+   * Calculate the log probability and perplexity of a sequence.
+   * @param sequence The sequence to score
+   * @param order The order to use for scoring (defaults to maxOrder)
+   * @returns Score object with logProb, perplexity, and validity
+   */
+  public score(sequence: string[], order?: number): MCSequenceScore {
+    const useOrder = order ?? this._model.maxOrder;
+    let logProb = 0;
+    let validTransitions = 0;
+    let totalTransitions = 0;
+
+    // Format sequence with delimiters
+    const formatted = [this._model.startDelimiter, ...sequence, this._model.endDelimiter];
+
+    // Calculate log probability for each transition
+    for (let i = 0; i < formatted.length; i++) {
+      const context = formatted.slice(Math.max(0, i - useOrder), i);
+      const nextState = formatted[i];
+
+      if (context.length === 0 || nextState === undefined) continue;
+
+      const gram = MarkovChain.findGram(this._model, context, useOrder, 'next');
+      if (gram) {
+        const prob = gram.next.normal[nextState];
+        if (prob !== undefined && prob > 0) {
+          logProb += Math.log(prob);
+          validTransitions++;
+        }
+      }
+      totalTransitions++;
+    }
+
+    const isValid = validTransitions > 0;
+    const perplexity = isValid ? Math.exp(-logProb / validTransitions) : Infinity;
+
+    // Normalize log probability by sequence length for comparison
+    const normalized = validTransitions > 0 ? logProb / validTransitions : -Infinity;
+
+    return {
+      sequence,
+      logProb,
+      perplexity,
+      isValid,
+      normalized,
+    };
+  }
+
+  /**
+   * Rank multiple sequences by their likelihood.
+   * @param sequences Array of sequences to rank
+   * @param order The order to use for scoring
+   * @returns Ranked sequences sorted by likelihood (best first)
+   */
+  public rankByLikelihood(sequences: string[][], order?: number): MCRankedSequence[] {
+    const scored = sequences.map(seq => this.score(seq, order));
+
+    // Sort by normalized log probability (higher is better)
+    scored.sort((a, b) => b.normalized - a.normalized);
+
+    // Add ranks
+    return scored.map((score, index) => ({
+      ...score,
+      rank: index + 1,
+    }));
+  }
+
+  /**
+   * Detect if a sequence is anomalous based on its probability.
+   * @param sequence The sequence to check
+   * @param threshold The perplexity threshold above which a sequence is considered anomalous
+   * @param order The order to use for scoring
+   * @returns True if the sequence is anomalous (unlikely)
+   */
+  public isAnomaly(sequence: string[], threshold: number = 50, order?: number): boolean {
+    const score = this.score(sequence, order);
+    return !score.isValid || score.perplexity > threshold;
+  }
+
+  /**
+   * Validate a sequence against constraints.
+   * @param sequence The sequence to validate
+   * @param constraints The constraints to check against
+   * @param model The Markov Chain model (for delimiter trimming)
+   * @returns True if the sequence satisfies all constraints
+   */
+  private static validateConstraints(
+    sequence: string[],
+    constraints: MCConstraints | undefined,
+    model: MarkovChainDTO
+  ): boolean {
+    if (!constraints) return true;
+
+    // Trim delimiters for constraint checking
+    const trimmed = sequence.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v));
+
+    // Check length constraints
+    if (constraints.minLength !== undefined && trimmed.length < constraints.minLength) return false;
+    if (constraints.maxLength !== undefined && trimmed.length > constraints.maxLength) return false;
+
+    // Check mustContain
+    if (constraints.mustContain) {
+      for (const required of constraints.mustContain) {
+        if (!trimmed.includes(required)) return false;
+      }
+    }
+
+    // Check mustNotContain
+    if (constraints.mustNotContain) {
+      for (const forbidden of constraints.mustNotContain) {
+        if (trimmed.includes(forbidden)) return false;
+      }
+    }
+
+    // Check pattern
+    if (constraints.pattern) {
+      const joined = trimmed.join('');
+      if (!constraints.pattern.test(joined)) return false;
+    }
+
+    // Check custom validator
+    if (constraints.validator && !constraints.validator(trimmed)) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -978,75 +1131,90 @@ export class MarkovChain<T extends string = string> {
     mask,
     strict = defaultGenOptions.strict,
     trim = defaultGenOptions.trim,
+    constraints,
     engine,
   }: MCGeneratorStaticOptions) {
     const eng = engine || new Random({});
+    const maxRetries = constraints?.maxRetries ?? (constraints ? 100 : 1);
 
-    // SETUP
-    // Set the starting sequence and the terminating character.
-    const dirForward = direction === 'next';
-    const picks = start !== undefined ? [...start] : dirForward ? [model.startDelimiter] : [model.endDelimiter];
-    const terminator = dirForward ? model.endDelimiter : model.startDelimiter;
+    // If constraints are specified, wrap generation in retry logic
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      // SETUP
+      // Set the starting sequence and the terminating character.
+      const dirForward = direction === 'next';
+      const picks = start !== undefined ? [...start] : dirForward ? [model.startDelimiter] : [model.endDelimiter];
+      const terminator = dirForward ? model.endDelimiter : model.startDelimiter;
 
-    // Determine the order
-    const maxOrder = order !== undefined ? order : start ? start.length : model.maxOrder;
-    let curOrder = start !== undefined ? start.length : 1;
+      // Determine the order
+      const maxOrder = order !== undefined ? order : start ? start.length : model.maxOrder;
+      let curOrder = start !== undefined ? start.length : 1;
 
-    // Determine the offset for our picks.
-    // Removed this because it wasn't necessary and causing a bug.
-    // TODO: Keep as a reminder and then remove if there aren't any long term issues.
-    // const pickOffset = trim ? 0 : 0;
-    // const minPicks = min + pickOffset;
-    // const maxPicks = max + pickOffset;
+      // Determine the offset for our picks.
+      // Removed this because it wasn't necessary and causing a bug.
+      // TODO: Keep as a reminder and then remove if there aren't any long term issues.
+      // const pickOffset = trim ? 0 : 0;
+      // const minPicks = min + pickOffset;
+      // const maxPicks = max + pickOffset;
 
-    // Determine the temporary mask to use while sequence is less than min.
-    const tempMask = mask !== undefined ? [terminator, ...mask] : [terminator];
+      // Determine the temporary mask to use while sequence is less than min.
+      const tempMask = mask !== undefined ? [terminator, ...mask] : [terminator];
 
-    // Utility function for finding the current sequence given order and direction.
+      // Utility function for finding the current sequence given order and direction.
 
-    // MAKE THE PICKS
-    for (let i = 0; picks.length <= max; i += 1) {
-      // Increase the order if we're below the desired value.
-      if (curOrder < maxOrder) curOrder += 1;
+      // MAKE THE PICKS
+      for (let i = 0; picks.length <= max; i += 1) {
+        // Increase the order if we're below the desired value.
+        if (curOrder < maxOrder) curOrder += 1;
 
-      // Determine which mask we should use.
-      const pickMask = picks.length < min ? tempMask : mask;
+        // Determine which mask we should use.
+        const pickMask = picks.length < min ? tempMask : mask;
 
-      // Find the gram
-      const gram = strict
-        ? MarkovChain.getGram(model, MarkovChain.getSequence(picks, curOrder, dirForward))
-        : MarkovChain.findGram(model, picks, curOrder, direction);
+        // Find the gram
+        const gram = strict
+          ? MarkovChain.getGram(model, MarkovChain.getSequence(picks, curOrder, dirForward))
+          : MarkovChain.findGram(model, picks, curOrder, direction);
 
-      // If we can't find a gram, then we need to break;
-      if (gram === undefined) break;
+        // If we can't find a gram, then we need to break;
+        if (gram === undefined) break;
 
-      // Set the current order to the Gram's order.
-      curOrder = gram.order;
+        // Set the current order to the Gram's order.
+        curOrder = gram.order;
 
-      // Get the Gram sequence.
-      const gramSequence = gram.id.split(model.delimiter);
+        // Get the Gram sequence.
+        const gramSequence = gram.id.split(model.delimiter);
 
-      // Get the gram sequence and then make the pick.
-      const pick = MarkovChain.pick(model, gramSequence, dirForward, pickMask, eng);
+        // Get the gram sequence and then make the pick.
+        const pick = MarkovChain.pick(model, gramSequence, dirForward, pickMask, eng);
 
-      // If we have a pick, figure out whether we need to add it to the beginning or end of the picks array.
-      if (pick) {
-        if (dirForward) {
-          picks.push(pick);
+        // If we have a pick, figure out whether we need to add it to the beginning or end of the picks array.
+        if (pick) {
+          if (dirForward) {
+            picks.push(pick);
+          } else {
+            picks.unshift(pick);
+          }
+
+          // If we've picked the terminator, then break.
+          if (pick === terminator) break;
         } else {
-          picks.unshift(pick);
+          // If we don't have a pick, then break.
+          // This could result because of an error in the chain, or because all possible values are masked.
+          break;
         }
-
-        // If we've picked the terminator, then break.
-        if (pick === terminator) break;
-      } else {
-        // If we don't have a pick, then break.
-        // This could result because of an error in the chain, or because all possible values are masked.
-        break;
       }
+
+      // Validate constraints
+      if (MarkovChain.validateConstraints(picks, constraints, model)) {
+        // FORMAT THE RESULT
+        return trim ? picks.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v)) : picks;
+      }
+
+      // If constraints not satisfied and not the last attempt, continue to next iteration
     }
 
-    // FORMAT THE RESULT
+    // If all retries failed, return best effort (last attempt)
+    const dirForward = direction === 'next';
+    const picks = start !== undefined ? [...start] : dirForward ? [model.startDelimiter] : [model.endDelimiter];
     return trim ? picks.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v)) : picks;
   }
 

@@ -534,6 +534,283 @@ chain.serialize(): MultiDimMarkovChainDTO<T>
 
 For complete examples, see [examples/multi-dimensional-chains.ts](../examples/multi-dimensional-chains.ts).
 
+### Sequence Scoring & Ranking (v3.4+)
+
+**Sequence Scoring** allows you to calculate the likelihood of sequences, enabling quality filtering, anomaly detection, autocomplete ranking, and more.
+
+#### Basic Scoring
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const chain = new MarkovChain({ maxOrder: 2 });
+chain.addSequences([
+  ['j', 'o', 'h', 'n'],
+  ['j', 'a', 'n', 'e'],
+  ['a', 'l', 'i', 'c', 'e']
+]);
+
+// Score a sequence
+const score = chain.score(['j', 'o', 'h', 'n']);
+console.log(score);
+// {
+//   sequence: ['j', 'o', 'h', 'n'],
+//   logProb: -8.3,        // Log probability
+//   perplexity: 12.4,     // Lower is better
+//   isValid: true,        // Can the chain generate this?
+//   normalized: -2.1      // Normalized by sequence length
+// }
+```
+
+#### Ranking Sequences
+
+```typescript
+// Rank multiple candidates by likelihood
+const candidates = [
+  ['j', 'o', 'h', 'n'],
+  ['x', 'q', 'z'],
+  ['a', 'l', 'i', 'c', 'e']
+];
+
+const ranked = chain.rankByLikelihood(candidates);
+ranked.forEach(result => {
+  console.log(`${result.rank}. ${result.sequence.join('')} (perplexity: ${result.perplexity})`);
+});
+// 1. john (perplexity: 12.4)
+// 2. alice (perplexity: 15.2)
+// 3. xqz (perplexity: Infinity)
+```
+
+#### Anomaly Detection
+
+```typescript
+// Detect unusual sequences
+const isAnomaly = chain.isAnomaly(['x', 'q', 'z'], 50);
+// true - very unlikely sequence
+
+const isNormal = chain.isAnomaly(['j', 'o', 'h', 'n'], 50);
+// false - common pattern
+```
+
+#### Practical Use Cases
+
+**Autocomplete Ranking:**
+```typescript
+const prefix = 'al';
+const completions = ['alice', 'albert', 'alfred', 'alex'];
+
+const ranked = chain.rankByLikelihood(
+  completions.map(c => c.split(''))
+);
+
+// Display in order of likelihood
+ranked.forEach(r => console.log(r.sequence.join('')));
+```
+
+**Input Validation:**
+```typescript
+function validateUsername(username: string): boolean {
+  const score = nameChain.score(username.split(''));
+  return score.isValid && score.perplexity < 30;
+}
+```
+
+**Quality Filtering:**
+```typescript
+const generated = [];
+for (let i = 0; i < 100; i++) {
+  const name = chain.generate({ order: 2, max: 10 });
+  const score = chain.score(name);
+
+  // Only keep high-quality generations
+  if (score.perplexity < 20) {
+    generated.push(name.join(''));
+  }
+}
+```
+
+### Constraint-Based Generation (v3.4+)
+
+**Constraint-Based Generation** allows you to generate sequences that satisfy specific requirements, perfect for quality control, domain rules, and content filtering.
+
+#### Length Constraints
+
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+// ... add training data ...
+
+const result = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 8
+  }
+});
+// Guaranteed to be 5-8 elements long
+```
+
+#### Element Requirements
+
+```typescript
+// Must contain specific elements
+const name = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustContain: ['a', 'e'],  // Must have both 'a' and 'e'
+    maxRetries: 100
+  }
+});
+
+// Must NOT contain specific elements
+const filtered = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustNotContain: ['x', 'z', 'q'],  // No uncommon letters
+    maxRetries: 100
+  }
+});
+```
+
+#### Pattern Matching
+
+```typescript
+// Generate sequences matching a regex pattern
+const vowelStart = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    pattern: /^[aeiou]/,  // Must start with vowel
+    maxRetries: 100
+  }
+});
+
+// More complex patterns
+const formatted = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    pattern: /^[A-Z][a-z]+$/,  // Capital first letter
+    maxRetries: 100
+  }
+});
+```
+
+#### Custom Validators
+
+```typescript
+// Content filtering
+const forbiddenWords = ['bad', 'ugly', 'hate'];
+
+const clean = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    validator: (seq) => {
+      const text = seq.join('');
+      return !forbiddenWords.some(word => text.includes(word));
+    },
+    maxRetries: 100
+  }
+});
+
+// Business rules
+const username = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    validator: (seq) => {
+      const str = seq.join('');
+      // No repeating characters
+      if (/(.)\1/.test(str)) return false;
+      // Must have vowel
+      if (!/[aeiou]/.test(str)) return false;
+      return true;
+    },
+    maxRetries: 200
+  }
+});
+```
+
+#### Combined Constraints
+
+```typescript
+// All constraints work together
+const highQuality = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 10,
+    mustContain: ['a'],
+    mustNotContain: ['x', 'z'],
+    pattern: /^[a-z]+$/,
+    validator: (seq) => {
+      // Custom quality checks
+      const str = seq.join('');
+      return !/(.)\\1{2,}/.test(str);  // No triple repeats
+    },
+    maxRetries: 200
+  }
+});
+```
+
+#### Retry Control
+
+```typescript
+// Control how many times generation is attempted
+const result = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustContain: ['rare'],
+    maxRetries: 50  // Try up to 50 times
+  }
+});
+
+// If constraints can't be satisfied, returns best effort
+```
+
+#### Practical Examples
+
+**Username Generation:**
+```typescript
+const username = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 12,
+    pattern: /^[a-z]/,  // Start with letter
+    mustNotContain: ['_', '-', '.'],
+    validator: (seq) => /[aeiou]/.test(seq.join('')),
+    maxRetries: 150
+  }
+});
+```
+
+**Safe Content Generation:**
+```typescript
+const profanityList = ['bad', 'ugly'];
+
+const safeContent = chain.generate({
+  order: 2,
+  max: 50,
+  constraints: {
+    minLength: 10,
+    validator: (seq) => {
+      const text = seq.join(' ');
+      return !profanityList.some(word => text.includes(word));
+    },
+    maxRetries: 100
+  }
+});
+```
+
+For complete examples, see [examples/scoring-and-constraints.ts](../examples/scoring-and-constraints.ts).
+
 ### Core Concepts
 
 #### States and Dependent Probability

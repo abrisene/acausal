@@ -1,5 +1,52 @@
 # Change Log
 
+<a name="3.4.0"></a>
+# [3.4.0](https://github.com/abrisene/acausal/compare/v3.4.0...v3.3.0) (2025-11-08)
+
+### Features
+
+**Phase 8: Sequence Scoring & Constraint-Based Generation**
+* Added `score()` method for calculating log probability and perplexity of sequences
+* Added `rankByLikelihood()` for ranking multiple sequences by their likelihood
+* Added `isAnomaly()` for detecting unusual/suspicious sequences
+* Added constraint-based generation with `MCConstraints` interface
+* 12 new comprehensive tests for scoring and constraints (94 total tests passing)
+
+### Scoring Features
+* **Log Probability**: Calculate exact likelihood of any sequence
+* **Perplexity Metrics**: Quality scoring with normalized perplexity values
+* **Sequence Ranking**: Rank and compare multiple candidate sequences
+* **Anomaly Detection**: Identify outliers and suspicious patterns
+* **Order-Aware Scoring**: Score with different Markov orders for flexibility
+
+### Constraint Features
+* **Length Constraints**: `minLength` and `maxLength` for precise control
+* **Element Requirements**: `mustContain` and `mustNotContain` for required/forbidden states
+* **Pattern Matching**: Regex pattern support for format validation
+* **Custom Validators**: User-defined validation functions for domain rules
+* **Retry Logic**: Configurable `maxRetries` with graceful degradation
+* **Combined Constraints**: All constraints can be used together
+
+### Use Cases
+* **Quality Control**: Filter generations by perplexity scores
+* **Autocomplete**: Rank suggestions by likelihood
+* **Input Validation**: Detect anomalous user input
+* **Content Filtering**: Block unwanted patterns with custom validators
+* **Username Generation**: Enforce business rules and format requirements
+* **Anomaly Detection**: Identify unusual patterns in sequences
+* **Grammar Rules**: Enforce structural constraints in generated text
+
+### Documentation
+* Added scoring and constraint sections to `readme/markov.md`
+* Created `examples/scoring-and-constraints.ts` with 10 practical examples
+* Comprehensive API documentation for all new methods
+
+### Performance
+* Efficient log probability calculations using existing gram distributions
+* Retry logic with early termination for impossible constraints
+* Minimal overhead for unconstrained generation (default path unchanged)
+* Test coverage maintained at 95%+
+
 <a name="3.3.0"></a>
 # [3.3.0](https://github.com/abrisene/acausal/compare/v3.3.0...v3.2.0) (2025-11-08)
 

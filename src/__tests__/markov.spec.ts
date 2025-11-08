@@ -1748,4 +1748,259 @@ describe('Markov Chain', () => {
       });
     });
   });
+
+  describe('Sequence Scoring & Ranking (Phase 8)', () => {
+    test('should score sequences with log probability and perplexity', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['a', 'b', 'c', 'd'],
+      ]);
+
+      // Score a common sequence
+      const commonScore = trained.score(['a', 'b', 'c']);
+      expect(commonScore.sequence).toEqual(['a', 'b', 'c']);
+      expect(commonScore.logProb).toBeLessThan(0); // Log prob is negative
+      expect(commonScore.perplexity).toBeGreaterThan(0);
+      expect(commonScore.isValid).toBe(true);
+      expect(commonScore.normalized).toBeLessThan(0);
+
+      // Score an unlikely sequence
+      const unlikelyScore = trained.score(['x', 'y', 'z']);
+      expect(unlikelyScore.isValid).toBe(false);
+      expect(unlikelyScore.perplexity).toBe(Infinity);
+    });
+
+    test('should rank sequences by likelihood', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const ranked = trained.rankByLikelihood([
+        ['a', 'b', 'c'],  // Should be most likely
+        ['x', 'y', 'z'],  // Should be less likely
+        ['z', 'y', 'x'],  // Should be least likely
+      ]);
+
+      expect(ranked.length).toBe(3);
+      expect(ranked[0].rank).toBe(1);
+      expect(ranked[1].rank).toBe(2);
+      expect(ranked[2].rank).toBe(3);
+
+      // First should be better than last
+      expect(ranked[0].normalized).toBeGreaterThan(ranked[2].normalized);
+    });
+
+    test('should detect anomalous sequences', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['sunny', 'sunny', 'cloudy'],
+        ['sunny', 'cloudy', 'rainy'],
+        ['cloudy', 'rainy', 'sunny'],
+      ]);
+
+      // Normal sequence should not be anomalous
+      const normal = trained.isAnomaly(['sunny', 'cloudy'], 50);
+      expect(normal).toBe(false);
+
+      // Completely unseen sequence should be anomalous
+      const anomaly = trained.isAnomaly(['blizzard', 'tornado'], 50);
+      expect(anomaly).toBe(true);
+    });
+
+    test('should work with different scoring orders', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 3 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'e'],
+      ]);
+
+      const score1 = trained.score(['a', 'b', 'c'], 1);
+      const score2 = trained.score(['a', 'b', 'c'], 2);
+
+      expect(score1.isValid).toBe(true);
+      expect(score2.isValid).toBe(true);
+      // Different orders may produce different scores
+    });
+  });
+
+  describe('Constraint-Based Generation (Phase 8)', () => {
+    test('should generate sequences satisfying length constraints', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'd', 'e'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          minLength: 3,
+          maxLength: 5,
+        },
+      });
+
+      expect(result.length).toBeGreaterThanOrEqual(3);
+      expect(result.length).toBeLessThanOrEqual(5);
+    });
+
+    test('should generate sequences with required elements', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'd', 'e'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          mustContain: ['a'],
+          maxRetries: 50,
+        },
+      });
+
+      expect(result).toContain('a');
+    });
+
+    test('should generate sequences without forbidden elements', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'd', 'e'],
+        ['a', 'x', 'y'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          mustNotContain: ['x', 'y'],
+          maxRetries: 50,
+        },
+      });
+
+      expect(result).not.toContain('x');
+      expect(result).not.toContain('y');
+    });
+
+    test('should generate sequences matching a pattern', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['h', 'e', 'l', 'l', 'o'],
+        ['h', 'e', 'l', 'p'],
+        ['h', 'a', 'l', 'o'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          pattern: /^h.*o$/,  // Starts with 'h', ends with 'o'
+          maxRetries: 50,
+        },
+      });
+
+      const str = result.join('');
+      expect(str).toMatch(/^h.*o$/);
+    });
+
+    test('should generate sequences with custom validator', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const forbiddenWords = ['abc', 'xyz'];
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          validator: (seq) => !forbiddenWords.includes(seq.join('')),
+          maxRetries: 50,
+        },
+      });
+
+      const str = result.join('');
+      expect(forbiddenWords).not.toContain(str);
+    });
+
+    test('should combine multiple constraints', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['j', 'o', 'h', 'n'],
+        ['j', 'a', 'n', 'e'],
+        ['j', 'a', 'c', 'k'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          minLength: 4,
+          maxLength: 4,
+          mustContain: ['j'],
+          mustNotContain: ['x'],
+          pattern: /^j/,
+          maxRetries: 100,
+        },
+      });
+
+      expect(result.length).toBe(4);
+      expect(result[0]).toBe('j');
+      expect(result).not.toContain('x');
+    });
+
+    test('should handle impossible constraints gracefully', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b'],
+        ['c', 'd'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          mustContain: ['x'],  // Impossible - 'x' not in training data
+          maxRetries: 5,
+        },
+      });
+
+      // Should return something even if constraints can't be satisfied
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    test('should respect maxRetries limit', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b'],
+        ['c', 'd'],
+      ]);
+
+      // This should complete quickly even with impossible constraints
+      const start = Date.now();
+      trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          mustContain: ['z'],  // Impossible
+          maxRetries: 3,
+        },
+      });
+      const elapsed = Date.now() - start;
+
+      // Should not take too long (allowing generous margin)
+      expect(elapsed).toBeLessThan(1000);
+    });
+  });
 });
