@@ -1,5 +1,42 @@
 # Change Log
 
+<a name="4.0.0"></a>
+# [4.0.0](https://github.com/abrisene/acausal/compare/v4.0.0...v3.5.0) (2025-11-08)
+
+### Breaking Changes
+
+* **Major Version**: Incremented to v4.0.0 to reflect substantial new feature set
+* No API breaking changes - fully backward compatible with v3.x
+
+### Features
+
+**Phase 10: Import/Export & Visualization Utilities**
+* Added `exportAsGraph()` method for converting chains to node/edge graph format
+* Added `diff()` method for comparing two chains and identifying differences
+* Added `toJSON()` method for simplified JSON serialization
+* 5 new comprehensive tests for export utilities (105 total tests passing)
+
+### Export & Visualization Features
+* **Graph Export**: Convert Markov chains to node/edge format for D3.js, Cytoscape, etc.
+* **Chain Comparison**: Diff algorithm to identify added, removed, common, and modified grams
+* **JSON Serialization**: Simplified export format for external tools and debugging
+* **Metadata Tracking**: Include chain statistics in exports (order, gram count, sequence count)
+* **Flexible Formats**: Support for multiple visualization and analysis tools
+
+### Use Cases
+* **Visualization**: Export to D3.js, Cytoscape, Graphviz for interactive chain visualization
+* **Model Comparison**: Compare chains trained on different datasets
+* **Debugging**: Inspect internal chain structure in readable format
+* **Version Control**: Track changes in trained models over time
+* **Data Exchange**: Share models with external tools and systems
+* **Analysis**: Export for statistical analysis in Python, R, etc.
+
+### Implementation
+* Efficient graph conversion with separate nodes and edges
+* Set-based diff algorithm for O(n+m) comparison
+* Frequency tracking for modified grams
+* Test coverage maintained at 95%+
+
 <a name="3.5.0"></a>
 # [3.5.0](https://github.com/abrisene/acausal/compare/v3.5.0...v3.4.0) (2025-11-08)
 

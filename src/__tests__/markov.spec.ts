@@ -2114,4 +2114,131 @@ describe('Markov Chain', () => {
       expect(similar).toEqual([]);
     });
   });
+
+  describe('Import/Export Utilities (Phase 10)', () => {
+    test('should export chain as graph structure', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+      ]);
+
+      const graph = trained.exportAsGraph();
+
+      expect(graph).toHaveProperty('nodes');
+      expect(graph).toHaveProperty('edges');
+      expect(graph).toHaveProperty('metadata');
+      expect(Array.isArray(graph.nodes)).toBe(true);
+      expect(Array.isArray(graph.edges)).toBe(true);
+      expect(graph.metadata.maxOrder).toBe(2);
+      expect(graph.metadata.totalGrams).toBeGreaterThan(0);
+
+      // Validate node structure
+      if (graph.nodes.length > 0) {
+        expect(graph.nodes[0]).toHaveProperty('id');
+        expect(graph.nodes[0]).toHaveProperty('order');
+        expect(graph.nodes[0]).toHaveProperty('frequency');
+        expect(graph.nodes[0]).toHaveProperty('states');
+      }
+
+      // Validate edge structure
+      if (graph.edges.length > 0) {
+        expect(graph.edges[0]).toHaveProperty('from');
+        expect(graph.edges[0]).toHaveProperty('to');
+        expect(graph.edges[0]).toHaveProperty('weight');
+        expect(graph.edges[0]).toHaveProperty('probability');
+      }
+    });
+
+    test('should export chain to JSON format', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['x', 'y', 'z'],
+      ]);
+
+      const json = trained.toJSON();
+
+      expect(json).toHaveProperty('metadata');
+      expect(json).toHaveProperty('grams');
+      expect(json.metadata.maxOrder).toBe(2);
+      expect(Array.isArray(json.grams)).toBe(true);
+
+      // Validate gram structure
+      if (json.grams.length > 0) {
+        expect(json.grams[0]).toHaveProperty('pattern');
+        expect(json.grams[0]).toHaveProperty('order');
+        expect(json.grams[0]).toHaveProperty('frequency');
+        expect(json.grams[0]).toHaveProperty('next');
+        expect(Array.isArray(json.grams[0].pattern)).toBe(true);
+      }
+    });
+
+    test('should diff two chains and show differences', () => {
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained1 = chain1.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+      ]);
+
+      const chain2 = new MarkovChain({ seed: 2, maxOrder: 2 });
+      const trained2 = chain2.addSequences([
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const diff = trained1.diff(trained2);
+
+      expect(diff).toHaveProperty('added');
+      expect(diff).toHaveProperty('removed');
+      expect(diff).toHaveProperty('common');
+      expect(diff).toHaveProperty('modified');
+      expect(Array.isArray(diff.added)).toBe(true);
+      expect(Array.isArray(diff.removed)).toBe(true);
+      expect(Array.isArray(diff.common)).toBe(true);
+      expect(Array.isArray(diff.modified)).toBe(true);
+    });
+
+    test('should identify common grams in diff', () => {
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained1 = chain1.addSequences([
+        ['a', 'b'],
+        ['a', 'b'],
+      ]);
+
+      const chain2 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained2 = chain2.addSequences([
+        ['a', 'b'],
+      ]);
+
+      const diff = trained1.diff(trained2);
+
+      // Should have some common grams (both have 'a', 'b')
+      expect(diff.common.length).toBeGreaterThan(0);
+
+      // Modified should include grams with different frequencies
+      const hasModified = diff.modified.some(m => m.difference !== 0);
+      if (diff.modified.length > 0) {
+        expect(hasModified).toBe(true);
+      }
+    });
+
+    test('should detect added and removed grams in diff', () => {
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 1 });
+      const trained1 = chain1.addSequences([
+        ['a'],
+      ]);
+
+      const chain2 = new MarkovChain({ seed: 1, maxOrder: 1 });
+      const trained2 = chain2.addSequences([
+        ['b'],
+      ]);
+
+      const diff = trained1.diff(trained2);
+
+      // chain2 should have grams that chain1 doesn't (added)
+      // chain1 should have grams that chain2 doesn't (removed)
+      const totalChanges = diff.added.length + diff.removed.length;
+      expect(totalChanges).toBeGreaterThan(0);
+    });
+  });
 });

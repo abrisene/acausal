@@ -177,6 +177,42 @@ export interface MCSimilarSequence {
   distance: number;
 }
 
+export interface MCExportNode {
+  id: string;
+  order: number;
+  frequency: number;
+  states: string[];
+}
+
+export interface MCExportEdge {
+  from: string;
+  to: string;
+  weight: number;
+  probability: number;
+}
+
+export interface MCGraphExport {
+  nodes: MCExportNode[];
+  edges: MCExportEdge[];
+  metadata: {
+    maxOrder: number;
+    totalGrams: number;
+    totalSequences: number;
+  };
+}
+
+export interface MCDiffResult {
+  added: string[];      // Grams in chain2 but not chain1
+  removed: string[];    // Grams in chain1 but not chain2
+  common: string[];     // Grams in both chains
+  modified: Array<{     // Grams with different probabilities
+    gram: string;
+    chain1Freq: number;
+    chain2Freq: number;
+    difference: number;
+  }>;
+}
+
 /**
  # Constants
  */
@@ -1079,6 +1115,139 @@ export class MarkovChain<T extends string = string> {
 
     const lastRow = dp[m];
     return lastRow ? lastRow[n] ?? 0 : 0;
+  }
+
+  /**
+   * Export chain as a graph structure for visualization.
+   * @returns Graph export with nodes and edges
+   */
+  public exportAsGraph(): MCGraphExport {
+    const nodes: MCExportNode[] = [];
+    const edges: MCExportEdge[] = [];
+    const grams = Object.values(this._model.grams);
+
+    // Create nodes from grams
+    for (const gram of grams) {
+      nodes.push({
+        id: gram.id,
+        order: gram.order,
+        frequency: gram.frequency,
+        states: gram.id.split(this._model.delimiter),
+      });
+
+      // Create edges from next probabilities
+      for (const [nextState, prob] of Object.entries(gram.next.normal)) {
+        if (prob > 0) {
+          edges.push({
+            from: gram.id,
+            to: nextState,
+            weight: gram.next.source[nextState] ?? 0,
+            probability: prob,
+          });
+        }
+      }
+    }
+
+    return {
+      nodes,
+      edges,
+      metadata: {
+        maxOrder: this._model.maxOrder,
+        totalGrams: grams.length,
+        totalSequences: this._model.sequences?.length ?? 0,
+      },
+    };
+  }
+
+  /**
+   * Compare this chain with another and return the differences.
+   * @param other The other chain to compare against
+   * @returns Diff result showing added, removed, common, and modified grams
+   */
+  public diff(other: MarkovChain): MCDiffResult {
+    const thisGrams = Object.keys(this._model.grams);
+    const otherGrams = Object.keys(other._model.grams);
+
+    const thisSet = new Set(thisGrams);
+    const otherSet = new Set(otherGrams);
+
+    // Find added, removed, and common
+    const added: string[] = [];
+    const removed: string[] = [];
+    const common: string[] = [];
+
+    for (const gram of otherGrams) {
+      if (!thisSet.has(gram)) {
+        added.push(gram);
+      } else {
+        common.push(gram);
+      }
+    }
+
+    for (const gram of thisGrams) {
+      if (!otherSet.has(gram)) {
+        removed.push(gram);
+      }
+    }
+
+    // Find modified (different frequencies)
+    const modified: MCDiffResult['modified'] = [];
+    for (const gram of common) {
+      const thisFreq = this._model.grams[gram]?.frequency ?? 0;
+      const otherFreq = other._model.grams[gram]?.frequency ?? 0;
+
+      if (thisFreq !== otherFreq) {
+        modified.push({
+          gram,
+          chain1Freq: thisFreq,
+          chain2Freq: otherFreq,
+          difference: otherFreq - thisFreq,
+        });
+      }
+    }
+
+    return {
+      added,
+      removed,
+      common,
+      modified,
+    };
+  }
+
+  /**
+   * Export chain to a simple JSON format for external use.
+   * @returns Simplified JSON representation
+   */
+  public toJSON(): {
+    metadata: {
+      maxOrder: number;
+      delimiter: string;
+      totalGrams: number;
+      totalSequences: number;
+    };
+    grams: Array<{
+      pattern: string[];
+      order: number;
+      frequency: number;
+      next: { [key: string]: number };
+    }>;
+  } {
+    const grams = Object.values(this._model.grams);
+
+    return {
+      metadata: {
+        maxOrder: this._model.maxOrder,
+        delimiter: this._model.delimiter,
+        totalGrams: grams.length,
+        totalSequences: this._model.sequences?.length ?? 0,
+      },
+      grams: grams.map(g => ({
+        pattern: g.id.split(this._model.delimiter),
+        order: g.order,
+        frequency: g.frequency,
+        next: g.next.normal,
+      })),
+    };
   }
 
   /**
