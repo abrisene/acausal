@@ -7,7 +7,7 @@
  # Module Dependencies
  */
 
-import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS } from '..';
+import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS, Distribution } from '..';
 import { MCGeneratorOptions, MCDirectionOption, MCGeneratorStaticOptions } from '../structures';
 // import { MarkovChainSequenceDTO } from '../structures';
 
@@ -986,6 +986,101 @@ describe('Markov Chain', () => {
       expect(Object.keys(updated.grams).length).toBe(Object.keys(current.grams).length);
 
       console.log(`Individual operations: ${time1}ms, Batch operations: ${time2}ms`);
+    });
+  });
+
+  describe('Generic Types and Utility Methods', () => {
+    test('hasGram should correctly check for gram existence', () => {
+      const chain = new MarkovChain({ maxOrder: 2 });
+      chain.addSequence(['a', 'b', 'c']);
+
+      expect(chain.hasGram(['a'])).toBe(true);
+      expect(chain.hasGram(['a', 'b'])).toBe(true);
+      expect(chain.hasGram(['b', 'c'])).toBe(true);
+      expect(chain.hasGram(['x', 'y'])).toBe(false);
+    });
+
+    test('getGramsByOrder should return grams of specific order', () => {
+      const chain = new MarkovChain({ maxOrder: 2 });
+      chain.addSequence(['a', 'b', 'c', 'd']);
+
+      const order1Grams = chain.getGramsByOrder(1);
+      const order2Grams = chain.getGramsByOrder(2);
+
+      expect(order1Grams.length).toBeGreaterThan(0);
+      expect(order2Grams.length).toBeGreaterThan(0);
+      expect(order1Grams.every(g => g.order === 1)).toBe(true);
+      expect(order2Grams.every(g => g.order === 2)).toBe(true);
+    });
+
+    test('getStats should return chain statistics', () => {
+      const chain = new MarkovChain({ maxOrder: 2 });
+      chain.addSequence(['a', 'b', 'c']);
+      chain.addSequence(['a', 'b', 'd']);
+
+      const stats = chain.getStats();
+
+      expect(stats.gramCount).toBeGreaterThan(0);
+      expect(stats.sequenceCount).toBe(2);
+      expect(stats.orderRange).toEqual([expect.any(Number), expect.any(Number)]);
+      expect(stats.avgDegreeIn).toBeGreaterThanOrEqual(0);
+      expect(stats.avgDegreeOut).toBeGreaterThanOrEqual(0);
+    });
+
+    test('withSelector should allow type-safe state selection', () => {
+      interface User {
+        id: number;
+        name: string;
+      }
+
+      const users: User[] = [
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
+        { id: 3, name: 'Charlie' },
+      ];
+
+      const lookup = new Map(users.map(u => [String(u.id), u]));
+      const selector = (id: string) => lookup.get(id);
+
+      // Create chain with ID sequences
+      const chain = new MarkovChain({ maxOrder: 1 });
+      chain.addSequence(['1', '2', '3']);
+      chain.addSequence(['1', '2', '1']);
+
+      // Attach selector
+      const chainWithSelector = chain.withSelector(selector);
+
+      // Verify selector is attached
+      expect(chainWithSelector.stateSelector).toBe(selector);
+    });
+
+    test('Distribution with specific string types should maintain type safety', () => {
+      type Options = 'red' | 'blue' | 'green';
+
+      const dist = new Distribution<Options>({
+        source: { red: 1, blue: 2, green: 3 }
+      });
+
+      const pick = dist.pickOne();
+      // At runtime, this should be one of the three options
+      expect(['red', 'blue', 'green']).toContain(pick);
+
+      const picks = dist.pick(10);
+      picks.forEach(p => {
+        expect(['red', 'blue', 'green']).toContain(p);
+      });
+    });
+
+    test('batch operations should maintain type information', () => {
+      const chain = new MarkovChain<string>({ maxOrder: 2 });
+
+      const updated = chain.batch()
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['b', 'c', 'd'])
+        .commit();
+
+      expect(updated.sequences).toHaveLength(2);
+      expect(updated.hasGram(['a', 'b'])).toBe(true);
     });
   });
 });

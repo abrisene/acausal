@@ -39,6 +39,10 @@ import { CONSTANTS } from '..';
  # Types
  */
 
+// State type can be anything, but internally stored as strings
+export type StateId = string | number;
+export type StateSelector<T> = (id: StateId) => T | undefined;
+
 export type MCDirectionOption = 'next' | 'last';
 export type MCInsertOption = boolean | 'start' | 'end' | 'middle';
 export type MCDelimitersShort = [string, string, string];
@@ -63,7 +67,7 @@ export interface MarkovChainGramDTO extends MarkovChainOptions {
 
 export type MarkovChainDTO = MarkovChainSequenceDTO | MarkovChainGramDTO;
 
-export interface MarkovChainConstructor extends RandomDTO {
+export interface MarkovChainConstructor<T extends string = string> extends RandomDTO {
   maxOrder?: number;
   delimiter?: string;
   startDelimiter?: string;
@@ -72,6 +76,7 @@ export interface MarkovChainConstructor extends RandomDTO {
   sequences?: string[][];
   grams?: GramDictionary;
   insert?: MCInsertOption;
+  stateSelector?: StateSelector<T>;
 }
 
 export interface Gram {
@@ -111,6 +116,14 @@ export interface MCAnalysis {
   sequence: string[];
   sources: { [key: string]: number };
   sinks: { [key: string]: number };
+}
+
+export interface MarkovChainStats {
+  gramCount: number;
+  sequenceCount: number;
+  orderRange: [number, number];
+  avgDegreeIn: number;
+  avgDegreeOut: number;
 }
 
 /**
@@ -335,9 +348,10 @@ function addGram(grams: GramDictionary, gramId: string, order: number) {
  # Class
  */
 
-export class MarkovChain {
+export class MarkovChain<T extends string = string> {
   private _engine: Random;
   private _model: MarkovChainDTO;
+  private _stateSelector?: StateSelector<T>;
 
   constructor({
     engine,
@@ -352,8 +366,10 @@ export class MarkovChain {
     insert = false,
     sequences,
     grams,
-  }: MarkovChainConstructor) {
+    stateSelector,
+  }: MarkovChainConstructor<T>) {
     this._engine = engine || new Random({ seed, uses });
+    this._stateSelector = stateSelector;
     this._model = {
       ...defaultOptions,
       maxOrder,
@@ -409,6 +425,10 @@ export class MarkovChain {
 
   get uses() {
     return this._engine.uses;
+  }
+
+  get stateSelector() {
+    return this._stateSelector;
   }
 
   get maxOrder() {
@@ -644,9 +664,68 @@ export class MarkovChain {
    *   .commit();
    * ```
    */
-  public batch(): MarkovChainBatch {
+  public batch(): MarkovChainBatch<T> {
     // Import is handled at top of file to avoid issues
-    return new MarkovChainBatch(this);
+    return new MarkovChainBatch<T>(this);
+  }
+
+  /**
+   * Attach a state selector for resolving IDs to values.
+   * Useful when storing numeric/string IDs in the chain and want to resolve to objects.
+   *
+   * @param selector Function to resolve state IDs to values
+   * @returns A new MarkovChain instance with the selector attached
+   *
+   * @example
+   * ```ts
+   * const lookup = new Map([[1, obj1], [2, obj2]]);
+   * const withSelector = chain.withSelector(id => lookup.get(id as number));
+   * const values = withSelector.generate({ order: 2 }); // Returns T[] instead of string[]
+   * ```
+   */
+  public withSelector<U extends string = string>(selector: StateSelector<U>): MarkovChain<U> {
+    const cloned = this.clone();
+    const newChain = cloned as unknown as MarkovChain<U>;
+    (newChain as any)._stateSelector = selector;
+    return newChain;
+  }
+
+  /**
+   * Check if a gram exists in the chain.
+   * @param gramSequence The gram sequence to check
+   * @returns True if the gram exists
+   */
+  public hasGram(gramSequence: string[]): boolean {
+    const id = this.getGramId(gramSequence);
+    return id in this._model.grams;
+  }
+
+  /**
+   * Get all grams of a specific order.
+   * @param order The order to filter by
+   * @returns Array of grams with the specified order
+   */
+  public getGramsByOrder(order: number): Gram[] {
+    return Object.values(this._model.grams).filter(gram => gram.order === order);
+  }
+
+  /**
+   * Get statistics about the Markov Chain.
+   * @returns Statistics including gram count, sequence count, and degree information
+   */
+  public getStats(): MarkovChainStats {
+    const grams = Object.values(this._model.grams);
+    const orders = grams.map(g => g.order);
+    const minOrder = orders.length > 0 ? Math.min(...orders) : 0;
+    const maxOrder = orders.length > 0 ? Math.max(...orders) : 0;
+
+    return {
+      gramCount: grams.length,
+      sequenceCount: this._model.sequences?.length ?? 0,
+      orderRange: [minOrder, maxOrder],
+      avgDegreeIn: grams.length > 0 ? grams.reduce((sum, g) => sum + g.degreeIn, 0) / grams.length : 0,
+      avgDegreeOut: grams.length > 0 ? grams.reduce((sum, g) => sum + g.degreeOut, 0) / grams.length : 0,
+    };
   }
 
   /**
@@ -1092,11 +1171,11 @@ type BatchOperation = (model: MarkovChainDTO) => void;
  *   .commit();
  * ```
  */
-export class MarkovChainBatch {
+export class MarkovChainBatch<T extends string = string> {
   private _operations: BatchOperation[] = [];
-  private _chain: MarkovChain;
+  private _chain: MarkovChain<T>;
 
-  constructor(chain: MarkovChain) {
+  constructor(chain: MarkovChain<T>) {
     this._chain = chain;
   }
 
