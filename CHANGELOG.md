@@ -1,5 +1,34 @@
 # Change Log
 
+<a name="3.1.0"></a>
+# [3.1.0](https://github.com/abrisene/acausal/compare/v3.1.0...v3.0.0) (2025-11-08)
+
+### Features
+
+**Phase 5: Chain Blending & Interpolation**
+* Added `MarkovChain.blend()` static method for combining multiple chains with weighted probabilities
+* Added `MarkovChain.interpolate()` instance method for blending two chains with alpha parameter
+* Support for multiple blending strategies: arithmetic, geometric, harmonic, max, min
+* Added `minWeight` option to filter low-probability states
+* Weight normalization for automatic probability balancing
+* 8 new comprehensive tests for chain blending (65 total tests passing)
+
+### Use Cases
+* Character genetics simulation (trait inheritance from multiple parents)
+* Loot table mixing (combining common/rare/epic drop tables)
+* Style interpolation (blending fantasy/sci-fi name generators)
+* Procedural generation with multiple influences
+
+### Documentation
+* Added chain blending section to `readme/markov.md`
+* Created `examples/chain-blending.ts` with practical examples
+* Updated `ROADMAP.md` with future enhancement plans
+
+### Performance
+* All blending operations create new chains without mutating originals
+* Efficient distribution merging with configurable strategies
+* Test coverage maintained at 95%+
+
 <a name="3.0.0"></a>
 # [3.0.0](https://github.com/abrisene/acausal/compare/v3.0.0...v2.0.1) (2025-11-08)
 

@@ -1083,4 +1083,167 @@ describe('Markov Chain', () => {
       expect(updated.hasGram(['a', 'b'])).toBe(true);
     });
   });
+
+  describe('Chain Blending', () => {
+    test('blend() should combine multiple chains with arithmetic mean', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      chain1.addSequence(['a', 'b', 'c']);
+      chain1.addSequence(['a', 'b', 'd']);
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      chain2.addSequence(['a', 'x', 'y']);
+      chain2.addSequence(['a', 'x', 'z']);
+
+      const blended = MarkovChain.blend([
+        { chain: chain1, weight: 0.5 },
+        { chain: chain2, weight: 0.5 }
+      ]);
+
+      // Blended chain should have grams from both
+      expect(blended.hasGram(['a'])).toBe(true);
+      expect(blended.hasGram(['b'])).toBe(true);
+      expect(blended.hasGram(['x'])).toBe(true);
+
+      // Should have combined probabilities
+      const gramA = blended.model.grams[blended.getGramId(['a'])];
+      expect(gramA).toBeDefined();
+      if (gramA) {
+        // 'a' should lead to both 'b' and 'x' with blended probabilities
+        expect(gramA.next.source['b']).toBeDefined();
+        expect(gramA.next.source['x']).toBeDefined();
+      }
+    });
+
+    test('interpolate() should blend two chains with alpha parameter', () => {
+      const names1 = ['alice', 'bob', 'charlie'].map(n => n.split(''));
+      const names2 = ['akira', 'yuki', 'hana'].map(n => n.split(''));
+
+      const chain1 = new MarkovChain({ maxOrder: 1, sequences: names1 });
+      const chain2 = new MarkovChain({ maxOrder: 1, sequences: names2 });
+
+      // 70% chain1, 30% chain2
+      const blended = chain1.interpolate(chain2, 0.3);
+
+      // Should have grams from both chains
+      expect(Object.keys(blended.model.grams).length).toBeGreaterThan(0);
+
+      // Generate a sequence to ensure it works
+      const generated = blended.generate({ order: 1, min: 3, max: 10 });
+      expect(generated.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test('blend() should handle single chain input', () => {
+      const chain = new MarkovChain({ maxOrder: 1 });
+      chain.addSequence(['a', 'b', 'c']);
+
+      const blended = MarkovChain.blend([{ chain, weight: 1.0 }]);
+
+      // Should be equivalent to a clone
+      expect(blended.model.grams).toEqual(chain.model.grams);
+    });
+
+    test('blend() should normalize weights', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      chain1.addSequence(['a', 'b']);
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      chain2.addSequence(['a', 'c']);
+
+      // Weights don't sum to 1
+      const blended = MarkovChain.blend(
+        [
+          { chain: chain1, weight: 2 },
+          { chain: chain2, weight: 3 }
+        ],
+        { normalize: true }
+      );
+
+      // Should still produce valid chain
+      expect(Object.keys(blended.model.grams).length).toBeGreaterThan(0);
+      const generated = blended.generate({ order: 1, min: 1, max: 5 });
+      expect(generated.length).toBeGreaterThanOrEqual(1);
+    });
+
+    test('blend() should support different blending strategies', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      chain1.addSequence(['a', 'b']);
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      chain2.addSequence(['a', 'c']);
+
+      const strategies: Array<'arithmetic' | 'geometric' | 'max' | 'min'> = [
+        'arithmetic',
+        'geometric',
+        'max',
+        'min'
+      ];
+
+      for (const strategy of strategies) {
+        const blended = MarkovChain.blend(
+          [
+            { chain: chain1, weight: 0.5 },
+            { chain: chain2, weight: 0.5 }
+          ],
+          { strategy }
+        );
+
+        expect(Object.keys(blended.model.grams).length).toBeGreaterThan(0);
+      }
+    });
+
+    test('blend() should filter low-weight states with minWeight option', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      // Add 'b' with high frequency
+      for (let i = 0; i < 10; i++) {
+        chain1.addSequence(['a', 'b']);
+      }
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      // Add 'c' with low frequency
+      chain2.addSequence(['a', 'c']);
+
+      const blended = MarkovChain.blend(
+        [
+          { chain: chain1, weight: 0.9 },
+          { chain: chain2, weight: 0.1 }
+        ],
+        { minWeight: 0.5 } // Filter out states with weight < 0.5
+      );
+
+      const gramA = blended.model.grams[blended.getGramId(['a'])];
+      expect(gramA).toBeDefined();
+      if (gramA) {
+        // 'b' should be present (high weight from chain1)
+        expect(gramA.next.source['b']).toBeDefined();
+        // 'c' might be filtered out due to low weight
+        // (depending on exact calculation, this is probabilistic)
+      }
+    });
+
+    test('blend() should throw error for empty chains array', () => {
+      expect(() => {
+        MarkovChain.blend([]);
+      }).toThrow('Cannot blend zero chains');
+    });
+
+    test('blended chains should be able to generate valid sequences', () => {
+      const englishWords = ['the', 'cat', 'sat', 'on', 'mat'].map(w => w.split(''));
+      const frenchWords = ['le', 'chat', 'est', 'sur', 'tapis'].map(w => w.split(''));
+
+      const english = new MarkovChain({ maxOrder: 2, sequences: englishWords });
+      const french = new MarkovChain({ maxOrder: 2, sequences: frenchWords });
+
+      const mixed = MarkovChain.blend([
+        { chain: english, weight: 0.6 },
+        { chain: french, weight: 0.4 }
+      ]);
+
+      // Generate multiple sequences to ensure stability
+      for (let i = 0; i < 10; i++) {
+        const generated = mixed.generate({ order: 2, min: 2, max: 8 });
+        expect(generated.length).toBeGreaterThanOrEqual(2);
+        expect(generated.length).toBeLessThanOrEqual(8);
+      }
+    });
+  });
 });

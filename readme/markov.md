@@ -143,6 +143,128 @@ console.log(`Average out-degree: ${stats.avgDegreeOut}`);
 
 See the [Migration Guide](../MIGRATION.md) for complete v3.0 features and migration steps.
 
+### Chain Blending (v3.1+)
+
+**Chain Blending** allows you to combine multiple Markov chains with weighted probabilities, useful for genetics simulation, loot table mixing, and style interpolation.
+
+#### Basic Usage
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+// Create two chains with different patterns
+const chain1 = new MarkovChain({ maxOrder: 2 });
+chain1.addSequences([
+  ['a', 'b', 'c'],
+  ['a', 'b', 'd']
+]);
+
+const chain2 = new MarkovChain({ maxOrder: 2 });
+chain2.addSequences([
+  ['x', 'y', 'z'],
+  ['x', 'y', 'w']
+]);
+
+// Blend with equal weights
+const blended = MarkovChain.blend([
+  { chain: chain1, weight: 0.5 },
+  { chain: chain2, weight: 0.5 }
+]);
+
+// Generate from blended probabilities
+const result = blended.generate({ order: 1, length: 5 });
+```
+
+#### Interpolation
+
+For blending exactly two chains, use the `interpolate()` method:
+
+```typescript
+// Alpha controls the blend: 0 = all chain1, 1 = all chain2
+const hybrid = chain1.interpolate(chain2, 0.3); // 70% chain1, 30% chain2
+```
+
+#### Blend Strategies
+
+Choose different blending strategies to control how probabilities combine:
+
+```typescript
+// Arithmetic mean (default): weighted average
+const arithmetic = MarkovChain.blend(chains, { strategy: 'arithmetic' });
+
+// Geometric mean: multiplicative combination
+const geometric = MarkovChain.blend(chains, { strategy: 'geometric' });
+
+// Harmonic mean: reciprocal weighting
+const harmonic = MarkovChain.blend(chains, { strategy: 'harmonic' });
+
+// Max: takes maximum probability for each transition
+const maxBlend = MarkovChain.blend(chains, { strategy: 'max' });
+
+// Min: takes minimum non-zero probability
+const minBlend = MarkovChain.blend(chains, { strategy: 'min' });
+```
+
+#### Filtering Low-Weight States
+
+Remove states with insignificant probabilities:
+
+```typescript
+const filtered = MarkovChain.blend(chains, {
+  minWeight: 0.1  // Only include states with ≥10% combined weight
+});
+```
+
+#### Practical Examples
+
+**Character Genetics:**
+```typescript
+const motherTraits = new MarkovChain({ maxOrder: 2 });
+motherTraits.addSequences([
+  ['black', 'brown', 'black'],
+  ['brown', 'black', 'brown']
+]);
+
+const fatherTraits = new MarkovChain({ maxOrder: 2 });
+fatherTraits.addSequences([
+  ['blonde', 'blonde', 'light-brown'],
+  ['light-brown', 'blonde', 'blonde']
+]);
+
+// Child inherits 50% from each parent
+const childTraits = MarkovChain.blend([
+  { chain: motherTraits, weight: 0.5 },
+  { chain: fatherTraits, weight: 0.5 }
+]);
+
+const hairColor = childTraits.generate({ order: 1, length: 3 });
+```
+
+**Loot Table Mixing:**
+```typescript
+const commonLoot = new MarkovChain({ maxOrder: 1 });
+commonLoot.addSequences([
+  ['copper', 'copper', 'wood'],
+  ['wood', 'copper', 'stone']
+]);
+
+const rareLoot = new MarkovChain({ maxOrder: 1 });
+rareLoot.addSequences([
+  ['gold', 'diamond', 'emerald'],
+  ['diamond', 'gold', 'ruby']
+]);
+
+// Boss chest: 30% common, 70% rare
+const bossChest = MarkovChain.blend([
+  { chain: commonLoot, weight: 0.3 },
+  { chain: rareLoot, weight: 0.7 }
+]);
+
+const drops = bossChest.generate({ order: 1, length: 5 });
+```
+
+For more examples, see [examples/chain-blending.ts](../examples/chain-blending.ts).
+
 ### Core Concepts
 
 #### States and Dependent Probability

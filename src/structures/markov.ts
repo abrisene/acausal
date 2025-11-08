@@ -670,6 +670,38 @@ export class MarkovChain<T extends string = string> {
   }
 
   /**
+   * Blend this chain with another chain using interpolation.
+   * Creates a new chain where probabilities are a weighted combination of both chains.
+   *
+   * @param otherChain The chain to blend with
+   * @param alpha Interpolation factor (0 = all this chain, 1 = all other chain)
+   * @param options Blending options
+   * @returns A new blended chain
+   *
+   * @example
+   * ```ts
+   * const mother = new MarkovChain({ sequences: motherTraits });
+   * const father = new MarkovChain({ sequences: fatherTraits });
+   *
+   * // 70% mother, 30% father
+   * const child = mother.interpolate(father, 0.3);
+   * ```
+   */
+  public interpolate<U extends string = string>(
+    otherChain: MarkovChain<U>,
+    alpha: number,
+    options?: BlendOptions
+  ): MarkovChain<T> {
+    return MarkovChain.blend(
+      [
+        { chain: this, weight: 1 - alpha },
+        { chain: otherChain as unknown as MarkovChain<T>, weight: alpha }
+      ],
+      options
+    );
+  }
+
+  /**
    * Attach a state selector for resolving IDs to values.
    * Useful when storing numeric/string IDs in the chain and want to resolve to objects.
    *
@@ -1149,6 +1181,127 @@ export class MarkovChain<T extends string = string> {
         } as MarkovChainDTO)
       : ({ ...dtoData, grams: gramsClone } as MarkovChainDTO);
   }
+
+  /**
+   * Blend multiple Markov chains together with weighted combination.
+   * Creates a new chain where gram probabilities are combined according to weights.
+   *
+   * @param chains Array of chains with their weights
+   * @param options Blending options
+   * @returns A new blended chain
+   *
+   * @example
+   * ```ts
+   * const irish = new MarkovChain({ sequences: irishNames });
+   * const japanese = new MarkovChain({ sequences: japaneseNames });
+   *
+   * // 70% Irish, 30% Japanese
+   * const blended = MarkovChain.blend([
+   *   { chain: irish, weight: 0.7 },
+   *   { chain: japanese, weight: 0.3 }
+   * ]);
+   *
+   * // Generate from blended probabilities
+   * const name = blended.generate({ order: 2 });
+   * ```
+   */
+  static blend<T extends string = string>(
+    chains: ChainBlendConfig<T>[],
+    options?: BlendOptions
+  ): MarkovChain<T> {
+    if (chains.length === 0) {
+      throw new Error('Cannot blend zero chains');
+    }
+
+    if (chains.length === 1) {
+      return chains[0]!.chain.clone() as MarkovChain<T>;
+    }
+
+    const {
+      strategy = 'arithmetic',
+      normalize = true,
+      minWeight = 0
+    } = options || {};
+
+    // Normalize weights if requested
+    const totalWeight = chains.reduce((sum, c) => sum + c.weight, 0);
+    const normalizedChains = normalize
+      ? chains.map(c => ({ ...c, weight: c.weight / totalWeight }))
+      : chains;
+
+    // Collect all unique gram IDs from all chains
+    const allGramIds = new Set<string>();
+    for (const { chain } of chains) {
+      Object.keys(chain.model.grams).forEach(id => allGramIds.add(id));
+    }
+
+    // Blend grams
+    const blendedGrams: GramDictionary = {};
+
+    for (const gramId of allGramIds) {
+      // Collect this gram from all chains that have it
+      const gramConfigs: Array<{ gram: Gram; weight: number }> = [];
+
+      for (const { chain, weight } of normalizedChains) {
+        const gram = chain.model.grams[gramId];
+        if (gram) {
+          gramConfigs.push({ gram, weight });
+        }
+      }
+
+      if (gramConfigs.length === 0) continue;
+
+      // Blend the next distributions
+      const nextDists = gramConfigs.map(g => g.gram.next);
+      const weights = gramConfigs.map(g => g.weight);
+      const blendedNext = blendMultipleDistributions(nextDists, weights, strategy);
+
+      // Blend the last distributions
+      const lastDists = gramConfigs.map(g => g.gram.last);
+      const blendedLast = blendMultipleDistributions(lastDists, weights, strategy);
+
+      // Use properties from the first gram, but with blended distributions
+      const firstGram = gramConfigs[0]!.gram;
+
+      // Filter out low-weight states if threshold is set
+      if (minWeight > 0) {
+        const filteredNext = Object.fromEntries(
+          Object.entries(blendedNext.source).filter(([_, v]) => v >= minWeight)
+        );
+        const filteredLast = Object.fromEntries(
+          Object.entries(blendedLast.source).filter(([_, v]) => v >= minWeight)
+        );
+
+        blendedNext.source = filteredNext;
+        blendedNext.normal = normalizeObject(filteredNext);
+        blendedLast.source = filteredLast;
+        blendedLast.normal = normalizeObject(filteredLast);
+      }
+
+      blendedGrams[gramId] = {
+        id: firstGram.id,
+        order: firstGram.order,
+        next: blendedNext,
+        last: blendedLast,
+        frequency: gramConfigs.reduce((sum, { gram, weight }) => sum + gram.frequency * weight, 0),
+        degreeIn: Object.keys(blendedLast.source).length,
+        degreeOut: Object.keys(blendedNext.source).length,
+      };
+    }
+
+    // Create new chain with blended grams
+    // Use properties from the first chain as defaults
+    const baseChain = chains[0]!.chain;
+
+    return new MarkovChain<T>({
+      maxOrder: baseChain.maxOrder,
+      delimiter: baseChain.model.delimiter,
+      startDelimiter: baseChain.model.startDelimiter,
+      endDelimiter: baseChain.model.endDelimiter,
+      grams: blendedGrams,
+      // Don't include sequences as we've synthesized new probabilities
+    });
+  }
 }
 
 /**
@@ -1269,4 +1422,104 @@ export class MarkovChainBatch<T extends string = string> {
     this._operations = [];
     return this;
   }
+}
+
+/**
+ * # Chain Blending
+ *
+ * Utilities for blending and interpolating multiple Markov chains.
+ */
+
+/**
+ * Blending strategy for combining probability distributions
+ */
+export type BlendStrategy = 'arithmetic' | 'geometric' | 'harmonic' | 'max' | 'min';
+
+/**
+ * Configuration for blending a single chain
+ */
+export interface ChainBlendConfig<T extends string = string> {
+  chain: MarkovChain<T>;
+  weight: number;
+}
+
+/**
+ * Options for chain blending
+ */
+export interface BlendOptions {
+  strategy?: BlendStrategy;
+  normalize?: boolean;
+  minWeight?: number; // Minimum weight threshold to include a state
+}
+
+/**
+ * Helper function to blend multiple distributions
+ */
+function blendMultipleDistributions(
+  distributions: DistributionSourceDTO[],
+  weights: number[],
+  strategy: BlendStrategy = 'arithmetic'
+): DistributionSourceDTO {
+  if (distributions.length === 0) {
+    return { source: {}, normal: {} };
+  }
+
+  if (distributions.length === 1) {
+    return distributions[0]!;
+  }
+
+  // Collect all unique keys
+  const allKeys = new Set<string>();
+  for (const dist of distributions) {
+    Object.keys(dist.source).forEach(key => allKeys.add(key));
+  }
+
+  const blended: { [key: string]: number } = {};
+
+  for (const key of allKeys) {
+    const values = distributions.map((d, i) => ({
+      value: d.source[key] || 0,
+      weight: weights[i] || 0
+    }));
+
+    switch (strategy) {
+      case 'arithmetic':
+        blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        break;
+      case 'geometric': {
+        const nonZeroValues = values.filter(v => v.value > 0);
+        if (nonZeroValues.length === values.length) {
+          blended[key] = nonZeroValues.reduce((prod, { value, weight }) =>
+            prod * Math.pow(value, weight), 1
+          );
+        } else {
+          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        }
+        break;
+      }
+      case 'harmonic': {
+        const nonZeroValues = values.filter(v => v.value > 0);
+        if (nonZeroValues.length === values.length) {
+          const sum = nonZeroValues.reduce((s, { value, weight }) => s + weight / value, 0);
+          blended[key] = 1 / sum;
+        } else {
+          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        }
+        break;
+      }
+      case 'max':
+        blended[key] = Math.max(...values.map(v => v.value));
+        break;
+      case 'min': {
+        const nonZeroValues = values.filter(v => v.value > 0).map(v => v.value);
+        blended[key] = nonZeroValues.length > 0 ? Math.min(...nonZeroValues) : 0;
+        break;
+      }
+    }
+  }
+
+  return {
+    source: blended,
+    normal: normalizeObject(blended)
+  };
 }
