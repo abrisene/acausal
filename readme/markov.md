@@ -265,6 +265,94 @@ const drops = bossChest.generate({ order: 1, length: 5 });
 
 For more examples, see [examples/chain-blending.ts](../examples/chain-blending.ts).
 
+### Scaled States & Continuous Values (v3.2+)
+
+**ScaledMarkovChain** tracks both categorical states and continuous magnitude values. Perfect for market simulations, physics, weather modeling, or any system where transitions have associated numerical values.
+
+#### Basic Usage
+
+```typescript
+import { ScaledMarkovChain } from 'acausal';
+
+const marketChain = new ScaledMarkovChain<'bullish' | 'bearish' | 'neutral'>({
+  maxOrder: 2,
+  magnitudeRange: [-100, 100],
+  samplingStrategy: 'mean'
+});
+
+// Add historical data with sentiment + price changes
+marketChain.addScaledSequence([
+  { category: 'neutral', magnitude: 0 },
+  { category: 'bullish', magnitude: 15 },
+  { category: 'bullish', magnitude: 22 },
+  { category: 'neutral', magnitude: -5 },
+  { category: 'bearish', magnitude: -18 }
+]);
+
+// Generate forecast with both sentiment and magnitude
+const forecast = marketChain.generateScaled({ order: 2, length: 5 });
+// Returns: [{ category: 'bullish', magnitude: 18.5 }, ...]
+```
+
+#### Magnitude Statistics
+
+```typescript
+// Get statistics for a specific category
+const stats = marketChain.getMagnitudeStats('bullish');
+console.log(`Average: ${stats.mean}, Range: [${stats.min}, ${stats.max}]`);
+
+// Get all observed magnitudes
+const samples = marketChain.getMagnitudeSamples('bullish');
+```
+
+#### Sampling Strategies
+
+```typescript
+// Mean: Returns average of observed magnitudes (default)
+new ScaledMarkovChain({ samplingStrategy: 'mean' });
+
+// Median: Returns middle value
+new ScaledMarkovChain({ samplingStrategy: 'median' });
+
+// Sample: Randomly picks from observed values
+new ScaledMarkovChain({ samplingStrategy: 'sample' });
+
+// Weighted-sample: Uses seeded RNG for reproducibility
+new ScaledMarkovChain({ samplingStrategy: 'weighted-sample' });
+```
+
+#### Practical Examples
+
+**Weather with Temperature:**
+```typescript
+const weatherChain = new ScaledMarkovChain<'sunny' | 'cloudy' | 'rainy'>({
+  maxOrder: 1,
+  magnitudeRange: [-10, 40]  // Temperature in Celsius
+});
+
+weatherChain.addScaledSequence([
+  { category: 'sunny', magnitude: 25 },
+  { category: 'cloudy', magnitude: 22 },
+  { category: 'rainy', magnitude: 18 }
+]);
+
+const forecast = weatherChain.generateScaled({ order: 1, length: 7 });
+// Returns 7-day forecast with both conditions and temperatures
+```
+
+**Game Character States:**
+```typescript
+const characterChain = new ScaledMarkovChain<'idle' | 'walking' | 'fighting' | 'resting'>({
+  maxOrder: 2,
+  magnitudeRange: [0, 100]  // Health/stamina
+});
+
+// Model character behavior with health changes
+const behavior = characterChain.generateScaled({ order: 2, length: 10 });
+```
+
+For complete examples, see [examples/scaled-states.ts](../examples/scaled-states.ts).
+
 ### Core Concepts
 
 #### States and Dependent Probability

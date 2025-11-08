@@ -1523,3 +1523,377 @@ function blendMultipleDistributions(
     normal: normalizeObject(blended)
   };
 }
+
+/**
+ * # Scaled States & Continuous Values
+ */
+
+/**
+ * Represents a state with both a categorical value and a continuous magnitude.
+ * Useful for modeling systems where states have associated numerical values.
+ */
+export interface ScaledState<T extends string = string> {
+  category: T;
+  magnitude: number;
+}
+
+/**
+ * Strategy for sampling magnitudes from stored distributions
+ */
+export type MagnitudeSamplingStrategy = 'mean' | 'median' | 'sample' | 'weighted-sample';
+
+/**
+ * Statistics for magnitude distributions
+ */
+export interface MagnitudeStats {
+  mean: number;
+  median: number;
+  std: number;
+  min: number;
+  max: number;
+  count: number;
+}
+
+/**
+ * Options for ScaledMarkovChain construction
+ */
+export interface ScaledMarkovChainOptions<T extends string = string> extends MarkovChainConstructor<T> {
+  magnitudeRange?: [number, number];
+  samplingStrategy?: MagnitudeSamplingStrategy;
+}
+
+/**
+ * Storage for magnitude samples associated with gram-category transitions
+ */
+interface MagnitudeStore {
+  [gramId: string]: {
+    [category: string]: number[];
+  };
+}
+
+/**
+ * MarkovChain that tracks both categorical states and continuous magnitude values.
+ * Useful for modeling systems where transitions have associated numerical values,
+ * such as market movements, physics simulations, or game states with attributes.
+ *
+ * @example
+ * ```typescript
+ * const marketChain = new ScaledMarkovChain<'up' | 'down' | 'stable'>({
+ *   maxOrder: 2,
+ *   magnitudeRange: [-100, 100]
+ * });
+ *
+ * marketChain.addScaledSequence([
+ *   { category: 'up', magnitude: 20 },
+ *   { category: 'up', magnitude: 35 },
+ *   { category: 'stable', magnitude: 2 },
+ *   { category: 'down', magnitude: -15 }
+ * ]);
+ *
+ * const next = marketChain.generateScaled({ order: 1, length: 5 });
+ * // Returns: [{ category: 'up', magnitude: 28 }, ...]
+ * ```
+ */
+export class ScaledMarkovChain<T extends string = string> {
+  private categoryChain: MarkovChain<T>;
+  private magnitudeStore: MagnitudeStore;
+  private samplingStrategy: MagnitudeSamplingStrategy;
+  private magnitudeRange?: [number, number];
+  private _engine: Random;
+  private categorySequences: string[][];
+  private chainOptions: MarkovChainOptions;
+
+  constructor(options: ScaledMarkovChainOptions<T> = { maxOrder: 2 }) {
+    this._engine = options.engine || new Random({ seed: options.seed, uses: options.uses });
+
+    // Store chain options for rebuilding
+    this.chainOptions = {
+      maxOrder: options.maxOrder || 2,
+      delimiter: options.delimiter || CONSTANTS.MC_GRAM_DELIMITER,
+      startDelimiter: options.startDelimiter || CONSTANTS.MC_START_DELIMITER,
+      endDelimiter: options.endDelimiter || CONSTANTS.MC_END_DELIMITER,
+      seed: options.seed,
+      uses: options.uses
+    };
+
+    this.categorySequences = [];
+
+    this.categoryChain = new MarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      sequences: [],  // Start with empty sequences
+      grams: options.grams
+    });
+    this.magnitudeStore = {};
+    this.samplingStrategy = options.samplingStrategy || 'mean';
+    this.magnitudeRange = options.magnitudeRange;
+  }
+
+  /**
+   * Add a sequence of scaled states to the chain
+   */
+  public addScaledSequence(
+    sequence: ScaledState<T>[]
+  ): ScaledMarkovChain<T> {
+    if (sequence.length === 0) return this;
+
+    // Extract categories for the category chain
+    const categories = sequence.map(s => s.category);
+
+    // Clone category sequences and add new one
+    const newCategorySequences = [...this.categorySequences, categories];
+
+    // Clone magnitude store
+    const newMagnitudeStore = this.cloneMagnitudeStore();
+
+    // Store magnitude samples for each transition
+    const maxOrder = this.chainOptions.maxOrder;
+
+    for (let i = 0; i < sequence.length; i++) {
+      const state = sequence[i]!;
+
+      // Track magnitude for each order
+      for (let order = 0; order <= Math.min(maxOrder, i); order++) {
+        const gramSequence = categories.slice(Math.max(0, i - order), i);
+        // Use start delimiter for empty gram (start context)
+        const gramId = gramSequence.length === 0
+          ? this.chainOptions.startDelimiter
+          : getGramId(gramSequence, this.chainOptions.delimiter);
+
+        // Initialize storage for this gram if needed
+        if (!newMagnitudeStore[gramId]) {
+          newMagnitudeStore[gramId] = {};
+        }
+        if (!newMagnitudeStore[gramId]![state.category]) {
+          newMagnitudeStore[gramId]![state.category] = [];
+        }
+
+        // Store the magnitude sample
+        newMagnitudeStore[gramId]![state.category]!.push(state.magnitude);
+      }
+    }
+
+    // Create new category chain with all sequences
+    // Note: Don't pass insert to constructor - it defaults to adding delimiters
+    // The insert parameter in addScaledSequence is for potential future use
+    const newCategoryChain = new MarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      sequences: newCategorySequences
+    });
+
+    // Create new instance with updated data
+    const updated = new ScaledMarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      samplingStrategy: this.samplingStrategy,
+      magnitudeRange: this.magnitudeRange
+    });
+    updated.categoryChain = newCategoryChain;
+    updated.categorySequences = newCategorySequences;
+    updated.magnitudeStore = newMagnitudeStore;
+    updated.samplingStrategy = this.samplingStrategy;
+    updated.magnitudeRange = this.magnitudeRange;
+    updated.chainOptions = this.chainOptions;
+
+    return updated;
+  }
+
+  /**
+   * Add multiple scaled sequences
+   */
+  public addScaledSequences(
+    sequences: ScaledState<T>[][]
+  ): ScaledMarkovChain<T> {
+    let result: ScaledMarkovChain<T> = this;
+    for (const seq of sequences) {
+      result = result.addScaledSequence(seq);
+    }
+    return result;
+  }
+
+  /**
+   * Generate a sequence of scaled states
+   */
+  public generateScaled(options: MCGeneratorOptions = {}): ScaledState<T>[] {
+    // First generate categories using the category chain
+    const categories = this.categoryChain.generate(options);
+
+    // Then sample magnitudes for each category
+    const result: ScaledState<T>[] = [];
+    const model = this.categoryChain.model;
+
+    for (let i = 0; i < categories.length; i++) {
+      const category = categories[i]!;
+
+      // Determine the gram context for this position
+      const order = options.order ?? model.maxOrder;
+      const gramSequence = categories.slice(Math.max(0, i - order), i);
+      const gramId = gramSequence.length === 0
+        ? model.startDelimiter
+        : getGramId(gramSequence, model.delimiter);
+
+      // Sample magnitude for this category given the gram context
+      const magnitude = this.sampleMagnitude(gramId, category);
+
+      result.push({ category: category as T, magnitude });
+    }
+
+    return result;
+  }
+
+  /**
+   * Pick a single next scaled state
+   */
+  public pickScaled(
+    current?: ScaledState<T>[] | string[],
+    next: boolean = true,
+    mask?: string[]
+  ): ScaledState<T> | undefined {
+    // Extract categories if scaled states provided
+    const categories = current
+      ? (typeof current[0] === 'object' && 'category' in current[0]
+        ? (current as ScaledState<T>[]).map(s => s.category)
+        : current as string[])
+      : undefined;
+
+    // Pick next category
+    const nextCategory = this.categoryChain.pick(categories, next, mask);
+    if (!nextCategory) return undefined;
+
+    // Determine gram context
+    const model = this.categoryChain.model;
+    const gramSequence = categories || [];
+    const gramId = gramSequence.length === 0
+      ? model.startDelimiter
+      : getGramId(gramSequence, model.delimiter);
+
+    // Sample magnitude
+    const magnitude = this.sampleMagnitude(gramId, nextCategory);
+
+    return { category: nextCategory as T, magnitude };
+  }
+
+  /**
+   * Get magnitude statistics for a category given a gram context
+   */
+  public getMagnitudeStats(
+    category: string,
+    gramContext?: string[]
+  ): MagnitudeStats | undefined {
+    const model = this.categoryChain.model;
+    const gramId = gramContext
+      ? getGramId(gramContext, model.delimiter)
+      : model.startDelimiter; // Use start context if none provided
+
+    const magnitudes = this.magnitudeStore[gramId]?.[category];
+    if (!magnitudes || magnitudes.length === 0) return undefined;
+
+    const sorted = magnitudes.slice().sort((a, b) => a - b);
+    const sum = magnitudes.reduce((s, m) => s + m, 0);
+    const mean = sum / magnitudes.length;
+    const variance = magnitudes.reduce((s, m) => s + Math.pow(m - mean, 2), 0) / magnitudes.length;
+
+    return {
+      mean,
+      median: sorted[Math.floor(sorted.length / 2)]!,
+      std: Math.sqrt(variance),
+      min: sorted[0]!,
+      max: sorted[sorted.length - 1]!,
+      count: magnitudes.length
+    };
+  }
+
+  /**
+   * Get all magnitude samples for a category given a gram context
+   */
+  public getMagnitudeSamples(
+    category: string,
+    gramContext?: string[]
+  ): number[] {
+    const model = this.categoryChain.model;
+    const gramId = gramContext
+      ? getGramId(gramContext, model.delimiter)
+      : model.startDelimiter;
+
+    return this.magnitudeStore[gramId]?.[category]?.slice() || [];
+  }
+
+  /**
+   * Clone the magnitude store
+   */
+  private cloneMagnitudeStore(): MagnitudeStore {
+    const clone: MagnitudeStore = {};
+    for (const gramId in this.magnitudeStore) {
+      clone[gramId] = {};
+      for (const category in this.magnitudeStore[gramId]) {
+        clone[gramId]![category] = this.magnitudeStore[gramId]![category]!.slice();
+      }
+    }
+    return clone;
+  }
+
+  /**
+   * Sample a magnitude value for a category given a gram context
+   */
+  private sampleMagnitude(gramId: string, category: string): number {
+    const magnitudes = this.magnitudeStore[gramId]?.[category];
+
+    // If no samples, return midpoint of range or 0
+    if (!magnitudes || magnitudes.length === 0) {
+      if (this.magnitudeRange) {
+        return (this.magnitudeRange[0] + this.magnitudeRange[1]) / 2;
+      }
+      return 0;
+    }
+
+    // Sample based on strategy
+    switch (this.samplingStrategy) {
+      case 'mean': {
+        const sum = magnitudes.reduce((s, m) => s + m, 0);
+        return sum / magnitudes.length;
+      }
+      case 'median': {
+        const sorted = magnitudes.slice().sort((a, b) => a - b);
+        return sorted[Math.floor(sorted.length / 2)]!;
+      }
+      case 'sample': {
+        // Random sample from observed values
+        const idx = Math.floor(Math.random() * magnitudes.length);
+        return magnitudes[idx]!;
+      }
+      case 'weighted-sample': {
+        // Sample using RNG for reproducibility
+        const idx = this._engine.integer(0, magnitudes.length - 1);
+        return magnitudes[idx]!;
+      }
+    }
+  }
+
+  /**
+   * Get the underlying category chain
+   */
+  public getCategoryChain(): MarkovChain<T> {
+    return this.categoryChain;
+  }
+
+  /**
+   * Clone this scaled chain
+   */
+  public clone(): ScaledMarkovChain<T> {
+    const cloned = new ScaledMarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      samplingStrategy: this.samplingStrategy,
+      magnitudeRange: this.magnitudeRange
+    });
+    cloned.categoryChain = this.categoryChain.clone() as MarkovChain<T>;
+    cloned.categorySequences = [...this.categorySequences];
+    cloned.magnitudeStore = this.cloneMagnitudeStore();
+    cloned.samplingStrategy = this.samplingStrategy;
+    cloned.magnitudeRange = this.magnitudeRange;
+    cloned.chainOptions = { ...this.chainOptions };
+    cloned._engine = this._engine;
+    return cloned;
+  }
+}

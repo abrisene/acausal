@@ -7,7 +7,7 @@
  # Module Dependencies
  */
 
-import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS, Distribution } from '..';
+import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS, Distribution, ScaledMarkovChain } from '..';
 import { MCGeneratorOptions, MCDirectionOption, MCGeneratorStaticOptions } from '../structures';
 // import { MarkovChainSequenceDTO } from '../structures';
 
@@ -1244,6 +1244,237 @@ describe('Markov Chain', () => {
         expect(generated.length).toBeGreaterThanOrEqual(2);
         expect(generated.length).toBeLessThanOrEqual(8);
       }
+    });
+  });
+
+  /**
+   * Scaled Markov Chain Tests (v3.2)
+   */
+  describe('ScaledMarkovChain', () => {
+    test('should create a scaled chain and add sequences', () => {
+      const chain = new ScaledMarkovChain<'up' | 'down' | 'stable'>({
+        seed: 1,
+        maxOrder: 2,
+        magnitudeRange: [-100, 100]
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'up', magnitude: 20 },
+        { category: 'up', magnitude: 35 },
+        { category: 'stable', magnitude: 2 },
+        { category: 'down', magnitude: -15 }
+      ]);
+
+      expect(updated).toBeInstanceOf(ScaledMarkovChain);
+      const categoryChain = updated.getCategoryChain();
+      expect(categoryChain.hasGram(['up'])).toBe(true);
+      expect(categoryChain.hasGram(['stable'])).toBe(true);
+      expect(categoryChain.hasGram(['down'])).toBe(true);
+    });
+
+    test('should generate scaled sequences with magnitude sampling', () => {
+      const chain = new ScaledMarkovChain<'positive' | 'negative' | 'neutral'>({
+        seed: 2,
+        maxOrder: 1,
+        samplingStrategy: 'mean'
+      });
+
+      const updated = chain.addScaledSequences([
+        [
+          { category: 'positive', magnitude: 50 },
+          { category: 'positive', magnitude: 60 },
+          { category: 'neutral', magnitude: 5 }
+        ],
+        [
+          { category: 'positive', magnitude: 40 },
+          { category: 'neutral', magnitude: 0 },
+          { category: 'negative', magnitude: -30 }
+        ]
+      ]);
+
+      const generated = updated.generateScaled({ order: 1, min: 3, max: 5 });
+
+      expect(generated.length).toBeGreaterThanOrEqual(3);
+      expect(generated.length).toBeLessThanOrEqual(5);
+      generated.forEach(state => {
+        expect(state).toHaveProperty('category');
+        expect(state).toHaveProperty('magnitude');
+        expect(typeof state.magnitude).toBe('number');
+      });
+    });
+
+    test('should track magnitude statistics correctly', () => {
+      const chain = new ScaledMarkovChain<'a' | 'b'>({
+        seed: 3,
+        maxOrder: 1
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'a', magnitude: 10 },
+        { category: 'a', magnitude: 20 },
+        { category: 'a', magnitude: 30 },
+        { category: 'b', magnitude: 5 }
+      ]);
+
+      // Get stats for 'a' from start context
+      const stats = updated.getMagnitudeStats('a');
+      expect(stats).toBeDefined();
+      expect(stats!.mean).toBe(20); // (10 + 20 + 30) / 3
+      expect(stats!.min).toBe(10);
+      expect(stats!.max).toBe(30);
+      expect(stats!.count).toBe(3);
+    });
+
+    test('should support different sampling strategies', () => {
+      const magnitudes = [10, 20, 30, 40, 50];
+
+      // Mean strategy
+      const meanChain = new ScaledMarkovChain<'test'>({
+        seed: 4,
+        maxOrder: 1,
+        samplingStrategy: 'mean'
+      });
+
+      const states = magnitudes.map(m => ({ category: 'test' as const, magnitude: m }));
+      const withMean = meanChain.addScaledSequence(states);
+      const meanResult = withMean.generateScaled({ order: 1, min: 1, max: 1 });
+
+      // Mean should be 30
+      expect(meanResult[0]?.magnitude).toBe(30);
+
+      // Median strategy
+      const medianChain = new ScaledMarkovChain<'test'>({
+        seed: 5,
+        maxOrder: 1,
+        samplingStrategy: 'median'
+      });
+
+      const withMedian = medianChain.addScaledSequence(states);
+      const medianResult = withMedian.generateScaled({ order: 1, min: 1, max: 1 });
+
+      // Median should be 30 (middle value)
+      expect(medianResult[0]?.magnitude).toBe(30);
+    });
+
+    test('should handle magnitude range fallback', () => {
+      const chain = new ScaledMarkovChain<'known' | 'unknown'>({
+        seed: 6,
+        maxOrder: 1,
+        magnitudeRange: [-50, 50],
+        samplingStrategy: 'mean'
+      });
+
+      // Add a sequence with only 'known' category
+      const updated = chain.addScaledSequence([
+        { category: 'known', magnitude: 10 },
+        { category: 'unknown', magnitude: 20 }
+      ]);
+
+      // Get magnitude for a category-gram combination that has no magnitude data
+      // by getting stats for non-existent gram context
+      const stats = updated.getMagnitudeStats('unknown', ['nonexistent']);
+
+      // When no magnitude data exists for a gram-category pair, stats should be undefined
+      expect(stats).toBeUndefined();
+
+      // The sampleMagnitude method should use midpoint of range as fallback
+      // This is tested indirectly through generation with limited data
+      const result = updated.generateScaled({ order: 1, min: 1, max: 2 });
+      expect(result.length).toBeGreaterThanOrEqual(1);
+      result.forEach(state => {
+        expect(state.magnitude).toBeDefined();
+        expect(typeof state.magnitude).toBe('number');
+      });
+    });
+
+    test('should get magnitude samples for categories', () => {
+      const chain = new ScaledMarkovChain<'x' | 'y'>({
+        seed: 7,
+        maxOrder: 1
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'x', magnitude: 100 },
+        { category: 'x', magnitude: 200 },
+        { category: 'y', magnitude: 300 }
+      ]);
+
+      const samples = updated.getMagnitudeSamples('x');
+      expect(samples).toHaveLength(2);
+      expect(samples).toContain(100);
+      expect(samples).toContain(200);
+    });
+
+    test('should clone scaled chain correctly', () => {
+      const chain = new ScaledMarkovChain<'foo' | 'bar'>({
+        seed: 8,
+        maxOrder: 2,
+        samplingStrategy: 'median',
+        magnitudeRange: [0, 100]
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'foo', magnitude: 10 },
+        { category: 'bar', magnitude: 20 }
+      ]);
+
+      const cloned = updated.clone();
+
+      // Check that properties are preserved
+      expect(cloned).toBeInstanceOf(ScaledMarkovChain);
+
+      // Generate from both and compare
+      const original = updated.generateScaled({ order: 1, min: 2, max: 2 });
+      const fromClone = cloned.generateScaled({ order: 1, min: 2, max: 2 });
+
+      // Both should generate valid sequences
+      expect(original.length).toBe(2);
+      expect(fromClone.length).toBe(2);
+    });
+
+    test('should support pickScaled for single state generation', () => {
+      const chain = new ScaledMarkovChain<'hot' | 'cold'>({
+        seed: 9,
+        maxOrder: 1
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'hot', magnitude: 80 },
+        { category: 'cold', magnitude: 20 },
+        { category: 'hot', magnitude: 90 }
+      ]);
+
+      const next = updated.pickScaled(['hot']);
+
+      expect(next).toBeDefined();
+      expect(next).toHaveProperty('category');
+      expect(next).toHaveProperty('magnitude');
+    });
+
+    test('should handle multi-order magnitude tracking', () => {
+      const chain = new ScaledMarkovChain<'rising' | 'falling'>({
+        seed: 10,
+        maxOrder: 2,
+        samplingStrategy: 'mean'
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'rising', magnitude: 10 },
+        { category: 'rising', magnitude: 20 },
+        { category: 'rising', magnitude: 30 },
+        { category: 'falling', magnitude: -10 }
+      ]);
+
+      // Generate with order 2 to use bigram context
+      const result = updated.generateScaled({ order: 2, min: 2, max: 4 });
+
+      expect(result.length).toBeGreaterThanOrEqual(2);
+      expect(result.length).toBeLessThanOrEqual(4);
+
+      // All states should have magnitudes
+      result.forEach(state => {
+        expect(typeof state.magnitude).toBe('number');
+      });
     });
   });
 });

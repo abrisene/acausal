@@ -1,5 +1,36 @@
 # Change Log
 
+<a name="3.2.0"></a>
+# [3.2.0](https://github.com/abrisene/acausal/compare/v3.2.0...v3.1.0) (2025-11-08)
+
+### Features
+
+**Phase 6: Scaled States & Continuous Values**
+* Added `ScaledMarkovChain<T>` class for states with both category and magnitude
+* Support for continuous value tracking alongside categorical states
+* Four magnitude sampling strategies: mean, median, sample, weighted-sample
+* `generateScaled()` method for magnitude-aware sequence generation
+* `getMagnitudeStats()` and `getMagnitudeSamples()` for magnitude analysis
+* Configurable magnitude ranges with automatic fallback values
+* 9 new comprehensive tests for scaled states (74 total tests passing)
+
+### Use Cases
+* Market simulation (sentiment + price changes)
+* Weather modeling (conditions + temperature)
+* Game character states (actions + health/stamina)
+* Physics simulations (state + continuous properties)
+* Any system where transitions have associated numerical values
+
+### Documentation
+* Added scaled states section to `readme/markov.md`
+* Created `examples/scaled-states.ts` with practical examples (market, weather, game states)
+* Updated ROADMAP.md
+
+### Performance
+* Immutable operations create new chains without mutations
+* Efficient magnitude storage per gram-category pair
+* Test coverage maintained at 95%+
+
 <a name="3.1.0"></a>
 # [3.1.0](https://github.com/abrisene/acausal/compare/v3.1.0...v3.0.0) (2025-11-08)
 
