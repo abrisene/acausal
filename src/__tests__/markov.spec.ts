@@ -578,7 +578,7 @@ describe('Markov Chain', () => {
       expect(a1).toHaveProperty('sources');
       expect(a1).toHaveProperty('sinks');
       expect(a1.sequence).toEqual([dtoC2.startDelimiter]);
-      expect(a1.sources).toEqual({ undefined: 1 });
+      expect(a1.sources).toEqual({});
       Object.values(a1.sinks).forEach(v => {
         expect(v).toBeCloseTo(0.5, 1);
       });
@@ -586,7 +586,7 @@ describe('Markov Chain', () => {
       // Samples & Un-Normalized
       const a2 = MarkovChain.analyze({ model: dtoC2, engine: eng, samples: 500, normalize: false });
       expect(a2.sequence).toEqual([dtoC2.startDelimiter]);
-      expect(a2.sources).toEqual({ undefined: 500 });
+      expect(a2.sources).toEqual({});
       expect(Object.values(a2.sinks).reduce((a, b) => a + b)).toEqual(500);
 
       // Starting Values
@@ -886,7 +886,7 @@ describe('Markov Chain', () => {
       expect(a1).toHaveProperty('sources');
       expect(a1).toHaveProperty('sinks');
       expect(a1.sequence).toEqual([mc.startDelimiter]);
-      expect(a1.sources).toEqual({ undefined: 1 });
+      expect(a1.sources).toEqual({});
       Object.values(a1.sinks).forEach(v => {
         expect(v).toBeCloseTo(0.5, 1);
       });
@@ -894,7 +894,7 @@ describe('Markov Chain', () => {
       // Samples & Un-Normalized
       const a2 = mc.analyze({ samples: 500, normalize: false });
       expect(a2.sequence).toEqual([dtoC2.startDelimiter]);
-      expect(a2.sources).toEqual({ undefined: 500 });
+      expect(a2.sources).toEqual({});
       expect(Object.values(a2.sinks).reduce((a, b) => a + b)).toEqual(500);
 
       // Starting Values

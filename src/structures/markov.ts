@@ -159,14 +159,14 @@ const defaultAnalyzeOptions = {
  * @param insert        The addition / insertion type.
  * @param delimiters    The delimiters for start / middle / end states.
  */
-function formatGramSequence(gramSequence: string[], insert: MCInsertOption, delimiters: MCDelimitersShort) {
-  let result;
+function formatGramSequence(gramSequence: string[], insert: MCInsertOption, delimiters: MCDelimitersShort): string[] {
+  let result: string[];
   switch (insert) {
     case 'start':
-      result = [delimiters[0][0], ...gramSequence];
+      result = [delimiters[0], ...gramSequence];
       break;
     case 'end':
-      result = [...gramSequence, delimiters[2][0]];
+      result = [...gramSequence, delimiters[2]];
       break;
     case 'middle':
     case true:
@@ -174,7 +174,7 @@ function formatGramSequence(gramSequence: string[], insert: MCInsertOption, deli
       break;
     case false:
     default:
-      result = [delimiters[0][0], ...gramSequence, delimiters[2][0]];
+      result = [delimiters[0], ...gramSequence, delimiters[2]];
       break;
   }
   return result;
@@ -194,7 +194,16 @@ function getGramId(gramSequence: string[], delimiter: string) {
  * @param data A Markov Chain data transfer object to extract delimiters from.
  */
 function getDelimiters(data: MarkovChainDTO): MCDelimitersShort {
-  return [data.startDelimiter[0], data.delimiter[0], data.endDelimiter[0]];
+  const start = data.startDelimiter[0];
+  const middle = data.delimiter[0];
+  const end = data.endDelimiter[0];
+
+  // Delimiters must have at least one character
+  if (!start || !middle || !end) {
+    throw new Error('Delimiters must have at least one character');
+  }
+
+  return [start, middle, end];
 }
 
 /**
@@ -231,7 +240,11 @@ function addSequence(
 
       // Get the gram sequence and id.
       const gramSeq = seq.slice(pos, nextPos);
-      const gramId = getGramId(gramSeq, delimiters[1][0]);
+      const delimiter = delimiters[1]?.[0];
+      if (!delimiter) {
+        throw new Error('Invalid delimiter configuration');
+      }
+      const gramId = getGramId(gramSeq, delimiter);
 
       // Add the gram to the dictionary if it doesn't exist.
       // NOTE: We don't do this here anymore because addEdge does this for us.
@@ -272,6 +285,9 @@ function addEdge(
 
   // Add the edges to the distributions.
   const gram = grams[gramId];
+  if (!gram) {
+    throw new Error(`Failed to create or retrieve gram: ${gramId}`);
+  }
 
   // Add edge weights, and if this is a new state, update degree.
   if (lastId !== undefined) {
@@ -688,8 +704,10 @@ export class MarkovChain {
 
     // Add the sequences.
     for (let i = 0; i < sequences.length; i += 1) {
-      if (m.sequences !== undefined) m.sequences.push(sequences[i]);
-      addSequence(m.grams, sequences[i], insert, 1, m.maxOrder, delimiters);
+      const sequence = sequences[i];
+      if (!sequence) continue;
+      if (m.sequences !== undefined) m.sequences.push(sequence);
+      addSequence(m.grams, sequence, insert, 1, m.maxOrder, delimiters);
     }
 
     return m;
@@ -738,7 +756,11 @@ export class MarkovChain {
     const m = MarkovChain.clone(model);
 
     // Check to see if we need to calculate the id.
-    const id = Array.isArray(gram) ? getGramId(gram, m.delimiter[0]) : gram;
+    const delimiter = m.delimiter[0];
+    if (!delimiter) {
+      throw new Error('Invalid delimiter configuration');
+    }
+    const id = Array.isArray(gram) ? getGramId(gram, delimiter) : gram;
 
     // Add the edge.
     addEdge(m.grams, id, lastId, nextId, order, weight);
@@ -774,6 +796,9 @@ export class MarkovChain {
     const eng = engine || new Random({});
     const seq = gramSequence ? gramSequence : next ? [model.startDelimiter] : [model.endDelimiter];
     const gram = MarkovChain.getGram(model, seq);
+    if (!gram) {
+      return undefined;
+    }
     return MarkovChain.pickGram(gram, next, mask, eng);
   }
 
@@ -956,11 +981,15 @@ export class MarkovChain {
       const sinkState = sink[sink.length - 1];
       const sourceState = source[0];
 
-      if (sink !== undefined && results.sinks[sinkState] === undefined) results.sinks[sinkState] = 0;
-      if (source !== undefined && results.sources[sourceState] === undefined) results.sources[sourceState] = 0;
+      if (sinkState !== undefined) {
+        if (results.sinks[sinkState] === undefined) results.sinks[sinkState] = 0;
+        results.sinks[sinkState]! += 1;
+      }
 
-      results.sinks[sinkState] += 1;
-      results.sources[sourceState] += 1;
+      if (sourceState !== undefined) {
+        if (results.sources[sourceState] === undefined) results.sources[sourceState] = 0;
+        results.sources[sourceState]! += 1;
+      }
     }
 
     return normalize
@@ -999,6 +1028,7 @@ export class MarkovChain {
     const sequencesClone = sequences !== undefined && !stripSequences ? sequences.map(s => [...s]) : undefined;
     const gramsClone = Object.keys(grams).reduce((l, k) => {
       const gram = grams[k];
+      if (!gram) return l;
       const gramClone = {
         ...gram,
         last: { ...gram.last },

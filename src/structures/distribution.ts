@@ -75,8 +75,10 @@ function addObjects(...objects: WeightedDistribution[]) {
   const result: WeightedDistribution = {};
   for (const object of objects) {
     for (const key of Object.keys(object)) {
+      const value = object[key];
+      if (value === undefined) continue;
       if (result[key] === undefined) result[key] = 0;
-      result[key] += object[key];
+      result[key]! += value;
     }
   }
   return result;
@@ -418,7 +420,10 @@ export class Distribution {
 
     // Filter out the keys when creating the new distribution.
     for (const key of Object.keys(ref)) {
-      if (!rem.includes(key)) res[key] = ref[key];
+      const value = ref[key];
+      if (value !== undefined && !rem.includes(key)) {
+        res[key] = value;
+      }
     }
 
     // Renormalize and return the result.
