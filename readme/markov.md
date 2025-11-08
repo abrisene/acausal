@@ -811,6 +811,456 @@ const safeContent = chain.generate({
 
 For complete examples, see [examples/scoring-and-constraints.ts](../examples/scoring-and-constraints.ts).
 
+### Pattern Extraction & Analysis (v3.5+)
+
+**Pattern Extraction** allows you to discover frequent patterns in your training data and find similar sequences, enabling data mining, recommendation systems, and clustering.
+
+#### Extracting Patterns
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const chain = new MarkovChain({ maxOrder: 3 });
+chain.addSequences([
+  ['the', 'quick', 'brown', 'fox'],
+  ['the', 'lazy', 'brown', 'dog'],
+  ['the', 'quick', 'red', 'fox'],
+]);
+
+// Extract frequent patterns
+const patterns = chain.extractPatterns({
+  minOrder: 2,        // Look for patterns of length 2+
+  maxOrder: 3,        // Up to length 3
+  minFrequency: 2,    // Must appear at least twice
+  topN: 10            // Return top 10 patterns
+});
+
+patterns.forEach(p => {
+  console.log(`${p.pattern.join(' ')} - frequency: ${p.frequency}`);
+});
+// the quick - frequency: 2
+// brown fox - frequency: 2
+```
+
+#### Finding Similar Sequences
+
+**Jaccard Similarity** (set-based, fast):
+```typescript
+const target = ['the', 'quick', 'brown', 'fox'];
+
+const similar = chain.findSimilar(target, {
+  metric: 'jaccard',
+  topN: 5,
+  threshold: 0.5  // 50% similarity or higher
+});
+
+similar.forEach(s => {
+  console.log(`${s.sequence.join(' ')} - similarity: ${s.similarity.toFixed(2)}`);
+});
+```
+
+**Cosine Similarity** (frequency-weighted):
+```typescript
+// Better for sequences with repeated elements
+const similar = chain.findSimilar(target, {
+  metric: 'cosine',
+  topN: 5,
+  threshold: 0.6
+});
+```
+
+**Levenshtein Distance** (edit distance):
+```typescript
+// Best for finding sequences that are almost the same
+const similar = chain.findSimilar(target, {
+  metric: 'levenshtein',
+  topN: 5,
+  threshold: 0.7  // 70% similar (normalized)
+});
+```
+
+#### Practical Use Cases
+
+**Content Deduplication:**
+```typescript
+const contentChain = new MarkovChain({ maxOrder: 3 });
+// Train on user-generated content
+contentChain.addSequences([
+  ['fix', 'the', 'bug', 'in', 'auth'],
+  ['fix', 'the', 'auth', 'bug'],
+  ['resolve', 'authentication', 'issue']
+]);
+
+// Find duplicates
+const newContent = ['fix', 'bug', 'in', 'auth'];
+const duplicates = contentChain.findSimilar(newContent, {
+  metric: 'jaccard',
+  threshold: 0.8  // 80% similar = likely duplicate
+});
+
+if (duplicates.length > 0) {
+  console.log('Potential duplicate detected!');
+}
+```
+
+**Recommendation System:**
+```typescript
+const userBehaviorChain = new MarkovChain({ maxOrder: 2 });
+// Train on user click sequences
+userBehaviorChain.addSequences([
+  ['home', 'products', 'laptop', 'checkout'],
+  ['home', 'products', 'phone', 'specs'],
+  ['search', 'laptop', 'compare', 'checkout']
+]);
+
+// Find similar user journeys
+const currentJourney = ['home', 'products', 'laptop'];
+const similarJourneys = userBehaviorChain.findSimilar(currentJourney, {
+  metric: 'cosine',
+  topN: 3
+});
+
+// Recommend next steps based on similar journeys
+console.log('Users with similar journeys also:');
+similarJourneys.forEach(j => console.log(j.sequence.join(' → ')));
+```
+
+**Pattern Mining in Logs:**
+```typescript
+const logChain = new MarkovChain({ maxOrder: 4 });
+// Train on system logs
+logChain.addSequences([
+  ['login', 'query', 'query', 'error', 'retry'],
+  ['login', 'query', 'success', 'logout'],
+  ['login', 'query', 'query', 'error', 'timeout']
+]);
+
+// Find common error patterns
+const patterns = logChain.extractPatterns({
+  minFrequency: 2,
+  minOrder: 3
+});
+
+console.log('Common failure patterns:');
+patterns
+  .filter(p => p.pattern.includes('error'))
+  .forEach(p => console.log(p.pattern.join(' → ')));
+```
+
+**Text Similarity Search:**
+```typescript
+const nameChain = new MarkovChain({ maxOrder: 2 });
+nameChain.addSequences([
+  ['a', 'l', 'i', 'c', 'e'],
+  ['a', 'l', 'e', 'x'],
+  ['b', 'o', 'b']
+]);
+
+// Find names similar to user input (autocorrect)
+const userInput = ['a', 'l', 'i', 'x'];
+const corrections = nameChain.findSimilar(userInput, {
+  metric: 'levenshtein',
+  topN: 3
+});
+
+console.log('Did you mean:');
+corrections.forEach(c => console.log(c.sequence.join('')));
+// alice
+// alex
+```
+
+**Clustering Similar Sequences:**
+```typescript
+const sequences = [
+  ['quick', 'brown', 'fox'],
+  ['quick', 'red', 'fox'],
+  ['lazy', 'brown', 'dog'],
+  ['lazy', 'grey', 'dog']
+];
+
+// Group similar sequences
+const clusters = sequences.map(seq => ({
+  original: seq,
+  similar: chain.findSimilar(seq, {
+    metric: 'jaccard',
+    threshold: 0.5
+  })
+}));
+
+// Find cluster centers
+clusters.forEach(cluster => {
+  if (cluster.similar.length > 1) {
+    console.log(`Cluster: ${cluster.original.join(' ')}`);
+    cluster.similar.forEach(s =>
+      console.log(`  - ${s.sequence.join(' ')} (${s.similarity.toFixed(2)})`)
+    );
+  }
+});
+```
+
+### Import/Export & Visualization (v4.0+)
+
+**Import/Export utilities** allow you to visualize chains, compare models, and integrate with external tools.
+
+#### Graph Export for Visualization
+
+Export your chain as a node/edge graph for visualization in D3.js, Cytoscape, or other tools:
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const chain = new MarkovChain({ maxOrder: 2 });
+chain.addSequences([
+  ['start', 'login', 'browse', 'checkout'],
+  ['start', 'login', 'browse', 'exit'],
+  ['start', 'browse', 'exit']
+]);
+
+// Export as graph structure
+const graph = chain.exportAsGraph();
+
+console.log('Nodes:', graph.nodes.length);
+console.log('Edges:', graph.edges.length);
+console.log('Metadata:', graph.metadata);
+
+// Example node:
+// {
+//   id: 'start→login',
+//   order: 2,
+//   frequency: 15,
+//   states: ['start', 'login']
+// }
+
+// Example edge:
+// {
+//   from: 'start→login',
+//   to: 'browse',
+//   weight: 12,
+//   probability: 0.8
+// }
+```
+
+#### JSON Export for External Tools
+
+Export in simplified JSON format for analysis in Python, R, or other tools:
+
+```typescript
+const json = chain.toJSON();
+
+// {
+//   metadata: {
+//     maxOrder: 2,
+//     delimiter: '→',
+//     totalGrams: 15,
+//     totalSequences: 3
+//   },
+//   grams: [
+//     {
+//       pattern: ['start', 'login'],
+//       order: 2,
+//       frequency: 2,
+//       next: { 'browse': 1.0 }
+//     },
+//     // ... more grams
+//   ]
+// }
+
+// Save to file for external analysis
+import fs from 'fs';
+fs.writeFileSync('chain-export.json', JSON.stringify(json, null, 2));
+```
+
+#### Comparing Two Chains
+
+Compare chains to track model changes or merge datasets:
+
+```typescript
+const chainA = new MarkovChain({ maxOrder: 2 });
+chainA.addSequences([
+  ['a', 'b', 'c'],
+  ['a', 'b', 'd']
+]);
+
+const chainB = new MarkovChain({ maxOrder: 2 });
+chainB.addSequences([
+  ['a', 'b', 'c'],
+  ['a', 'x', 'y']
+]);
+
+// Compare the two chains
+const diff = chainA.diff(chainB);
+
+console.log('Added grams:', diff.added);
+// ['a→x', 'x→y']
+
+console.log('Removed grams:', diff.removed);
+// ['a→b→d']
+
+console.log('Common grams:', diff.common);
+// ['a→b', 'a→b→c']
+
+console.log('Modified frequencies:', diff.modified);
+// [{ gram: 'a→b', chain1Freq: 2, chain2Freq: 1, difference: -1 }]
+```
+
+#### Practical Use Cases
+
+**Visualizing User Flow:**
+```typescript
+// Track user navigation patterns
+const userFlow = new MarkovChain({ maxOrder: 2 });
+userFlow.addSequences([
+  ['home', 'products', 'laptop', 'cart', 'checkout'],
+  ['home', 'products', 'phone', 'details', 'exit'],
+  ['search', 'laptop', 'compare', 'cart', 'checkout']
+]);
+
+// Export for D3.js visualization
+const flowGraph = userFlow.exportAsGraph();
+
+// Create interactive funnel visualization
+const funnelData = {
+  nodes: flowGraph.nodes.map(n => ({
+    id: n.id,
+    label: n.states.join(' → '),
+    size: n.frequency
+  })),
+  edges: flowGraph.edges.map(e => ({
+    source: e.from,
+    target: e.to,
+    value: e.probability
+  }))
+};
+
+// Use with D3.js, Cytoscape, or Graphviz
+```
+
+**A/B Testing Model Comparison:**
+```typescript
+// Compare conversion patterns before and after change
+const beforeChange = new MarkovChain({ maxOrder: 2 });
+beforeChange.addSequences(beforeData);
+
+const afterChange = new MarkovChain({ maxOrder: 2 });
+afterChange.addSequences(afterData);
+
+const changes = beforeChange.diff(afterChange);
+
+// Analyze impact
+console.log('New user paths:', changes.added.length);
+console.log('Dropped paths:', changes.removed.length);
+
+// Find paths with increased frequency (success indicators)
+const improvements = changes.modified.filter(m => m.difference > 0);
+console.log('Improved paths:', improvements);
+```
+
+**Version Control for Models:**
+```typescript
+// Track changes to trained models over time
+const v1 = new MarkovChain({ maxOrder: 2 });
+v1.addSequences(historicalData);
+
+const v2 = v1.clone();
+v2.addSequences(newData);
+
+// Document changes between versions
+const changelog = v1.diff(v2);
+
+console.log(`Model Update:
+  - New patterns discovered: ${changelog.added.length}
+  - Obsolete patterns: ${changelog.removed.length}
+  - Updated frequencies: ${changelog.modified.length}
+`);
+
+// Export both for comparison
+fs.writeFileSync('model-v1.json', JSON.stringify(v1.toJSON()));
+fs.writeFileSync('model-v2.json', JSON.stringify(v2.toJSON()));
+```
+
+**Debugging Model Behavior:**
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+// ... train the chain ...
+
+// Export for inspection
+const exported = chain.toJSON();
+
+// Find why a specific sequence has low probability
+const problematicSequence = ['rare', 'transition'];
+exported.grams.forEach(gram => {
+  if (gram.pattern.includes('rare')) {
+    console.log(`Pattern: ${gram.pattern.join(' → ')}`);
+    console.log(`Frequency: ${gram.frequency}`);
+    console.log(`Next states:`, gram.next);
+  }
+});
+```
+
+**Merging Datasets:**
+```typescript
+// Compare models trained on different datasets
+const dataset1Chain = new MarkovChain({ maxOrder: 2 });
+dataset1Chain.addSequences(dataset1);
+
+const dataset2Chain = new MarkovChain({ maxOrder: 2 });
+dataset2Chain.addSequences(dataset2);
+
+const comparison = dataset1Chain.diff(dataset2Chain);
+
+// Identify unique patterns in each dataset
+console.log('Unique to dataset 1:', comparison.removed);
+console.log('Unique to dataset 2:', comparison.added);
+console.log('Common patterns:', comparison.common);
+
+// Decide on merge strategy based on overlap
+const overlapRatio = comparison.common.length /
+  (comparison.common.length + comparison.added.length + comparison.removed.length);
+
+if (overlapRatio > 0.7) {
+  console.log('High overlap - safe to merge');
+  const merged = dataset1Chain.clone();
+  merged.addSequences(dataset2);
+}
+```
+
+**Network Graph Export:**
+```typescript
+// Export for network analysis tools
+const socialChain = new MarkovChain({ maxOrder: 1 });
+// Train on social interaction patterns
+socialChain.addSequences([
+  ['alice', 'bob', 'carol'],
+  ['alice', 'david', 'eve'],
+  ['bob', 'carol', 'eve']
+]);
+
+const graph = socialChain.exportAsGraph();
+
+// Convert to Cytoscape.js format
+const cytoscapeData = {
+  nodes: graph.nodes.map(n => ({
+    data: {
+      id: n.id,
+      label: n.states[n.states.length - 1],
+      weight: n.frequency
+    }
+  })),
+  edges: graph.edges.map((e, i) => ({
+    data: {
+      id: `e${i}`,
+      source: e.from,
+      target: e.to,
+      weight: e.probability
+    }
+  }))
+};
+
+// Render with Cytoscape or export to Gephi
+```
+
+For complete examples, see [examples/pattern-analysis.ts](../examples/pattern-analysis.ts) and [examples/import-export.ts](../examples/import-export.ts).
+
 ### Core Concepts
 
 #### States and Dependent Probability
