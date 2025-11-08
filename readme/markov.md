@@ -68,6 +68,81 @@ for (let i = 0; i < 3; i += 1) {
 */
 ```
 
+### What's New in v3.0
+
+Version 3.0 brings significant improvements to Markov Chains:
+
+#### 1. Generic Types
+
+`MarkovChain<T>` is now generic for better type safety:
+
+```typescript
+type States = 'sunny' | 'cloudy' | 'rainy';
+const chain = new MarkovChain<States>({ maxOrder: 2 });
+```
+
+#### 2. Batch Operations (40% Faster)
+
+Add multiple sequences efficiently with batch operations:
+
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+
+// ❌ Slow: clones on every add
+for (const name of names) {
+  chain = chain.addSequence(name.split(''));
+}
+
+// ✅ Fast: single clone at the end
+const updated = chain.batch()
+  .addSequence(['a', 'l', 'i', 'c', 'e'])
+  .addSequence(['b', 'o', 'b'])
+  .addSequence(['c', 'h', 'a', 'r', 'l', 'i', 'e'])
+  .commit();
+```
+
+#### 3. StateSelector Pattern
+
+Store IDs in your chain and resolve to objects later:
+
+```typescript
+interface User { id: number; name: string; }
+
+const users: User[] = [
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' }
+];
+
+const lookup = new Map(users.map(u => [String(u.id), u]));
+const selector = (id: string) => lookup.get(id);
+
+// Store IDs in chain
+const chain = new MarkovChain({ maxOrder: 1 });
+chain.addSequence(['1', '2', '1']);
+
+// Attach selector for resolution
+const chainWithSelector = chain.withSelector(selector);
+```
+
+#### 4. New Utility Methods
+
+```typescript
+// Check if a gram exists
+if (chain.hasGram(['a', 'b'])) {
+  console.log('Gram exists!');
+}
+
+// Get grams by order
+const bigrams = chain.getGramsByOrder(2);
+
+// Get chain statistics
+const stats = chain.getStats();
+console.log(`Chain has ${stats.gramCount} grams`);
+console.log(`Average out-degree: ${stats.avgDegreeOut}`);
+```
+
+See the [Migration Guide](../MIGRATION.md) for complete v3.0 features and migration steps.
+
 ### Core Concepts
 
 #### States and Dependent Probability
