@@ -70,9 +70,22 @@ rand.integer(1, 6); // Roll 1d6
 
 ## Quick Links
 
+### Getting Started
 - [_acausal_ Home](https://github.com/abrisene/acausal/#readme)
 - [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/readme/distribution.md#acausal-)
 - [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
+
+### Game Development Guides
+- [Procedural Generation for Games](https://github.com/abrisene/acausal/blob/master/readme/game-generation.md) - Character names, quests, dialogue, dungeons, weather
+- [Loot Systems and Item Generation](https://github.com/abrisene/acausal/blob/master/readme/loot-systems.md) - Drop tables, rarity systems, procedural items
+- [Chain Blending](https://github.com/abrisene/acausal/blob/master/readme/chain-blending.md) - Character breeding, cultural mixing, content evolution (v3.1+)
+- [Scaled States](https://github.com/abrisene/acausal/blob/master/readme/scaled-states.md) - Combat damage, market prices, morale systems (v3.2+)
+- [Multi-Dimensional Chains](https://github.com/abrisene/acausal/blob/master/readme/multi-dimensional.md) - Tile generation, AI behavior, complex states (v3.3+)
+
+### Advanced Features
+- [Sequence Scoring & Constraints](https://github.com/abrisene/acausal/blob/master/readme/advanced.md) - Quality scoring, anomaly detection, constraint-based generation (v3.4+)
+- [Pattern Analysis](https://github.com/abrisene/acausal/blob/master/readme/advanced.md#pattern-extraction) - Extract patterns, find similar sequences (v3.5+)
+- [Visualization & Export](https://github.com/abrisene/acausal/blob/master/readme/visualization.md) - Graph export, model comparison, data analysis (v4.0+)
 
 ## Installation
 
