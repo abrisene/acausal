@@ -785,24 +785,365 @@ const wfc = new WFC({
 5. **Determinism**: Same seed produces same results
 6. **Performance**: Benchmark on large grids (1000x1000)
 
-## Open Questions
+## Configuration Options
 
-1. **Backtracking**: Should we implement backtracking for contradictions?
-   - Pro: More robust, handles complex constraints
-   - Con: Performance impact, non-deterministic without careful seeding
+All design decisions should be configurable to maximize flexibility and composability.
 
-2. **Entropy Calculation**: Use true Shannon entropy or just count?
-   - Current: Simple count (faster)
-   - Alternative: Weighted entropy with frequencies (more accurate)
+### 1. Backtracking (Configurable)
 
-3. **Symmetry**: Support rotational/reflective symmetry in constraints?
-   - Useful for tile-based generation
-   - Adds complexity to constraint definition
+**Decision**: Implement backtracking but make it optional via configuration.
 
-4. **Boundary Conditions**: How to handle graph edges?
-   - Option 1: Wraparound (toroidal topology)
-   - Option 2: Special boundary states
-   - Option 3: Leave unconstrained
+```typescript
+interface WFCOptions extends RandomDTO {
+  states: State[];
+  constraints: ConstraintRules;
+  frequencies?: { [state: State]: number };
+  backtrack?: boolean | {
+    enabled: true;
+    maxDepth?: number;      // Limit backtrack depth
+    maxAttempts?: number;   // Retry limit before failing
+  };
+}
+```
+
+**Trade-offs**:
+- `backtrack: false` (default): Faster, may fail on contradictions, deterministic
+- `backtrack: true`: More robust, handles complex constraints, slower, requires careful seeding for determinism
+- `backtrack: { enabled: true, maxDepth: 10 }`: Bounded backtracking for performance vs robustness balance
+
+### 2. Symmetry (Configurable)
+
+**Decision**: Support symmetry transformations with optional auto-generation of symmetric rules.
+
+```typescript
+interface WFCOptions extends RandomDTO {
+  // ... other options
+  symmetry?: {
+    rotational?: boolean | number;  // true = 4-way, number = n-way rotation
+    reflective?: boolean | 'horizontal' | 'vertical' | 'both';
+    autoGenerate?: boolean;  // Auto-generate symmetric constraints
+  };
+}
+```
+
+**Examples**:
+```typescript
+// Tile-based generation with 4-way rotation
+const wfc = new WFC({
+  states: ['corner', 'edge', 'floor'],
+  constraints: { corner: { north: ['edge'] } },  // Define once
+  symmetry: {
+    rotational: 4,        // Auto-generate south/east/west from north
+    autoGenerate: true
+  }
+});
+
+// Mirror symmetry for organic patterns
+const wfc = new WFC({
+  states: ['tree', 'grass'],
+  constraints: { tree: { east: ['grass'] } },
+  symmetry: {
+    reflective: 'horizontal',  // Auto-generate west from east
+    autoGenerate: true
+  }
+});
+```
+
+### 3. Boundary Conditions (Configurable)
+
+**Decision**: Support multiple boundary strategies, configurable per dimension or globally.
+
+```typescript
+interface WFCOptions extends RandomDTO {
+  // ... other options
+  boundaries?: 'wrap' | 'open' | 'fixed' | BoundaryConfig;
+}
+
+interface BoundaryConfig {
+  default?: 'wrap' | 'open' | 'fixed';
+  perDimension?: {
+    [dimension: Dimension]: 'wrap' | 'open' | 'fixed' | State | State[];
+  };
+}
+```
+
+**Boundary Strategies**:
+- `'wrap'`: Toroidal topology (opposite edges connect) - seamless tiling
+- `'open'`: No constraints at boundaries - unconstrained edges
+- `'fixed'`: Specific boundary states
+
+**Examples**:
+```typescript
+// Seamless tileable map
+const wfc = new WFC({
+  states: ['grass', 'water'],
+  constraints: rules,
+  boundaries: 'wrap'  // East edge wraps to west, north to south
+});
+
+// Ocean boundary around map
+const wfc = new WFC({
+  states: ['grass', 'water', 'mountain'],
+  constraints: rules,
+  boundaries: {
+    default: 'open',
+    perDimension: {
+      north: 'water',    // Fixed water at north edge
+      south: 'water',
+      east: 'water',
+      west: 'water'
+    }
+  }
+});
+
+// Wrap horizontal, fixed vertical
+const wfc = new WFC({
+  states: ['tile1', 'tile2'],
+  constraints: rules,
+  boundaries: {
+    perDimension: {
+      east: 'wrap',
+      west: 'wrap',
+      north: 'fixed',
+      south: 'fixed'
+    }
+  }
+});
+```
+
+### 4. Entropy Calculation (Configurable)
+
+**Decision**: Support both simple count and weighted Shannon entropy with configuration.
+
+```typescript
+interface WFCOptions extends RandomDTO {
+  // ... other options
+  entropyMode?: 'count' | 'shannon' | 'weighted-shannon' | EntropyFunction;
+  entropyNoise?: number;  // Add small random noise to break ties
+}
+
+type EntropyFunction = (cell: WFCCell, frequencies: Distribution<State>) => number;
+```
+
+**Entropy Calculation Trade-offs**:
+
+| Mode | Speed | Accuracy | Description |
+|------|-------|----------|-------------|
+| `'count'` | Fastest | Basic | Simply counts number of possible states |
+| `'shannon'` | Fast | Good | Shannon entropy: `-Σ(p * log(p))` with uniform probabilities |
+| `'weighted-shannon'` | Medium | Best | Shannon entropy weighted by actual frequencies |
+| Custom function | Varies | Custom | User-defined entropy calculation |
+
+**Why it matters**:
+
+- **Count**: Cell with 5 possible states has entropy 5. Simple, fast, no weighting.
+  ```typescript
+  entropy = cell.possibleStates.size;
+  ```
+
+- **Shannon**: Cell with 5 equally likely states has entropy ~2.32 bits. Accounts for information content.
+  ```typescript
+  const p = 1 / cell.possibleStates.size;
+  entropy = -cell.possibleStates.size * (p * Math.log2(p));
+  ```
+
+- **Weighted Shannon**: Cell with states [grass: 50, water: 10, sand: 5] has different entropy than equal weights. More accurate when frequencies vary widely.
+  ```typescript
+  let entropy = 0;
+  for (const state of cell.possibleStates) {
+    const p = frequencies.getProbability(state);
+    entropy -= p * Math.log2(p);
+  }
+  ```
+
+**When to use each**:
+- **Count**: Default. Fast, works well for most cases, especially when all states equally likely.
+- **Shannon**: When you want proper information-theoretic measure but states are roughly equal frequency.
+- **Weighted Shannon**: When frequencies vary widely (e.g., 90% grass, 5% water, 5% mountain) and you want to prioritize cells with high-frequency states.
+
+**Example**:
+```typescript
+// Use weighted entropy for biome generation with varied frequencies
+const wfc = new WFC({
+  states: ['grass', 'water', 'mountain'],
+  constraints: rules,
+  frequencies: { grass: 70, water: 20, mountain: 10 },
+  entropyMode: 'weighted-shannon',  // Prioritize common tiles
+  entropyNoise: 0.001  // Small noise to break ties randomly
+});
+```
+
+### 5. Dynamic Entropy & Multi-Pass Generation (Similar to MarkovChain Order)
+
+**Decision**: Support dynamic entropy calculation and multi-pass generation, mirroring MarkovChain's order system.
+
+Just as MarkovChain has:
+- `order`: Maximum n-gram size to consider
+- `strict`: Whether to dynamically adjust order during generation
+- Multi-order analysis
+
+WFC should have:
+- **Entropy levels**: Different constraint strictness levels
+- **Dynamic adjustment**: Adapt constraint strictness during generation
+- **Multi-pass generation**: Multiple collapse passes with different settings
+
+```typescript
+interface WFCGenerateOptions {
+  entropyMode?: 'count' | 'shannon' | 'weighted-shannon';
+  dynamicEntropy?: boolean;  // Adjust entropy calculation during generation
+
+  // Multi-pass generation
+  passes?: WFCPass[];
+
+  // Constraint strictness (similar to Markov order)
+  constraintLevel?: number;  // 0 = no constraints, 1 = first-order, 2 = second-order, etc.
+  strict?: boolean;  // If false, dynamically adjust constraint level
+
+  // Progressive collapse
+  progressive?: {
+    startEntropy?: 'high' | 'low';  // Start with high or low entropy cells
+    adaptiveThreshold?: number;  // Switch strategy partway through
+  };
+}
+
+interface WFCPass {
+  name?: string;
+  constraintLevel?: number;
+  entropyMode?: 'count' | 'shannon' | 'weighted-shannon';
+  filter?: (cell: WFCCell) => boolean;  // Which cells to collapse this pass
+  stopCondition?: (graph: WFCGraph) => boolean;
+}
+```
+
+**Examples**:
+
+```typescript
+// Coarse-to-fine generation (like Markov dynamic order)
+const wfc = new WFC({
+  states: ['grass', 'water', 'mountain', 'forest'],
+  constraints: multiLevelConstraints,  // Constraints at different levels
+  frequencies: { grass: 50, water: 20, mountain: 10, forest: 20 }
+});
+
+const result = wfc.collapse(graph, {
+  constraintLevel: 2,  // Use second-order constraints
+  strict: false,  // Dynamically adjust if needed
+  dynamicEntropy: true  // Adapt entropy calculation during generation
+});
+
+// Multi-pass: First pass places major features, second pass fills details
+const result = wfc.collapse(graph, {
+  passes: [
+    {
+      name: 'major-features',
+      constraintLevel: 1,  // Loose constraints
+      entropyMode: 'weighted-shannon',
+      filter: (cell) => isMajorFeatureLocation(cell),  // Only major features
+      stopCondition: (graph) => allMajorFeaturesPlaced(graph)
+    },
+    {
+      name: 'fill-details',
+      constraintLevel: 2,  // Strict constraints
+      entropyMode: 'count',
+      filter: (cell) => !cell.collapsed  // All remaining cells
+    }
+  ]
+});
+
+// Progressive collapse: Start with high-constraint areas
+const result = wfc.collapse(graph, {
+  progressive: {
+    startEntropy: 'low',  // Start with most constrained cells
+    adaptiveThreshold: 0.5  // Switch to high-entropy after 50% done
+  }
+});
+```
+
+**Dynamic Entropy Adjustment**:
+
+Similar to how MarkovChain dynamically adjusts order when `strict: false`:
+
+```typescript
+private findMinEntropyCell(
+  graph: WFCGraph,
+  options: WFCGenerateOptions
+): WFCCell | null {
+  // Calculate entropy with current mode
+  const entropies = new Map<WFCCell, number>();
+
+  for (const cell of graph.cells.values()) {
+    if (cell.collapsed) continue;
+
+    let entropy: number;
+    if (options.dynamicEntropy) {
+      // Adapt entropy based on context
+      const progress = this.getCollapseProgress(graph);
+      const neighborComplexity = this.getNeighborComplexity(cell, graph);
+
+      // Start with weighted-shannon for important cells
+      if (progress < 0.3 || neighborComplexity > 0.7) {
+        entropy = this.calculateWeightedShannonEntropy(cell);
+      } else {
+        // Switch to faster count for simple cells
+        entropy = cell.possibleStates.size;
+      }
+    } else {
+      entropy = this.calculateEntropy(cell, options.entropyMode);
+    }
+
+    // Add noise to break ties
+    if (options.entropyNoise) {
+      entropy += this.engine.real(0, options.entropyNoise);
+    }
+
+    entropies.set(cell, entropy);
+  }
+
+  // Return cell with minimum entropy
+  return this.selectMinEntropyCell(entropies);
+}
+```
+
+**Multi-Level Constraints**:
+
+Similar to MarkovChain having different n-gram orders:
+
+```typescript
+// First-order constraints: Only immediate adjacency
+const firstOrderConstraints: ConstraintRules = {
+  grass: {
+    north: ['grass', 'forest', 'mountain'],
+    east: ['grass', 'forest']
+  }
+};
+
+// Second-order constraints: Consider pairs of neighbors
+const secondOrderConstraints: ConstraintRules = {
+  'grass': {
+    'north': ['grass', 'forest'],
+    'north+east': ['grass'],  // Both north AND east neighbors
+    'north+west': ['forest']
+  }
+};
+
+// Use constraint level to control strictness
+const wfc = new WFC({
+  states: ['grass', 'forest', 'mountain'],
+  constraints: secondOrderConstraints
+});
+
+wfc.collapse(graph, {
+  constraintLevel: 1,  // Only use single-dimension constraints
+  strict: false  // Upgrade to level 2 if needed
+});
+```
+
+**Use Cases**:
+
+- **Dungeon generation**: First pass places rooms (low constraint), second pass adds corridors (high constraint), third pass adds details
+- **Terrain generation**: Coarse biomes first (low entropy), then terrain details (high entropy)
+- **City layouts**: Major roads and districts first (weighted entropy), then buildings (count entropy)
+- **Adaptive quality**: High-quality (weighted-shannon) for visible areas, fast (count) for distant/hidden areas
 
 ## Next Steps
 

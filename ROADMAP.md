@@ -55,15 +55,7 @@ All features should adhere to the core design principles:
 - Multiple distance metrics (Jaccard, cosine, Levenshtein)
 - Use cases: recommendations, matchmaking, content discovery
 
-### v4.0.0 - Graph Export & Visualization (Planned)
-- Export models to JSON, graph formats, CSV
-- Model comparison and analysis
-- Statistical introspection
-- Use cases: debugging, A/B testing, analytics
-
-## Future Versions
-
-### v5.0.0 - Wave Function Collapse
+### v3.6.0 - Wave Function Collapse (Planned)
 **Goal**: Add WFC as a first-class primitive alongside Distribution and MarkovChain
 
 #### Core Features
@@ -113,7 +105,7 @@ const voronoi = new WFCVoronoi({ points: seeds, wfc });
 - Puzzle generation with hard constraints
 - Building interiors with architectural rules
 
-### v5.1.0 - L-Systems
+### v3.7.0 - L-Systems (Planned)
 **Goal**: Add L-Systems for recursive/branching generation
 
 #### Core Features
@@ -147,7 +139,7 @@ const geometry = lsystem.interpret(result, { angle: 25, distance: 10 });
 - Procedural architecture
 - Fractal patterns
 
-### v5.2.0 - Grammar-Based Generation
+### v3.8.0 - Grammar-Based Generation (Planned)
 **Goal**: Add context-free grammars for structured content
 
 #### Core Features
@@ -183,7 +175,15 @@ const quest = grammar.generate('quest');
 - Structured data generation
 - Template-based content
 
-### v6.0.0 - Gen-AI Integration
+### v4.0.0 - Graph Export & Visualization (Planned)
+- Export models to JSON, graph formats, CSV
+- Model comparison and analysis
+- Statistical introspection
+- Use cases: debugging, A/B testing, analytics
+
+## Future Versions
+
+### v4.1.0+ - Gen-AI Integration (Research)
 **Goal**: Integrate with LLM APIs for context generation and parameter tuning
 
 #### Core Features
@@ -279,4 +279,8 @@ We follow semantic versioning:
 - **Minor** versions: New features, backwards compatible
 - **Patch** versions: Bug fixes, documentation updates
 
-Current development focuses on completing v3.x-v4.x features before starting v5.x work.
+Current development priorities:
+1. Complete v3.0-v3.5 features (modernization, blending, scaling, multi-dim, scoring, patterns)
+2. Add new primitives in v3.6-v3.8 (WFC, L-Systems, Grammar)
+3. Release v4.0 with export/visualization
+4. Research Gen-AI integration for future releases
