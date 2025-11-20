@@ -1,6 +1,13 @@
 # Advanced Markov Chain Features
 
-This guide covers advanced features introduced in v3.4+ including sequence scoring, constraint-based generation, pattern analysis, and model comparison.
+This guide covers advanced features introduced in v3.4-v3.5 including sequence scoring, constraint-based generation, pattern analysis, and model comparison.
+
+**📚 Documentation Guide:**
+- This is the **technical API reference** with detailed method signatures and algorithms
+- For **game development examples**, see the game-focused guides:
+  - [Quality Control & Filtering](./quality-control.md) - Game examples for scoring and constraints
+  - [Recommendation Systems](./recommendations.md) - Game examples for pattern analysis
+- For basic usage, start with the [Markov Chain Quickstart](./markov.md)
 
 ## Table of Contents
 

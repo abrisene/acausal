@@ -1,461 +1,298 @@
-# acausal Roadmap
+# Acausal Roadmap
 
-This document outlines planned features and enhancements for the acausal library, organized by priority and complexity.
+This document outlines the development roadmap for acausal, including completed features and planned additions.
 
----
+## Design Philosophy
 
-## 🎯 High Priority - Core Enhancements
+All features should adhere to the core design principles:
+- **Immutable**: Pure functions that don't mutate state
+- **Portable**: Easily serializable/deserializable
+- **Composable**: Solid primitives that can be combined
+- **Minimal Dependencies**: Lean and focused
+- **Deterministic**: Seeded randomness for reproducibility
 
-### 1. Multi-Dimensional Markov Chains ⭐⭐⭐
-**Status:** Planned
-**Complexity:** High
-**Use Case:** Procedural generation with multi-attribute states, WFC-style tile generation
+## Completed Versions
 
-**Problem:**
-Current implementation requires flattening multi-dimensional data into 1D sequences, losing spatial/attribute relationships.
+### v2.0.0 - TypeScript Rewrite (2021)
+- Full conversion to TypeScript
+- Rewrote MarkovChain class
+- Rewrote Distribution class
+- Random service wrapping random-js
+- Comprehensive test coverage (>99%)
+- Documentation and quickstart guides
 
-**Solution:**
+### v3.0.0 - Modernization (2025)
+- Updated to TypeScript 5.6.3
+- Modern build system (tsup) - 60% faster builds
+- ESM/CJS dual output with package exports
+- Updated dependencies
+- Jest 29.7.0 for testing with 95%+ coverage
+- Generic types for MarkovChain<T> and Distribution<T>
+- New utility methods: `hasGram()`, `getGramsByOrder()`, `getStats()`
+
+### v3.1.0 - Chain Blending (2025)
+- `blend()` static method for combining multiple chains
+- `interpolate()` method for weighted blending
+- Multiple strategies: arithmetic, geometric, harmonic, max, min
+- Use cases: character breeding, cultural mixing, evolution
+
+### v3.2.0 - Scaled States (2025)
+- `ScaledMarkovChain<T>` class for magnitude tracking
+- Four sampling strategies: mean, median, sample, weighted-sample
+- `generateScaled()` for magnitude-aware generation
+- Use cases: combat damage, market prices, morale systems
+
+### v3.3.0 - Multi-Dimensional Chains (2025)
+- `MultiDimMarkovChain<T>` for structured state spaces
+- Preserves multi-attribute structure without flattening
+- StateKeyFunction pattern for custom state mapping
+- Use cases: tile generation, AI behavior trees, equipment combos
+
+### v3.4.0 - Sequence Scoring & Constraints (2025)
+- `score()` method with log probability and perplexity
+- `rankByLikelihood()` for comparing sequences
+- `isAnomaly()` for outlier detection
+- Constraint-based generation with validators
+- Use cases: quality filtering, autocomplete, bot detection
+
+### v3.5.0 - Pattern Analysis (2025)
+- `extractPatterns()` for discovering frequent patterns
+- `findSimilar()` with Jaccard, Cosine, Levenshtein metrics
+- Pattern frequency analysis and filtering
+- Use cases: recommendations, matchmaking, content discovery
+
+### v4.0.0 - Graph Export & Visualization (2025)
+- `exportAsGraph()` for node/edge graph format
+- `diff()` for comparing chains
+- `toJSON()` for simplified serialization
+- Integration guides for D3.js, Cytoscape, Graphviz
+- Use cases: debugging, A/B testing, analytics
+
+## Planned Versions
+
+### v3.6.0 - Wave Function Collapse (Future)
+**Goal**: Add WFC as a first-class primitive alongside Distribution and MarkovChain
+
+#### Core Features
+- **Graph-based constraints**: Not opinionated towards grids
+- **Multi-dimensional support**: Works in 2D, 3D, and beyond
+- **Irregular topologies**: Support for Voronoi, hex grids, custom graphs
+- **Composable primitives**: Core collapse algorithm separate from topology
+- **Rule learning**: Extract constraint rules from example data
+- **Serializable models**: Store and transfer trained WFC models
+
+#### API Design
 ```typescript
-// Current limitation - must flatten
-const state = `${tile}_${x}_${y}`; // Loses structure
-
-// New: Multi-dimensional states
-interface TileState {
-  tile: string;
-  position: [number, number];
-  neighbors: string[];
-}
-
-const mdChain = new MultiDimMarkovChain<TileState>({
-  dimensions: ['tile', 'position'],
-  maxOrder: 2
-});
-
-// Add sequences with full context
-mdChain.addSequence([
-  { tile: 'grass', position: [0, 0], neighbors: ['water', 'grass'] },
-  { tile: 'water', position: [0, 1], neighbors: ['grass', 'water'] },
-]);
-
-// Generate considering all dimensions
-const next = mdChain.generate({
-  context: { neighbors: ['grass', 'grass'] },
-  constraints: { position: [1, 1] }
-});
-```
-
-**Implementation Plan:**
-- [ ] `TensorMarkovChain` class for N-dimensional state spaces
-- [ ] Projection/marginalization to analyze single dimensions
-- [ ] Constraint propagation for WFC-like generation
-- [ ] Spatial correlation tracking
-
----
-
-### 2. Chain Blending & Interpolation ⭐⭐⭐
-**Status:** Planned
-**Complexity:** Medium
-**Use Case:** Combining multiple sources, genetic algorithms, style transfer
-
-**Problem:**
-No way to combine probabilities from multiple chains or states.
-
-**Solution:**
-```typescript
-// Blend multiple chains
-const mother = new MarkovChain({ sequences: motherTraits });
-const father = new MarkovChain({ sequences: fatherTraits });
-
-// Weighted blend: 50% each parent
-const child = MarkovChain.blend([
-  { chain: mother, weight: 0.5 },
-  { chain: father, weight: 0.5 }
-]);
-
-// Or smooth interpolation
-const hybrid = mother.interpolate(father, 0.3); // 70% mother, 30% father
-
-// Generate from blended probabilities
-const hairColor = child.generate({ start: ['hair', 'color'] });
-```
-
-**Advanced Blending:**
-```typescript
-// Blend with custom strategy
-const blended = MarkovChain.blend([
-  { chain: chain1, weight: 0.5 },
-  { chain: chain2, weight: 0.3 },
-  { chain: chain3, weight: 0.2 }
-], {
-  strategy: 'geometric-mean',  // or 'arithmetic-mean', 'max', 'min'
-  normalize: true
-});
-
-// Conditional blending
-const adaptive = MarkovChain.blend([
-  { chain: formalChain, weight: (ctx) => ctx.formality },
-  { chain: casualChain, weight: (ctx) => 1 - ctx.formality }
-]);
-```
-
-**Implementation Plan:**
-- [ ] `MarkovChain.blend()` static method
-- [ ] `interpolate()` instance method
-- [ ] Multiple blending strategies (arithmetic, geometric, harmonic mean)
-- [ ] Context-aware weight functions
-- [ ] Distribution merging utilities
-
----
-
-### 3. Continuous & Scaled States ⭐⭐⭐
-**Status:** Planned
-**Complexity:** High
-**Use Case:** Market simulations, physics, continuous values with categorical states
-
-**Problem:**
-Can only handle discrete categorical states. Can't represent `positive(+50)` where magnitude matters.
-
-**Solution:**
-```typescript
-interface ScaledState<T = string> {
-  category: T;
-  magnitude: number;
-}
-
-const marketChain = new ScaledMarkovChain<'positive' | 'negative' | 'neutral'>({
-  maxOrder: 2,
-  magnitudeRange: [-100, 100]
-});
-
-// Add sequences with magnitudes
-marketChain.addSequence([
-  { category: 'positive', magnitude: 20 },
-  { category: 'positive', magnitude: 45 },  // Trending up
-  { category: 'neutral', magnitude: 5 },
-  { category: 'negative', magnitude: -30 }
-]);
-
-// Generate considering both category AND magnitude
-const next = marketChain.generate({
-  current: { category: 'positive', magnitude: 30 }
-});
-// Returns: { category: 'positive', magnitude: 42, confidence: 0.85 }
-
-// Analyze magnitude distributions
-const stats = marketChain.getMagnitudeStats('positive');
-// { mean: 35, std: 15, range: [20, 75] }
-```
-
-**Advanced Features:**
-```typescript
-// Kernel density estimation for smooth magnitude transitions
-const smooth = new ScaledMarkovChain({
-  magnitudeKernel: 'gaussian',
-  bandwidth: 10
-});
-
-// Bin continuous values automatically
-const binned = new ScaledMarkovChain({
-  autoBin: true,
-  bins: 10,  // Automatically discretize into 10 bins
-  adaptive: true  // Use adaptive binning based on data
-});
-```
-
-**Implementation Plan:**
-- [ ] `ScaledMarkovChain` class
-- [ ] Magnitude tracking and transitions
-- [ ] Kernel density estimation for smoothing
-- [ ] Adaptive binning strategies
-- [ ] Magnitude-aware generation
-
----
-
-## 🚀 Medium Priority - Quality of Life
-
-### 4. Constraint-Based Generation ⭐⭐
-**Status:** Planned
-**Complexity:** Medium
-
-**Use Case:** Quality control, grammar rules, domain constraints
-
-```typescript
-const chain = new MarkovChain({ sequences: names });
-
-const validName = chain.generate({
-  order: 2,
+// Low-level: Define your own topology
+const wfc = new WFC({
+  seed: 42,
+  states: ['grass', 'water', 'sand'],
   constraints: {
-    minLength: 5,
-    maxLength: 10,
-    mustContain: ['a'],
-    mustNotContain: ['x', 'q'],
-    pattern: /^[A-Z][a-z]+$/,
-    validator: (seq) => !profanityList.includes(seq.join('')),
-    maxRetries: 100
+    // Adjacency rules per dimension/direction
+    grass: { north: ['grass', 'sand'], south: ['grass', 'water'] },
+    water: { north: ['sand', 'water'], south: ['water'] },
+    sand: { north: ['grass', 'sand'], south: ['water', 'sand'] }
   }
 });
-```
 
-**Implementation Plan:**
-- [ ] Constraint validation framework
-- [ ] Backtracking for constraint satisfaction
-- [ ] Pattern matching
-- [ ] Custom validator functions
-
----
-
-### 5. Sequence Scoring & Ranking ⭐⭐
-**Status:** Planned
-**Complexity:** Medium
-
-**Use Case:** Anomaly detection, quality filtering, autocomplete
-
-```typescript
-// Score how likely a sequence is
-const score = chain.score(['j', 'o', 'h', 'n']);
-// { logProb: -8.3, perplexity: 12.4, isValid: true }
-
-// Rank multiple candidates
-const candidates = ['john', 'xqz', 'alice', 'zxyw'];
-const ranked = chain.rankByLikelihood(candidates);
-// [
-//   { sequence: 'john', score: -8.3, rank: 1 },
-//   { sequence: 'alice', score: -9.1, rank: 2 },
-//   { sequence: 'xqz', score: -25.4, rank: 3 },
-//   { sequence: 'zxyw', score: -35.2, rank: 4 }
-// ]
-
-// Detect anomalies
-const isAnomaly = chain.isAnomaly(['x', 'q', 'z'], { threshold: 0.01 });
-```
-
-**Implementation Plan:**
-- [ ] Log-probability calculation
-- [ ] Perplexity metrics
-- [ ] Ranking utilities
-- [ ] Anomaly detection thresholds
-
----
-
-### 6. Pattern Extraction & Analysis ⭐⭐
-**Status:** Planned
-**Complexity:** Low
-
-**Use Case:** Data exploration, similarity search, clustering
-
-```typescript
-// Extract frequent patterns
-const patterns = chain.extractPatterns({
-  minOrder: 2,
-  minFrequency: 5,
-  topN: 20
+// Collapse over your own graph structure
+const result = wfc.collapse({
+  nodes: customNodeArray,
+  getNeighbors: (node) => node.neighbors,
+  getDimension: (node, neighbor) => calculateDimension(node, neighbor)
 });
 
-// Find similar sequences
-const similar = chain.findSimilar(['alice'], {
-  metric: 'cosine',  // or 'jaccard', 'levenshtein'
-  topN: 5
-});
-
-// Cluster sequences
-const clusters = chain.clusterSequences({
-  method: 'kmeans',
-  k: 5
-});
+// High-level: Built-in topologies
+const grid = new WFCGrid2D({ width: 50, height: 50, wfc });
+const hex = new WFCHexGrid({ radius: 20, wfc });
+const voronoi = new WFCVoronoi({ points: seeds, wfc });
 ```
 
-**Implementation Plan:**
-- [ ] Pattern frequency analysis
-- [ ] Similarity metrics (cosine, Jaccard, edit distance)
-- [ ] Clustering algorithms
-- [ ] Visualization helpers
+#### Integration with Existing Primitives
+- Use Distribution for weighted tile selection
+- Use MarkovChain to learn sequential patterns in tile placement
+- Combine with multi-dimensional chains for complex state spaces
 
----
+#### Use Cases
+- Tile-based dungeon/map generation
+- 3D voxel world generation
+- Irregular city layouts (Townscaper-style)
+- Puzzle generation with hard constraints
+- Building interiors with architectural rules
 
-### 7. Incremental/Streaming Generation ⭐⭐
-**Status:** Planned
-**Complexity:** Medium
+### v3.7.0 - L-Systems (Planned)
+**Goal**: Add L-Systems for recursive/branching generation
 
-**Use Case:** Interactive generation, beam search, exploration
+#### Core Features
+- **Rule-based expansion**: Context-free and context-sensitive grammars
+- **Parameterized rules**: Rules with variables and conditions
+- **Stochastic variation**: Weighted rule selection using Distribution
+- **Turtle interpretation**: Built-in 2D/3D turtle graphics
+- **Composable with MarkovChain**: Vary rule applications statistically
 
+#### API Design
 ```typescript
-// Step-by-step generation with control
-const generator = chain.createGenerator({ order: 2 });
-
-for (const step of generator) {
-  console.log('Current:', step.sequence);
-  console.log('Options:', step.nextOptions);
-
-  if (shouldBacktrack(step.sequence)) {
-    generator.backtrack(2);
+const lsystem = new LSystem({
+  seed: 42,
+  axiom: 'F',
+  rules: {
+    'F': [
+      { successor: 'F[+F]F[-F]F', weight: 3 },
+      { successor: 'F[++F][--F]F', weight: 1 }
+    ]
   }
-
-  if (step.sequence.length >= 10) break;
-}
-
-// Beam search for quality
-const beamResults = chain.beamSearch({
-  beamWidth: 5,
-  maxLength: 20,
-  scorer: (seq) => chain.score(seq).logProb
 });
+
+const result = lsystem.generate({ iterations: 5 });
+const geometry = lsystem.interpret(result, { angle: 25, distance: 10 });
 ```
 
-**Implementation Plan:**
-- [ ] Generator/iterator interface
-- [ ] Backtracking support
-- [ ] Beam search implementation
-- [ ] Step-by-step control
+#### Use Cases
+- Tree and plant generation
+- River networks and cave systems
+- Lightning bolts and cracks
+- Procedural architecture
+- Fractal patterns
 
----
+### v3.8.0 - Grammar-Based Generation (Planned)
+**Goal**: Add context-free grammars for structured content
 
-## 🔧 Low Priority - Utilities
+#### Core Features
+- **Production rules**: Define grammar with terminal/non-terminal symbols
+- **Weighted rules**: Use Distribution for rule selection
+- **Template support**: Embed variables and expressions
+- **Recursive expansion**: Safe recursion with depth limits
+- **Integration with MarkovChain**: Learn rule variations from examples
 
-### 8. Conditional/Tagged Chains ⭐
-**Status:** Planned
-**Complexity:** Medium
-
-**Use Case:** Controlled generation, multi-domain models
-
+#### API Design
 ```typescript
-interface Message {
-  text: string[];
-  sentiment: 'positive' | 'negative';
-  author: string;
-}
-
-const conditional = new ConditionalMarkovChain<string, { sentiment: string }>({
-  maxOrder: 2
+const grammar = new Grammar({
+  seed: 42,
+  start: 'quest',
+  rules: {
+    quest: [
+      { template: 'Retrieve the [item] from [location]', weight: 3 },
+      { template: 'Defeat [enemy] at [location]', weight: 2 }
+    ],
+    item: ['Ancient Sword', 'Magic Crystal', 'Lost Scroll'],
+    location: ['Dark Forest', 'Abandoned Castle', 'Mountain Peak'],
+    enemy: ['Dragon', 'Lich', 'Giant']
+  }
 });
 
-// Add with conditions
-messages.forEach(msg => {
-  conditional.addSequence(msg.text, {
-    conditions: { sentiment: msg.sentiment }
-  });
-});
-
-// Generate with specific conditions
-const positive = conditional.generate({
-  conditions: { sentiment: 'positive' }
-});
+const quest = grammar.generate('quest');
 ```
 
-**Implementation Plan:**
-- [ ] Condition tracking in gram storage
-- [ ] Filtered generation by conditions
-- [ ] Condition-aware statistics
+#### Use Cases
+- Quest and dialogue generation
+- Procedural story generation
+- Code generation
+- Structured data generation
+- Template-based content
 
----
+### v4.1+ - Gen-AI Integration (Research)
+**Goal**: Integrate with LLM APIs for context generation and parameter tuning
 
-### 9. Import/Export Utilities ⭐
-**Status:** Planned
-**Complexity:** Low
+#### Core Features
+- **Context generation**: Use LLMs to generate training data
+- **Parameter optimization**: AI-assisted parameter tuning
+- **Constraint refinement**: Generate WFC rules from descriptions
+- **Quality validation**: Use LLMs to validate generated content
+- **Hybrid workflows**: Combine statistical and neural generation
 
-**Use Case:** Data integration, visualization
-
+#### Integration Patterns
 ```typescript
-// Import from various formats
-const chain = MarkovChain.fromCSV('data.csv', {
-  sequenceColumn: 'text',
-  delimiter: ' '
+// Generate training data from AI
+const aiGenerator = new AIContextGenerator({
+  provider: 'anthropic',
+  model: 'claude-3-5-sonnet'
 });
 
-// Export for visualization
-chain.exportToD3();
-chain.exportToCytoscape();
-
-// Diff between chains
-const diff = chain1.diff(chain2);
-```
-
-**Implementation Plan:**
-- [ ] CSV/JSON importers
-- [ ] Visualization format exporters
-- [ ] Chain comparison/diff utilities
-
----
-
-### 10. Multi-Chain Composition ⭐
-**Status:** Planned
-**Complexity:** High
-
-**Use Case:** Hierarchical generation
-
-```typescript
-const wordChain = new MarkovChain({ sequences: wordSequences });
-const charChain = new MarkovChain({ sequences: charSequences });
-
-const composed = new CompositeChain({
-  levels: [
-    { chain: wordChain, name: 'word' },
-    { chain: charChain, name: 'char' }
-  ]
+// Generate example names for training
+const examples = await aiGenerator.generate({
+  prompt: 'Generate 100 fantasy character names with Celtic influence',
+  format: 'list'
 });
 
-const result = composed.generate({
-  word: { min: 3, max: 5 },
-  char: { min: 4, max: 8 }
+// Train Markov chain on AI-generated examples
+const chain = new MarkovChain({ sequences: examples.map(n => n.split('')) });
+
+// Use AI to validate generated content
+const validator = new AIValidator({
+  prompt: 'Is this a good fantasy name? Consider pronounceability and style.'
+});
+
+const names = chain.generate({ samples: 100 });
+const validated = await validator.filter(names);
+
+// AI-assisted parameter tuning
+const optimizer = new AIOptimizer({
+  prompt: 'Tune these WFC parameters to generate more varied dungeons'
+});
+
+const params = await optimizer.optimize(wfc, {
+  objective: 'maximize variety while maintaining playability'
 });
 ```
 
-**Implementation Plan:**
-- [ ] Hierarchical chain composition
-- [ ] Level-specific generation parameters
-- [ ] Cross-level dependencies
+#### Use Cases
+- Bootstrap training data from natural language descriptions
+- Validate generated content for quality/appropriateness
+- Tune generation parameters based on desired outcomes
+- Combine statistical patterns with semantic understanding
+- Generate constraint rules from high-level descriptions
 
----
+## Research & Exploration
 
-## 📊 Implementation Priority
+### Potential Future Features
 
-Based on user needs and impact:
+#### Cellular Automata
+- Framework for CA-based generation
+- Cave carving, erosion simulation
+- Game of Life variants
+- Needs clear scope to avoid being too broad
 
-1. **Phase 5 (v3.1):** Chain Blending & Interpolation
-2. **Phase 6 (v3.2):** Continuous & Scaled States
-3. **Phase 7 (v3.3):** Multi-Dimensional Chains
-4. **Phase 8 (v3.4):** Constraint-Based Generation + Scoring
-5. **Phase 9 (v3.5):** Pattern Analysis + Incremental Generation
-6. **Phase 10 (v4.0):** Conditional Chains + Composition
+#### Noise Function Integration
+- While external libraries exist, could add game-focused presets
+- Seamless tiling utilities
+- Octave/lacunarity presets for common use cases
+- Integration with Distribution for biome selection
 
----
+#### Constraint Satisfaction Problems (CSP)
+- General CSP solver as a primitive
+- Arc consistency algorithms
+- Backtracking with heuristics
+- Could unify WFC with other constraint-based generation
 
-## 🤝 Addressing Your Specific Use Cases
+#### Genetic Algorithms
+- Population-based optimization
+- Use chain blending for crossover
+- Use MarkovChain to evolve patterns
+- Fitness evaluation frameworks
 
-### Use Case 1: Multi-Dimensional State Spaces
-**Your need:** "Markov chains for tile generation, but everything needs to be collapsed to 1D"
+## Contributing
 
-**Solution:** Multi-Dimensional Markov Chains (Phase 7)
-- Store full state tuples: `{tile, x, y, neighbors}`
-- WFC-style constraint propagation
-- Spatial correlation tracking
+We welcome contributions aligned with this roadmap! Please:
+1. Open an issue to discuss major features before implementing
+2. Follow the design philosophy (immutable, portable, composable)
+3. Include comprehensive tests (maintain >95% coverage)
+4. Write documentation with game development examples
+5. Keep dependencies minimal
 
-### Use Case 2: Blending Parent Probabilities
-**Your need:** "Two characters have a baby, blend hair color probabilities"
+## Versioning
 
-**Solution:** Chain Blending (Phase 5) - **IMPLEMENTING NOW**
-- `MarkovChain.blend([mother, father], [0.5, 0.5])`
-- Interpolate probability distributions
-- Genetic algorithm support
+We follow semantic versioning:
+- **Major** versions: Breaking API changes
+- **Minor** versions: New features, backwards compatible
+- **Patch** versions: Bug fixes, documentation updates
 
-### Use Case 3: Continuous Magnitudes
-**Your need:** "A(0.4) => B(x) where x is magnitude determined by A"
+Current development priorities:
+1. ✅ **Completed**: v3.0-v4.0 features (modernization through export/visualization)
+2. **Next**: Add new primitives in v3.6-v3.8 (WFC, L-Systems, Grammar)
+3. **Future**: Research Gen-AI integration for v4.1+ releases
 
-**Solution:** Scaled States (Phase 6)
-- `ScaledMarkovChain` with category + magnitude
-- Track magnitude transitions
-- Kernel density estimation for smoothing
-
----
-
-## 📝 Notes
-
-- All features maintain immutability and functional design
-- Backward compatibility preserved
-- Performance optimizations from v3.0 carry forward
-- Generic types support throughout
-
----
-
-**Last Updated:** 2025-11-08
-**Current Version:** v3.0.0
-**Target for Next Release:** v3.1.0 (Chain Blending)
+**Version Strategy:**
+- v3.x releases added major features while maintaining backward compatibility
+- v4.0 was released as a major version to reflect substantial new feature set, but without breaking API changes
+- Future releases will follow semantic versioning strictly
+- A v5.0 major version would only occur with true breaking API changes

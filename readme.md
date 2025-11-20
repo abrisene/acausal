@@ -82,10 +82,15 @@ rand.integer(1, 6); // Roll 1d6
 - [Scaled States](https://github.com/abrisene/acausal/blob/master/readme/scaled-states.md) - Combat damage, market prices, morale systems (v3.2+)
 - [Multi-Dimensional Chains](https://github.com/abrisene/acausal/blob/master/readme/multi-dimensional.md) - Tile generation, AI behavior, complex states (v3.3+)
 
-### Advanced Features
-- [Sequence Scoring & Constraints](https://github.com/abrisene/acausal/blob/master/readme/advanced.md) - Quality scoring, anomaly detection, constraint-based generation (v3.4+)
-- [Pattern Analysis](https://github.com/abrisene/acausal/blob/master/readme/advanced.md#pattern-extraction) - Extract patterns, find similar sequences (v3.5+)
-- [Visualization & Export](https://github.com/abrisene/acausal/blob/master/readme/visualization.md) - Graph export, model comparison, data analysis (v4.0+)
+### Game-Focused Advanced Features
+- [Quality Control & Filtering](https://github.com/abrisene/acausal/blob/master/readme/quality-control.md) - Scoring, filtering bad content, bot detection, autocomplete (v3.4+)
+- [Recommendation Systems](https://github.com/abrisene/acausal/blob/master/readme/recommendations.md) - Pattern analysis, similarity search, matchmaking (v3.5+)
+- [Hybrid Algorithms](https://github.com/abrisene/acausal/blob/master/readme/hybrid-algorithms.md) - Wave Function Collapse, Perlin noise, L-Systems, genetic algorithms (v3.6+)
+- [Debugging & Analytics](https://github.com/abrisene/acausal/blob/master/readme/debugging.md) - Model inspection, visualization, testing, A/B testing (v4.0+)
+
+### Technical Reference
+- [Advanced Markov Chain Features](https://github.com/abrisene/acausal/blob/master/readme/advanced.md) - API reference for scoring, constraints, pattern extraction (v3.4-v3.5)
+- [Visualization & Export](https://github.com/abrisene/acausal/blob/master/readme/visualization.md) - Technical guide for graph export, D3.js, Cytoscape integration (v4.0)
 
 ## Installation
 
