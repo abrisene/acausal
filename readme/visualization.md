@@ -1,6 +1,11 @@
 # Visualizing Markov Chains
 
-This guide covers exporting and visualizing Markov chains using various tools including D3.js, Cytoscape, Graphviz, and custom solutions.
+This guide covers exporting and visualizing Markov chains using various tools including D3.js, Cytoscape, Graphviz, and custom solutions (v4.0 features).
+
+**📚 Documentation Guide:**
+- This is the **technical integration guide** for visualization libraries and export formats
+- For **game development examples**, see [Debugging & Analytics](./debugging.md) - Model inspection, testing, and analytics for game development
+- For basic usage, start with the [Markov Chain Quickstart](./markov.md)
 
 ## Table of Contents
 

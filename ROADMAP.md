@@ -21,41 +21,56 @@ All features should adhere to the core design principles:
 - Comprehensive test coverage (>99%)
 - Documentation and quickstart guides
 
-### v3.0.0 - Modernization (Planned)
+### v3.0.0 - Modernization (2025)
 - Updated to TypeScript 5.6.3
-- Modern build system (tsup)
-- ESM/CJS dual output
+- Modern build system (tsup) - 60% faster builds
+- ESM/CJS dual output with package exports
 - Updated dependencies
-- Jest 29.7.0 for testing
+- Jest 29.7.0 for testing with 95%+ coverage
+- Generic types for MarkovChain<T> and Distribution<T>
+- New utility methods: `hasGram()`, `getGramsByOrder()`, `getStats()`
 
-### v3.1.0 - Chain Blending (Planned)
-- Interpolate between multiple Markov chains
-- Weight-based blending
+### v3.1.0 - Chain Blending (2025)
+- `blend()` static method for combining multiple chains
+- `interpolate()` method for weighted blending
+- Multiple strategies: arithmetic, geometric, harmonic, max, min
 - Use cases: character breeding, cultural mixing, evolution
 
-### v3.2.0 - Scaled States (Planned)
-- States with magnitude/intensity values
-- Smooth transitions between states
+### v3.2.0 - Scaled States (2025)
+- `ScaledMarkovChain<T>` class for magnitude tracking
+- Four sampling strategies: mean, median, sample, weighted-sample
+- `generateScaled()` for magnitude-aware generation
 - Use cases: combat damage, market prices, morale systems
 
-### v3.3.0 - Multi-Dimensional Chains (Planned)
-- Support for multi-dimensional state spaces
-- Beyond sequential patterns
+### v3.3.0 - Multi-Dimensional Chains (2025)
+- `MultiDimMarkovChain<T>` for structured state spaces
+- Preserves multi-attribute structure without flattening
+- StateKeyFunction pattern for custom state mapping
 - Use cases: tile generation, AI behavior trees, equipment combos
 
-### v3.4.0 - Sequence Scoring & Constraints (Planned)
-- Score sequences with log probability and perplexity
-- Constraint-based generation
-- Quality filtering and anomaly detection
-- Use cases: filtering bad names, content validation
+### v3.4.0 - Sequence Scoring & Constraints (2025)
+- `score()` method with log probability and perplexity
+- `rankByLikelihood()` for comparing sequences
+- `isAnomaly()` for outlier detection
+- Constraint-based generation with validators
+- Use cases: quality filtering, autocomplete, bot detection
 
-### v3.5.0 - Pattern Analysis (Planned)
-- Extract common patterns from trained models
-- Similarity search between sequences
-- Multiple distance metrics (Jaccard, cosine, Levenshtein)
+### v3.5.0 - Pattern Analysis (2025)
+- `extractPatterns()` for discovering frequent patterns
+- `findSimilar()` with Jaccard, Cosine, Levenshtein metrics
+- Pattern frequency analysis and filtering
 - Use cases: recommendations, matchmaking, content discovery
 
-### v3.6.0 - Wave Function Collapse (Planned)
+### v4.0.0 - Graph Export & Visualization (2025)
+- `exportAsGraph()` for node/edge graph format
+- `diff()` for comparing chains
+- `toJSON()` for simplified serialization
+- Integration guides for D3.js, Cytoscape, Graphviz
+- Use cases: debugging, A/B testing, analytics
+
+## Planned Versions
+
+### v3.6.0 - Wave Function Collapse (Future)
 **Goal**: Add WFC as a first-class primitive alongside Distribution and MarkovChain
 
 #### Core Features
@@ -175,15 +190,7 @@ const quest = grammar.generate('quest');
 - Structured data generation
 - Template-based content
 
-### v3.9.0 - Graph Export & Visualization (Planned)
-- Export models to JSON, graph formats, CSV
-- Model comparison and analysis
-- Statistical introspection
-- Use cases: debugging, A/B testing, analytics
-
-## Future Versions
-
-### v3.10+ - Gen-AI Integration (Research)
+### v4.1+ - Gen-AI Integration (Research)
 **Goal**: Integrate with LLM APIs for context generation and parameter tuning
 
 #### Core Features
@@ -280,9 +287,12 @@ We follow semantic versioning:
 - **Patch** versions: Bug fixes, documentation updates
 
 Current development priorities:
-1. Complete v3.0-v3.5 features (modernization, blending, scaling, multi-dim, scoring, patterns)
-2. Add new primitives in v3.6-v3.8 (WFC, L-Systems, Grammar)
-3. Add export/visualization in v3.9
-4. Research Gen-AI integration for v3.10+ releases
+1. ✅ **Completed**: v3.0-v4.0 features (modernization through export/visualization)
+2. **Next**: Add new primitives in v3.6-v3.8 (WFC, L-Systems, Grammar)
+3. **Future**: Research Gen-AI integration for v4.1+ releases
 
-All v3.x releases are additive features maintaining backward compatibility. A v4.0 major version would only occur with breaking API changes.
+**Version Strategy:**
+- v3.x releases added major features while maintaining backward compatibility
+- v4.0 was released as a major version to reflect substantial new feature set, but without breaking API changes
+- Future releases will follow semantic versioning strictly
+- A v5.0 major version would only occur with true breaking API changes

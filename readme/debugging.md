@@ -1,8 +1,13 @@
 # Debugging and Analytics
 
-**New in v4.0+**
+**New in v4.0**
 
 This guide shows you how to debug procedural generation, visualize game data, and analyze player behavior.
+
+**📚 Documentation Guide:**
+- This guide focuses on **game development examples** with practical debugging workflows
+- For **technical visualization integration**, see [Visualization & Export](./visualization.md) - D3.js, Cytoscape, Graphviz integration guides
+- For basic usage, start with the [Markov Chain Quickstart](./markov.md)
 
 ## Table of Contents
 

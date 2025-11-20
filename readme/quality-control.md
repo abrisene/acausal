@@ -4,6 +4,11 @@
 
 This guide shows you how to score generated content, filter out bad results, and ensure quality in your procedural generation.
 
+**📚 Documentation Guide:**
+- This guide focuses on **game development examples** with practical, relatable use cases
+- For **technical API reference**, see [Advanced Markov Chain Features](./advanced.md) - Detailed method signatures and algorithms
+- For basic usage, start with the [Markov Chain Quickstart](./markov.md)
+
 ## Table of Contents
 
 - [Why Quality Control Matters](#why-quality-control-matters)

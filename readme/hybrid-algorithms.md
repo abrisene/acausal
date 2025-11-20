@@ -1,6 +1,14 @@
 # Hybrid Algorithms: Combining Acausal with Other Techniques
 
+**Note**: This guide covers integration patterns for upcoming v3.6+ features (WFC, L-Systems, Grammar) alongside current acausal capabilities.
+
 This guide shows you how to combine Markov chains with other procedural generation algorithms for powerful hybrid systems.
+
+**📚 Documentation Guide:**
+- This guide focuses on **integration patterns** and hybrid approaches
+- These algorithms (WFC, L-Systems, Grammar) are planned for v3.6-v3.8
+- Current features (v3.0-v4.0) include chain blending, pattern analysis, and scoring
+- For basic usage, start with the [Markov Chain Quickstart](./markov.md)
 
 ## Table of Contents
 

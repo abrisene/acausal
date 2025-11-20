@@ -4,6 +4,11 @@
 
 This guide shows you how to analyze patterns in your game data to build recommendation systems, matchmaking, and player insights.
 
+**📚 Documentation Guide:**
+- This guide focuses on **game development examples** with practical, relatable use cases
+- For **technical API reference**, see [Advanced Markov Chain Features](./advanced.md#pattern-extraction) - Detailed method signatures for pattern extraction and similarity search
+- For basic usage, start with the [Markov Chain Quickstart](./markov.md)
+
 ## Table of Contents
 
 - [What is Pattern Analysis?](#what-is-pattern-analysis)
