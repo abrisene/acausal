@@ -7,9 +7,9 @@
  * Run with: npm test wfc-api.spec.ts
  */
 
-import { WFC } from '../structures/wfc';
-// TODO: Phase 4 & 5 - Uncomment when implemented
-// import { WFCGrid2D, WFCConstraintLearner } from '../structures/wfc';
+import { WFC, WFCGrid2D } from '../structures';
+// TODO: Phase 5 - Uncomment when implemented
+// import { WFCConstraintLearner } from '../structures/wfc';
 import type {
   State,
   Dimension,
@@ -321,8 +321,7 @@ describe('WFC - Core API', () => {
   });
 });
 
-// TODO: Phase 4 - Uncomment when WFCGrid2D is implemented
-describe.skip('WFCGrid2D - 2D Grid Adapter', () => {
+describe('WFCGrid2D - 2D Grid Adapter', () => {
   describe('Basic 2D Grid Generation', () => {
     it('should generate a 3x3 grid with simple constraints', () => {
       const wfc = new WFC({
