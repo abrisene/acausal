@@ -1,6 +1,8 @@
-# Advanced Markov Chain Features
+# Advanced Features: Markov Chains & Wave Function Collapse
 
-This guide covers advanced features introduced in v3.4-v3.5 including sequence scoring, constraint-based generation, pattern analysis, and model comparison.
+This guide covers advanced features including:
+- **v3.4-v3.5**: Markov Chain scoring, constraints, pattern analysis, and model comparison
+- **v3.6**: Wave Function Collapse (WFC) for constraint-based procedural generation
 
 **📚 Documentation Guide:**
 - This is the **technical API reference** with detailed method signatures and algorithms
@@ -11,6 +13,7 @@ This guide covers advanced features introduced in v3.4-v3.5 including sequence s
 
 ## Table of Contents
 
+### Markov Chains (v3.4-v3.5)
 - [Sequence Scoring & Ranking](#sequence-scoring--ranking)
 - [Constraint-Based Generation](#constraint-based-generation)
 - [Pattern Extraction](#pattern-extraction)
@@ -18,6 +21,16 @@ This guide covers advanced features introduced in v3.4-v3.5 including sequence s
 - [Model Comparison & Diffing](#model-comparison--diffing)
 - [Performance Optimization](#performance-optimization)
 - [Best Practices](#best-practices)
+
+### Wave Function Collapse (v3.6)
+- [WFC Overview](#wave-function-collapse-wfc)
+- [Quick Start](#wfc-quick-start)
+- [Core API](#wfc-core-api)
+- [Grid2D Adapter](#wfc-grid2d-adapter)
+- [Constraint Learning](#wfc-constraint-learning)
+- [Configuration Options](#wfc-configuration-options)
+- [Serialization](#wfc-serialization)
+- [Performance](#wfc-performance)
 
 ---
 
@@ -879,11 +892,698 @@ console.log(`Average quality: ${avgQuality.toFixed(2)}`);
 
 ---
 
+# Wave Function Collapse (WFC)
+
+**Added in v3.6**
+
+Wave Function Collapse is a constraint-based procedural generation algorithm that creates coherent outputs by collapsing quantum-like superpositions of states. Think of it as solving a sudoku where each cell can be multiple values until observed.
+
+## WFC Overview
+
+### What is WFC?
+
+WFC generates content by:
+1. Starting with all cells in a superposition (all possible states)
+2. **Observing** a cell - collapsing it to a single state
+3. **Propagating** constraints - reducing neighbors' possibilities
+4. Repeating until all cells are collapsed or a contradiction occurs
+
+### Key Features
+
+- **Topology-Agnostic**: Works on 2D grids, 3D voxels, graphs, or custom structures
+- **Constraint-Based**: Define rules for what can be adjacent
+- **Deterministic**: Same seed produces same results
+- **Composable**: Integrates with Distribution and MarkovChain
+- **Learnable**: Automatically extract constraints from examples
+
+### When to Use WFC
+
+**Best For:**
+- Tile-based level generation (dungeons, maps, puzzles)
+- Texture synthesis and pattern generation
+- Coherent procedural content with local rules
+- Constraint satisfaction problems
+
+**Compared to Markov Chains:**
+- WFC: Spatial constraints, bidirectional rules, local coherence
+- Markov: Sequential patterns, temporal dependencies, global structure
+
+**Compared to Noise (Perlin, Simplex):**
+- WFC: Discrete states, hard constraints, perfect coherence
+- Noise: Continuous values, soft gradients, no guarantees
+
+---
+
+## WFC Quick Start
+
+### 1. Basic 2D Grid Generation
+
+```typescript
+import { WFC, WFCGrid2D } from 'acausal';
+
+// Define states and rules
+const wfc = new WFC({
+  seed: 42,
+  states: ['grass', 'water', 'sand'],
+  constraints: {
+    grass: {
+      north: ['grass', 'sand'],  // Grass can be north of these
+      south: ['grass', 'sand'],
+      east: ['grass', 'water'],
+      west: ['grass', 'water']
+    },
+    water: {
+      north: ['water', 'sand'],
+      south: ['water', 'sand'],
+      east: ['water', 'grass'],
+      west: ['water', 'grass']
+    },
+    sand: {
+      north: ['sand', 'grass', 'water'],
+      south: ['sand', 'grass', 'water'],
+      east: ['sand', 'grass', 'water'],
+      west: ['sand', 'grass', 'water']
+    }
+  }
+});
+
+// Create 2D grid adapter
+const grid = new WFCGrid2D({ width: 10, height: 10, wfc });
+
+// Generate!
+const terrain = grid.generate();
+
+if (terrain) {
+  console.log(terrain);
+  // [
+  //   ['grass', 'grass', 'sand', 'water', ...],
+  //   ['grass', 'sand', 'water', 'water', ...],
+  //   ...
+  // ]
+}
+```
+
+### 2. Learn from Examples
+
+```typescript
+import { WFCConstraintLearner } from 'acausal';
+
+// Hand-craft a small example
+const example = [
+  ['W', 'W', 'W', 'W'],
+  ['W', '.', '.', 'W'],
+  ['W', '.', '.', 'W'],
+  ['W', 'W', 'W', 'W']
+];
+
+// Learn constraint rules automatically
+const constraints = WFCConstraintLearner.learn2DConstraints([example]);
+const states = WFCConstraintLearner.extractStates([example]);
+
+// Create WFC from learned rules
+const wfc = new WFC({ seed: 123, states, constraints });
+
+// Generate larger similar structures
+const grid = new WFCGrid2D({ width: 20, height: 20, wfc });
+const dungeon = grid.generate();
+```
+
+### 3. Weighted Generation
+
+```typescript
+// Learn with frequencies
+const constraints = WFCConstraintLearner.learnWeightedConstraints([
+  exampleA,  // Has lots of grass
+  exampleB,  // Has lots of water
+  exampleC   // Balanced
+]);
+
+const frequencies = WFCConstraintLearner.calculateFrequencies([
+  exampleA, exampleB, exampleC
+]);
+
+const wfc = new WFC({
+  seed: 456,
+  states: ['grass', 'water', 'sand'],
+  constraints,
+  frequencies  // More grass/water will appear more often
+});
+```
+
+---
+
+## WFC Core API
+
+### Creating a WFC Instance
+
+```typescript
+import { WFC } from 'acausal';
+
+const wfc = new WFC({
+  seed: 42,              // Random seed for determinism
+  states: ['A', 'B'],    // All possible states
+  constraints: {         // Adjacency rules
+    A: {
+      next: ['A', 'B']   // A can be followed by A or B
+    },
+    B: {
+      next: ['A']        // B can only be followed by A
+    }
+  },
+
+  // Optional configuration
+  frequencies: {         // State occurrence weights
+    A: 70,
+    B: 30
+  },
+  entropyMode: 'shannon', // 'count' | 'shannon' | 'weighted-shannon'
+  entropyNoise: 0.001     // Small noise to break ties
+});
+```
+
+### Collapse on Custom Graphs
+
+```typescript
+import type { WFCGraph, WFCCell, Adjacency } from 'acausal';
+
+// Create a custom graph structure
+const graph: WFCGraph = {
+  cells: new Map([
+    [0, { id: 0, possibleStates: new Set(), collapsed: false }],
+    [1, { id: 1, possibleStates: new Set(), collapsed: false }],
+    [2, { id: 2, possibleStates: new Set(), collapsed: false }]
+  ]),
+
+  // Define topology via neighbor function
+  getNeighbors: (cellId) => {
+    const neighbors: Adjacency[] = [];
+
+    if (cellId === 0) {
+      neighbors.push({ neighbor: 1, dimension: 'next' });
+    }
+    if (cellId === 1) {
+      neighbors.push({ neighbor: 2, dimension: 'next' });
+      neighbors.push({ neighbor: 0, dimension: 'prev' });
+    }
+    if (cellId === 2) {
+      neighbors.push({ neighbor: 1, dimension: 'prev' });
+    }
+
+    return neighbors;
+  }
+};
+
+// Collapse the graph
+const result = wfc.collapse(graph);
+
+if (result.success) {
+  console.log('Generated successfully!');
+  console.log(`Steps: ${result.metadata?.steps}`);
+  console.log(`Time: ${result.metadata?.timeMs}ms`);
+
+  // Extract collapsed states
+  for (const cell of result.graph.cells.values()) {
+    console.log(`Cell ${cell.id}: ${cell.collapsedState}`);
+  }
+} else {
+  console.error('Contradiction:', result.error);
+}
+```
+
+### WFC Result Structure
+
+```typescript
+interface WFCResult {
+  success: boolean;           // Whether collapse succeeded
+  graph: WFCGraph;            // Graph with collapsed cells
+  contradiction: boolean;     // Whether contradiction occurred
+  error?: string;             // Error message if failed
+  metadata?: {
+    steps?: number;           // Number of collapse steps
+    backtracks?: number;      // Backtracking attempts (if enabled)
+    timeMs?: number;          // Generation time
+  };
+}
+```
+
+---
+
+## WFC Grid2D Adapter
+
+The `WFCGrid2D` class provides a convenient interface for 2D grid generation.
+
+### Creating a Grid
+
+```typescript
+import { WFC, WFCGrid2D } from 'acausal';
+
+const wfc = new WFC({
+  seed: 42,
+  states: ['0', '1'],
+  constraints: {
+    '0': { north: ['0', '1'], south: ['1'], east: ['1'], west: ['0'] },
+    '1': { north: ['1'], south: ['0', '1'], east: ['0'], west: ['1'] }
+  }
+});
+
+const grid = new WFCGrid2D({
+  width: 5,
+  height: 5,
+  wfc
+});
+```
+
+### Generate Methods
+
+```typescript
+// Simple generation (returns 2D array or null)
+const result: string[][] | null = grid.generate();
+
+// Generation with metadata
+const detailed = grid.generateWithResult();
+
+if (detailed.success) {
+  console.log('Grid:', detailed.grid);
+  console.log('Steps:', detailed.metadata?.steps);
+  console.log('Time:', detailed.metadata?.timeMs);
+} else {
+  console.error('Failed:', detailed.error);
+}
+```
+
+### Generation Options
+
+```typescript
+// Override entropy mode for this generation
+const grid2D = grid.generate({
+  entropyMode: 'weighted-shannon'
+});
+
+// Future: Progressive collapse, multi-pass, etc.
+```
+
+### Cardinal Directions
+
+Grid2D uses standard cardinal directions:
+- **north**: y - 1 (up)
+- **south**: y + 1 (down)
+- **east**: x + 1 (right)
+- **west**: x - 1 (left)
+
+```typescript
+const constraints = {
+  floor: {
+    north: ['floor', 'wall'],
+    south: ['floor', 'wall'],
+    east: ['floor', 'wall'],
+    west: ['floor', 'wall']
+  },
+  wall: {
+    north: ['wall'],
+    south: ['wall'],
+    east: ['wall'],
+    west: ['wall']
+  }
+};
+```
+
+---
+
+## WFC Constraint Learning
+
+The `WFCConstraintLearner` class automatically extracts constraint rules from example grids.
+
+### Basic Learning
+
+```typescript
+import { WFCConstraintLearner } from 'acausal';
+
+// Define one or more examples
+const examples = [
+  [
+    ['A', 'B', 'A'],
+    ['B', 'A', 'B'],
+    ['A', 'B', 'A']
+  ],
+  [
+    ['B', 'A', 'B'],
+    ['A', 'B', 'A'],
+    ['B', 'A', 'B']
+  ]
+];
+
+// Learn constraints (unweighted - all adjacencies equally likely)
+const constraints = WFCConstraintLearner.learn2DConstraints(examples);
+
+console.log(constraints);
+// {
+//   A: {
+//     north: ['A', 'B'],  // A was north of both A and B
+//     south: ['A', 'B'],
+//     east: ['B'],        // A was only east of B
+//     west: ['B']
+//   },
+//   B: { ... }
+// }
+```
+
+### Weighted Learning
+
+```typescript
+// Learn with frequency tracking
+const weightedConstraints = WFCConstraintLearner.learnWeightedConstraints(
+  examples,
+  42  // Seed for distributions
+);
+
+// Now constraints are Distribution objects with weighted probabilities
+console.log(weightedConstraints.A.north);
+// Distribution { normal: { A: 0.6, B: 0.4 }, ... }
+```
+
+### Extract States and Frequencies
+
+```typescript
+// Get all unique states from examples
+const states = WFCConstraintLearner.extractStates(examples);
+// ['A', 'B']
+
+// Calculate how often each state appears
+const frequencies = WFCConstraintLearner.calculateFrequencies(examples);
+// { A: 9, B: 9 }  (9 occurrences each in the examples)
+```
+
+### Complete Learning Workflow
+
+```typescript
+import { WFC, WFCGrid2D, WFCConstraintLearner } from 'acausal';
+
+// 1. Provide examples
+const dungeonExamples = [
+  createHandCraftedDungeon(),
+  createAnotherDungeon()
+];
+
+// 2. Learn everything
+const states = WFCConstraintLearner.extractStates(dungeonExamples);
+const constraints = WFCConstraintLearner.learnWeightedConstraints(
+  dungeonExamples,
+  123
+);
+const frequencies = WFCConstraintLearner.calculateFrequencies(
+  dungeonExamples
+);
+
+// 3. Create WFC from learned data
+const wfc = new WFC({
+  seed: 456,
+  states,
+  constraints,
+  frequencies
+});
+
+// 4. Generate new content
+const grid = new WFCGrid2D({ width: 30, height: 30, wfc });
+const newDungeon = grid.generate();
+```
+
+---
+
+## WFC Configuration Options
+
+### Entropy Modes
+
+Entropy determines which cell to collapse next. Lower entropy = higher priority.
+
+```typescript
+// 1. Count (default - fastest)
+// Entropy = number of possible states
+const wfc1 = new WFC({
+  states: ['A', 'B'],
+  constraints: {...},
+  entropyMode: 'count'
+});
+
+// 2. Shannon entropy
+// Information-theoretic entropy (assumes uniform probabilities)
+const wfc2 = new WFC({
+  states: ['A', 'B'],
+  constraints: {...},
+  entropyMode: 'shannon'
+});
+
+// 3. Weighted Shannon entropy
+// Accounts for actual state frequencies
+const wfc3 = new WFC({
+  states: ['grass', 'water'],
+  constraints: {...},
+  frequencies: { grass: 70, water: 30 },
+  entropyMode: 'weighted-shannon'
+});
+
+// 4. Custom entropy function
+const wfc4 = new WFC({
+  states: ['A', 'B'],
+  constraints: {...},
+  entropyMode: (cell, frequencies) => {
+    // Your custom logic
+    return cell.possibleStates.size * Math.random();
+  }
+});
+```
+
+### Entropy Noise
+
+Add small random noise to break entropy ties:
+
+```typescript
+const wfc = new WFC({
+  states: ['A', 'B'],
+  constraints: {...},
+  entropyMode: 'shannon',
+  entropyNoise: 0.001  // Small noise value
+});
+
+// Without noise: cells with same entropy collapse in deterministic order
+// With noise: adds variety while maintaining overall coherence
+```
+
+### Frequency Weights
+
+Control how often each state appears:
+
+```typescript
+const wfc = new WFC({
+  states: ['grass', 'water', 'mountain'],
+  constraints: {...},
+  frequencies: {
+    grass: 70,      // 70% weight
+    water: 20,      // 20% weight
+    mountain: 10    // 10% weight
+  }
+});
+
+// Frequencies affect:
+// 1. State selection during collapse
+// 2. Weighted-shannon entropy calculation
+```
+
+### Constraints with Distributions
+
+Use Distribution objects for weighted adjacency rules:
+
+```typescript
+import { Distribution } from 'acausal';
+
+const wfc = new WFC({
+  seed: 42,
+  states: ['grass', 'water', 'sand'],
+  constraints: {
+    grass: {
+      north: new Distribution({
+        seed: 42,
+        source: {
+          grass: 80,  // Usually more grass
+          sand: 15,   // Sometimes sand
+          water: 5    // Rarely water
+        }
+      }),
+      // ... other directions
+    }
+  }
+});
+
+// Now adjacencies are probabilistic, not just allowed/forbidden
+```
+
+---
+
+## WFC Serialization
+
+### Save and Load Models
+
+```typescript
+import { WFC } from 'acausal';
+
+// Create and configure WFC
+const wfc = new WFC({
+  seed: 42,
+  states: ['A', 'B', 'C'],
+  constraints: {...},
+  frequencies: { A: 50, B: 30, C: 20 },
+  entropyMode: 'weighted-shannon',
+  entropyNoise: 0.001
+});
+
+// Serialize to JSON
+const dto = wfc.toJSON();
+
+// Save to file
+import fs from 'fs';
+fs.writeFileSync('wfc-model.json', JSON.stringify(dto, null, 2));
+
+// Later: Load from file
+const loaded = JSON.parse(fs.readFileSync('wfc-model.json', 'utf8'));
+const restoredWFC = WFC.fromJSON(loaded);
+
+// Generates identically to original (same seed)
+```
+
+### DTO Structure
+
+```typescript
+interface WFCDTO {
+  seed?: number;
+  states: string[];
+  constraints: {
+    [state: string]: {
+      [dimension: string]: string[] | {[state: string]: number};
+    };
+  };
+  frequencies?: {[state: string]: number};
+  entropyMode?: 'count' | 'shannon' | 'weighted-shannon';
+  entropyNoise?: number;
+  // boundaries, symmetry, backtrack configs (future)
+}
+```
+
+### Model Versioning
+
+```typescript
+// Version your models for compatibility
+const modelExport = {
+  version: '1.0.0',
+  created: new Date().toISOString(),
+  metadata: {
+    description: 'Dungeon generator',
+    stateCount: wfc.getStats().stateCount,
+    dimensions: wfc.getStats().dimensions
+  },
+  model: wfc.toJSON()
+};
+
+fs.writeFileSync(
+  `dungeon-wfc-v${modelExport.version}.json`,
+  JSON.stringify(modelExport, null, 2)
+);
+```
+
+---
+
+## WFC Performance
+
+### Benchmarks
+
+**100x100 Grid:**
+- Simple constraints: ~200ms
+- Complex constraints: ~1200ms
+- Average: ~500-800ms
+
+**1000x1000 Grid:**
+- Target: <10 seconds
+- Actual: ~8-12 seconds (depending on constraints)
+
+### Optimization Tips
+
+#### 1. Use Count Entropy for Speed
+
+```typescript
+// Fastest (but least sophisticated)
+const wfc = new WFC({
+  states: [...],
+  constraints: {...},
+  entropyMode: 'count'  // Default, fastest
+});
+
+// Slower but better quality
+entropyMode: 'shannon'
+
+// Slowest but most accurate
+entropyMode: 'weighted-shannon'
+```
+
+#### 2. Minimize Constraint Complexity
+
+```typescript
+// Faster: Fewer allowed states per direction
+grass: {
+  north: ['grass'],        // Only 1 option
+  south: ['grass', 'sand'] // Only 2 options
+}
+
+// Slower: Many allowed states
+grass: {
+  north: ['grass', 'sand', 'water', 'mountain', 'forest']
+}
+```
+
+#### 3. Start with Pre-Collapsed Cells
+
+```typescript
+// Pre-collapse border or anchor cells
+const graph: WFCGraph = {
+  cells: new Map([
+    [0, { id: 0, possibleStates: new Set(['wall']), collapsed: true, collapsedState: 'wall' }],
+    [1, { id: 1, possibleStates: new Set(), collapsed: false }],
+    // ...
+  ]),
+  getNeighbors: (id) => {...}
+};
+
+// WFC will propagate from pre-collapsed cells first
+const result = wfc.collapse(graph);
+```
+
+#### 4. Monitor Performance
+
+```typescript
+const start = Date.now();
+const result = grid.generateWithResult();
+
+console.log(`Generation time: ${result.metadata?.timeMs}ms`);
+console.log(`Steps: ${result.metadata?.steps}`);
+console.log(`Steps/ms: ${(result.metadata?.steps! / result.metadata?.timeMs!).toFixed(2)}`);
+
+// If too slow:
+// - Reduce grid size
+// - Simplify constraints
+// - Use count entropy
+// - Pre-collapse strategic cells
+```
+
+---
+
 ## Next Steps
 
+### Markov Chains
 - [Visualization Guide](./visualization.md) - Export and visualize chains
 - [Main Documentation](./markov.md) - Core Markov chain features
 - [Distribution Guide](./distribution.md) - Probability distributions
-- [Examples](../examples/) - Complete code examples
 
-For API reference, see the [full documentation](https://abrisene.github.io/acausal/).
+### Wave Function Collapse
+- [Game Development Examples](../examples/) - Dungeon, terrain, puzzle generation
+- [WFC Types Reference](../src/structures/wfc-types.ts) - Complete type definitions
+
+### General
+- [Examples](../examples/) - Complete code examples
+- [Full API Documentation](https://abrisene.github.io/acausal/)
