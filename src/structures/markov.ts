@@ -39,6 +39,10 @@ import { CONSTANTS } from '..';
  # Types
  */
 
+// State type can be anything, but internally stored as strings
+export type StateId = string | number;
+export type StateSelector<T> = (id: StateId) => T | undefined;
+
 export type MCDirectionOption = 'next' | 'last';
 export type MCInsertOption = boolean | 'start' | 'end' | 'middle';
 export type MCDelimitersShort = [string, string, string];
@@ -63,7 +67,7 @@ export interface MarkovChainGramDTO extends MarkovChainOptions {
 
 export type MarkovChainDTO = MarkovChainSequenceDTO | MarkovChainGramDTO;
 
-export interface MarkovChainConstructor extends RandomDTO {
+export interface MarkovChainConstructor<T extends string = string> extends RandomDTO {
   maxOrder?: number;
   delimiter?: string;
   startDelimiter?: string;
@@ -72,6 +76,7 @@ export interface MarkovChainConstructor extends RandomDTO {
   sequences?: string[][];
   grams?: GramDictionary;
   insert?: MCInsertOption;
+  stateSelector?: StateSelector<T>;
 }
 
 export interface Gram {
@@ -84,6 +89,16 @@ export interface Gram {
   degreeOut: number;
 }
 
+export interface MCConstraints {
+  minLength?: number;
+  maxLength?: number;
+  mustContain?: string[];
+  mustNotContain?: string[];
+  pattern?: RegExp;
+  validator?: (sequence: string[]) => boolean;
+  maxRetries?: number;
+}
+
 export interface MCGeneratorOptions {
   start?: string[];
   order?: number;
@@ -93,6 +108,7 @@ export interface MCGeneratorOptions {
   mask?: string[];
   strict?: boolean;
   trim?: boolean;
+  constraints?: MCConstraints;
 }
 
 export interface MCGeneratorStaticOptions extends MCGeneratorOptions {
@@ -111,6 +127,90 @@ export interface MCAnalysis {
   sequence: string[];
   sources: { [key: string]: number };
   sinks: { [key: string]: number };
+}
+
+export interface MarkovChainStats {
+  gramCount: number;
+  sequenceCount: number;
+  orderRange: [number, number];
+  avgDegreeIn: number;
+  avgDegreeOut: number;
+}
+
+export interface MCSequenceScore {
+  sequence: string[];
+  logProb: number;
+  perplexity: number;
+  isValid: boolean;
+  normalized: number;
+}
+
+export interface MCRankedSequence extends MCSequenceScore {
+  rank: number;
+}
+
+export interface MCPattern {
+  pattern: string[];
+  frequency: number;
+  order: number;
+  probability: number;
+}
+
+export interface MCExtractPatternsOptions {
+  minOrder?: number;
+  maxOrder?: number;
+  minFrequency?: number;
+  topN?: number;
+}
+
+export type SimilarityMetric = 'cosine' | 'jaccard' | 'levenshtein';
+
+export interface MCFindSimilarOptions {
+  metric?: SimilarityMetric;
+  topN?: number;
+  threshold?: number;
+}
+
+export interface MCSimilarSequence {
+  sequence: string[];
+  similarity: number;
+  distance: number;
+}
+
+export interface MCExportNode {
+  id: string;
+  order: number;
+  frequency: number;
+  states: string[];
+}
+
+export interface MCExportEdge {
+  from: string;
+  to: string;
+  weight: number;
+  probability: number;
+}
+
+export interface MCGraphExport {
+  nodes: MCExportNode[];
+  edges: MCExportEdge[];
+  metadata: {
+    maxOrder: number;
+    totalGrams: number;
+    totalSequences: number;
+  };
+}
+
+export interface MCDiffResult {
+  added: string[];      // Grams in chain2 but not chain1
+  removed: string[];    // Grams in chain1 but not chain2
+  common: string[];     // Grams in both chains
+  modified: Array<{     // Grams with different probabilities
+    gram: string;
+    chain1Freq: number;
+    chain2Freq: number;
+    difference: number;
+  }>;
 }
 
 /**
@@ -159,14 +259,14 @@ const defaultAnalyzeOptions = {
  * @param insert        The addition / insertion type.
  * @param delimiters    The delimiters for start / middle / end states.
  */
-function formatGramSequence(gramSequence: string[], insert: MCInsertOption, delimiters: MCDelimitersShort) {
-  let result;
+function formatGramSequence(gramSequence: string[], insert: MCInsertOption, delimiters: MCDelimitersShort): string[] {
+  let result: string[];
   switch (insert) {
     case 'start':
-      result = [delimiters[0][0], ...gramSequence];
+      result = [delimiters[0], ...gramSequence];
       break;
     case 'end':
-      result = [...gramSequence, delimiters[2][0]];
+      result = [...gramSequence, delimiters[2]];
       break;
     case 'middle':
     case true:
@@ -174,7 +274,7 @@ function formatGramSequence(gramSequence: string[], insert: MCInsertOption, deli
       break;
     case false:
     default:
-      result = [delimiters[0][0], ...gramSequence, delimiters[2][0]];
+      result = [delimiters[0], ...gramSequence, delimiters[2]];
       break;
   }
   return result;
@@ -194,7 +294,16 @@ function getGramId(gramSequence: string[], delimiter: string) {
  * @param data A Markov Chain data transfer object to extract delimiters from.
  */
 function getDelimiters(data: MarkovChainDTO): MCDelimitersShort {
-  return [data.startDelimiter[0], data.delimiter[0], data.endDelimiter[0]];
+  const start = data.startDelimiter[0];
+  const middle = data.delimiter[0];
+  const end = data.endDelimiter[0];
+
+  // Delimiters must have at least one character
+  if (!start || !middle || !end) {
+    throw new Error('Delimiters must have at least one character');
+  }
+
+  return [start, middle, end];
 }
 
 /**
@@ -231,7 +340,11 @@ function addSequence(
 
       // Get the gram sequence and id.
       const gramSeq = seq.slice(pos, nextPos);
-      const gramId = getGramId(gramSeq, delimiters[1][0]);
+      const delimiter = delimiters[1]?.[0];
+      if (!delimiter) {
+        throw new Error('Invalid delimiter configuration');
+      }
+      const gramId = getGramId(gramSeq, delimiter);
 
       // Add the gram to the dictionary if it doesn't exist.
       // NOTE: We don't do this here anymore because addEdge does this for us.
@@ -272,6 +385,9 @@ function addEdge(
 
   // Add the edges to the distributions.
   const gram = grams[gramId];
+  if (!gram) {
+    throw new Error(`Failed to create or retrieve gram: ${gramId}`);
+  }
 
   // Add edge weights, and if this is a new state, update degree.
   if (lastId !== undefined) {
@@ -319,9 +435,10 @@ function addGram(grams: GramDictionary, gramId: string, order: number) {
  # Class
  */
 
-export class MarkovChain {
+export class MarkovChain<T extends string = string> {
   private _engine: Random;
   private _model: MarkovChainDTO;
+  private _stateSelector?: StateSelector<T>;
 
   constructor({
     engine,
@@ -336,8 +453,10 @@ export class MarkovChain {
     insert = false,
     sequences,
     grams,
-  }: MarkovChainConstructor) {
+    stateSelector,
+  }: MarkovChainConstructor<T>) {
     this._engine = engine || new Random({ seed, uses });
+    this._stateSelector = stateSelector;
     this._model = {
       ...defaultOptions,
       maxOrder,
@@ -393,6 +512,10 @@ export class MarkovChain {
 
   get uses() {
     return this._engine.uses;
+  }
+
+  get stateSelector() {
+    return this._stateSelector;
   }
 
   get maxOrder() {
@@ -546,6 +669,7 @@ export class MarkovChain {
     mask,
     strict = defaultGenOptions.strict,
     trim = defaultGenOptions.trim,
+    constraints,
   }: MCGeneratorOptions) {
     return MarkovChain.generate({
       model: this._model,
@@ -557,6 +681,7 @@ export class MarkovChain {
       mask,
       strict,
       trim,
+      constraints,
       engine: this._engine,
     });
   }
@@ -612,6 +737,566 @@ export class MarkovChain {
    */
   public clone(stripSequences = false) {
     return new MarkovChain(this.serialize(stripSequences));
+  }
+
+  /**
+   * Start a batch operation for efficient incremental updates.
+   * All operations are queued and applied in a single clone operation.
+   *
+   * @example
+   * ```ts
+   * const chain = new MarkovChain({ seed: 1 });
+   * const updated = chain.batch()
+   *   .addSequence(['a', 'b', 'c'])
+   *   .addSequence(['d', 'e', 'f'])
+   *   .addEdge(['a', 'b'], 'x', 'y', 2)
+   *   .commit();
+   * ```
+   */
+  public batch(): MarkovChainBatch<T> {
+    // Import is handled at top of file to avoid issues
+    return new MarkovChainBatch<T>(this);
+  }
+
+  /**
+   * Blend this chain with another chain using interpolation.
+   * Creates a new chain where probabilities are a weighted combination of both chains.
+   *
+   * @param otherChain The chain to blend with
+   * @param alpha Interpolation factor (0 = all this chain, 1 = all other chain)
+   * @param options Blending options
+   * @returns A new blended chain
+   *
+   * @example
+   * ```ts
+   * const mother = new MarkovChain({ sequences: motherTraits });
+   * const father = new MarkovChain({ sequences: fatherTraits });
+   *
+   * // 70% mother, 30% father
+   * const child = mother.interpolate(father, 0.3);
+   * ```
+   */
+  public interpolate<U extends string = string>(
+    otherChain: MarkovChain<U>,
+    alpha: number,
+    options?: BlendOptions
+  ): MarkovChain<T> {
+    return MarkovChain.blend(
+      [
+        { chain: this, weight: 1 - alpha },
+        { chain: otherChain as unknown as MarkovChain<T>, weight: alpha }
+      ],
+      options
+    );
+  }
+
+  /**
+   * Attach a state selector for resolving IDs to values.
+   * Useful when storing numeric/string IDs in the chain and want to resolve to objects.
+   *
+   * @param selector Function to resolve state IDs to values
+   * @returns A new MarkovChain instance with the selector attached
+   *
+   * @example
+   * ```ts
+   * const lookup = new Map([[1, obj1], [2, obj2]]);
+   * const withSelector = chain.withSelector(id => lookup.get(id as number));
+   * const values = withSelector.generate({ order: 2 }); // Returns T[] instead of string[]
+   * ```
+   */
+  public withSelector<U extends string = string>(selector: StateSelector<U>): MarkovChain<U> {
+    const cloned = this.clone();
+    const newChain = cloned as unknown as MarkovChain<U>;
+    (newChain as any)._stateSelector = selector;
+    return newChain;
+  }
+
+  /**
+   * Check if a gram exists in the chain.
+   * @param gramSequence The gram sequence to check
+   * @returns True if the gram exists
+   */
+  public hasGram(gramSequence: string[]): boolean {
+    const id = this.getGramId(gramSequence);
+    return id in this._model.grams;
+  }
+
+  /**
+   * Get all grams of a specific order.
+   * @param order The order to filter by
+   * @returns Array of grams with the specified order
+   */
+  public getGramsByOrder(order: number): Gram[] {
+    return Object.values(this._model.grams).filter(gram => gram.order === order);
+  }
+
+  /**
+   * Get statistics about the Markov Chain.
+   * @returns Statistics including gram count, sequence count, and degree information
+   */
+  public getStats(): MarkovChainStats {
+    const grams = Object.values(this._model.grams);
+    const orders = grams.map(g => g.order);
+    const minOrder = orders.length > 0 ? Math.min(...orders) : 0;
+    const maxOrder = orders.length > 0 ? Math.max(...orders) : 0;
+
+    return {
+      gramCount: grams.length,
+      sequenceCount: this._model.sequences?.length ?? 0,
+      orderRange: [minOrder, maxOrder],
+      avgDegreeIn: grams.length > 0 ? grams.reduce((sum, g) => sum + g.degreeIn, 0) / grams.length : 0,
+      avgDegreeOut: grams.length > 0 ? grams.reduce((sum, g) => sum + g.degreeOut, 0) / grams.length : 0,
+    };
+  }
+
+  /**
+   * Calculate the log probability and perplexity of a sequence.
+   * @param sequence The sequence to score
+   * @param order The order to use for scoring (defaults to maxOrder)
+   * @returns Score object with logProb, perplexity, and validity
+   */
+  public score(sequence: string[], order?: number): MCSequenceScore {
+    const useOrder = order ?? this._model.maxOrder;
+    let logProb = 0;
+    let validTransitions = 0;
+    let totalTransitions = 0;
+
+    // Format sequence with delimiters
+    const formatted = [this._model.startDelimiter, ...sequence, this._model.endDelimiter];
+
+    // Calculate log probability for each transition
+    for (let i = 0; i < formatted.length; i++) {
+      const context = formatted.slice(Math.max(0, i - useOrder), i);
+      const nextState = formatted[i];
+
+      if (context.length === 0 || nextState === undefined) continue;
+
+      const gram = MarkovChain.findGram(this._model, context, useOrder, 'next');
+      if (gram) {
+        const prob = gram.next.normal[nextState];
+        if (prob !== undefined && prob > 0) {
+          logProb += Math.log(prob);
+          validTransitions++;
+        }
+      }
+      totalTransitions++;
+    }
+
+    const isValid = validTransitions > 0;
+    const perplexity = isValid ? Math.exp(-logProb / validTransitions) : Infinity;
+
+    // Normalize log probability by sequence length for comparison
+    const normalized = validTransitions > 0 ? logProb / validTransitions : -Infinity;
+
+    return {
+      sequence,
+      logProb,
+      perplexity,
+      isValid,
+      normalized,
+    };
+  }
+
+  /**
+   * Rank multiple sequences by their likelihood.
+   * @param sequences Array of sequences to rank
+   * @param order The order to use for scoring
+   * @returns Ranked sequences sorted by likelihood (best first)
+   */
+  public rankByLikelihood(sequences: string[][], order?: number): MCRankedSequence[] {
+    const scored = sequences.map(seq => this.score(seq, order));
+
+    // Sort by normalized log probability (higher is better)
+    scored.sort((a, b) => b.normalized - a.normalized);
+
+    // Add ranks
+    return scored.map((score, index) => ({
+      ...score,
+      rank: index + 1,
+    }));
+  }
+
+  /**
+   * Detect if a sequence is anomalous based on its probability.
+   * @param sequence The sequence to check
+   * @param threshold The perplexity threshold above which a sequence is considered anomalous
+   * @param order The order to use for scoring
+   * @returns True if the sequence is anomalous (unlikely)
+   */
+  public isAnomaly(sequence: string[], threshold: number = 50, order?: number): boolean {
+    const score = this.score(sequence, order);
+    return !score.isValid || score.perplexity > threshold;
+  }
+
+  /**
+   * Extract frequent patterns from the Markov Chain.
+   * @param options Options for pattern extraction
+   * @returns Array of patterns sorted by frequency (descending)
+   */
+  public extractPatterns(options: MCExtractPatternsOptions = {}): MCPattern[] {
+    const {
+      minOrder = 2,
+      maxOrder = this._model.maxOrder,
+      minFrequency = 2,
+      topN = 20,
+    } = options;
+
+    const patterns: MCPattern[] = [];
+    const grams = Object.values(this._model.grams);
+
+    for (const gram of grams) {
+      if (gram.order >= minOrder && gram.order <= maxOrder && gram.frequency >= minFrequency) {
+        const pattern = gram.id.split(this._model.delimiter);
+
+        // Calculate probability (normalized frequency)
+        const totalFreq = grams.filter(g => g.order === gram.order).reduce((sum, g) => sum + g.frequency, 0);
+        const probability = totalFreq > 0 ? gram.frequency / totalFreq : 0;
+
+        patterns.push({
+          pattern,
+          frequency: gram.frequency,
+          order: gram.order,
+          probability,
+        });
+      }
+    }
+
+    // Sort by frequency descending
+    patterns.sort((a, b) => b.frequency - a.frequency);
+
+    return patterns.slice(0, topN);
+  }
+
+  /**
+   * Find sequences similar to a target sequence.
+   * @param target The target sequence to compare against
+   * @param options Options for similarity search
+   * @returns Array of similar sequences sorted by similarity (descending)
+   */
+  public findSimilar(target: string[], options: MCFindSimilarOptions = {}): MCSimilarSequence[] {
+    const {
+      metric = 'jaccard',
+      topN = 5,
+      threshold = 0,
+    } = options;
+
+    if (!this._model.sequences || this._model.sequences.length === 0) {
+      return [];
+    }
+
+    const results: MCSimilarSequence[] = [];
+
+    for (const seq of this._model.sequences) {
+      let similarity: number;
+      let distance: number;
+
+      switch (metric) {
+        case 'jaccard':
+          similarity = this.jaccardSimilarity(target, seq);
+          distance = 1 - similarity;
+          break;
+        case 'cosine':
+          similarity = this.cosineSimilarity(target, seq);
+          distance = 1 - similarity;
+          break;
+        case 'levenshtein':
+          distance = this.levenshteinDistance(target, seq);
+          // Normalize to 0-1 range for similarity
+          const maxLen = Math.max(target.length, seq.length);
+          similarity = maxLen > 0 ? 1 - (distance / maxLen) : 1;
+          break;
+        default:
+          similarity = this.jaccardSimilarity(target, seq);
+          distance = 1 - similarity;
+      }
+
+      if (similarity >= threshold) {
+        results.push({
+          sequence: seq,
+          similarity,
+          distance,
+        });
+      }
+    }
+
+    // Sort by similarity descending
+    results.sort((a, b) => b.similarity - a.similarity);
+
+    return results.slice(0, topN);
+  }
+
+  /**
+   * Calculate Jaccard similarity between two sequences.
+   * @private
+   */
+  private jaccardSimilarity(seq1: string[], seq2: string[]): number {
+    const set1 = new Set(seq1);
+    const set2 = new Set(seq2);
+
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const union = new Set([...set1, ...set2]);
+
+    return union.size > 0 ? intersection.size / union.size : 0;
+  }
+
+  /**
+   * Calculate cosine similarity between two sequences.
+   * @private
+   */
+  private cosineSimilarity(seq1: string[], seq2: string[]): number {
+    // Create frequency vectors
+    const allElements = new Set([...seq1, ...seq2]);
+    const vec1: number[] = [];
+    const vec2: number[] = [];
+
+    for (const elem of allElements) {
+      vec1.push(seq1.filter(e => e === elem).length);
+      vec2.push(seq2.filter(e => e === elem).length);
+    }
+
+    // Calculate dot product and magnitudes
+    let dotProduct = 0;
+    let mag1 = 0;
+    let mag2 = 0;
+
+    for (let i = 0; i < vec1.length; i++) {
+      const v1 = vec1[i] ?? 0;
+      const v2 = vec2[i] ?? 0;
+      dotProduct += v1 * v2;
+      mag1 += v1 * v1;
+      mag2 += v2 * v2;
+    }
+
+    mag1 = Math.sqrt(mag1);
+    mag2 = Math.sqrt(mag2);
+
+    return (mag1 > 0 && mag2 > 0) ? dotProduct / (mag1 * mag2) : 0;
+  }
+
+  /**
+   * Calculate Levenshtein distance between two sequences.
+   * @private
+   */
+  private levenshteinDistance(seq1: string[], seq2: string[]): number {
+    const m = seq1.length;
+    const n = seq2.length;
+
+    // Create distance matrix
+    const dp: number[][] = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
+
+    // Initialize base cases
+    for (let i = 0; i <= m; i++) {
+      const row = dp[i];
+      if (row) row[0] = i;
+    }
+    for (let j = 0; j <= n; j++) {
+      const row = dp[0];
+      if (row) row[j] = j;
+    }
+
+    // Fill matrix
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const currentRow = dp[i];
+        const prevRow = dp[i - 1];
+        if (!currentRow || !prevRow) continue;
+
+        if (seq1[i - 1] === seq2[j - 1]) {
+          currentRow[j] = prevRow[j - 1] ?? 0;
+        } else {
+          currentRow[j] = Math.min(
+            (prevRow[j] ?? 0) + 1,      // deletion
+            (currentRow[j - 1] ?? 0) + 1,      // insertion
+            (prevRow[j - 1] ?? 0) + 1   // substitution
+          );
+        }
+      }
+    }
+
+    const lastRow = dp[m];
+    return lastRow ? lastRow[n] ?? 0 : 0;
+  }
+
+  /**
+   * Export chain as a graph structure for visualization.
+   * @returns Graph export with nodes and edges
+   */
+  public exportAsGraph(): MCGraphExport {
+    const nodes: MCExportNode[] = [];
+    const edges: MCExportEdge[] = [];
+    const grams = Object.values(this._model.grams);
+
+    // Create nodes from grams
+    for (const gram of grams) {
+      nodes.push({
+        id: gram.id,
+        order: gram.order,
+        frequency: gram.frequency,
+        states: gram.id.split(this._model.delimiter),
+      });
+
+      // Create edges from next probabilities
+      for (const [nextState, prob] of Object.entries(gram.next.normal)) {
+        if (prob > 0) {
+          edges.push({
+            from: gram.id,
+            to: nextState,
+            weight: gram.next.source[nextState] ?? 0,
+            probability: prob,
+          });
+        }
+      }
+    }
+
+    return {
+      nodes,
+      edges,
+      metadata: {
+        maxOrder: this._model.maxOrder,
+        totalGrams: grams.length,
+        totalSequences: this._model.sequences?.length ?? 0,
+      },
+    };
+  }
+
+  /**
+   * Compare this chain with another and return the differences.
+   * @param other The other chain to compare against
+   * @returns Diff result showing added, removed, common, and modified grams
+   */
+  public diff(other: MarkovChain): MCDiffResult {
+    const thisGrams = Object.keys(this._model.grams);
+    const otherGrams = Object.keys(other._model.grams);
+
+    const thisSet = new Set(thisGrams);
+    const otherSet = new Set(otherGrams);
+
+    // Find added, removed, and common
+    const added: string[] = [];
+    const removed: string[] = [];
+    const common: string[] = [];
+
+    for (const gram of otherGrams) {
+      if (!thisSet.has(gram)) {
+        added.push(gram);
+      } else {
+        common.push(gram);
+      }
+    }
+
+    for (const gram of thisGrams) {
+      if (!otherSet.has(gram)) {
+        removed.push(gram);
+      }
+    }
+
+    // Find modified (different frequencies)
+    const modified: MCDiffResult['modified'] = [];
+    for (const gram of common) {
+      const thisFreq = this._model.grams[gram]?.frequency ?? 0;
+      const otherFreq = other._model.grams[gram]?.frequency ?? 0;
+
+      if (thisFreq !== otherFreq) {
+        modified.push({
+          gram,
+          chain1Freq: thisFreq,
+          chain2Freq: otherFreq,
+          difference: otherFreq - thisFreq,
+        });
+      }
+    }
+
+    return {
+      added,
+      removed,
+      common,
+      modified,
+    };
+  }
+
+  /**
+   * Export chain to a simple JSON format for external use.
+   * @returns Simplified JSON representation
+   */
+  public toJSON(): {
+    metadata: {
+      maxOrder: number;
+      delimiter: string;
+      totalGrams: number;
+      totalSequences: number;
+    };
+    grams: Array<{
+      pattern: string[];
+      order: number;
+      frequency: number;
+      next: { [key: string]: number };
+    }>;
+  } {
+    const grams = Object.values(this._model.grams);
+
+    return {
+      metadata: {
+        maxOrder: this._model.maxOrder,
+        delimiter: this._model.delimiter,
+        totalGrams: grams.length,
+        totalSequences: this._model.sequences?.length ?? 0,
+      },
+      grams: grams.map(g => ({
+        pattern: g.id.split(this._model.delimiter),
+        order: g.order,
+        frequency: g.frequency,
+        next: g.next.normal,
+      })),
+    };
+  }
+
+  /**
+   * Validate a sequence against constraints.
+   * @param sequence The sequence to validate
+   * @param constraints The constraints to check against
+   * @param model The Markov Chain model (for delimiter trimming)
+   * @returns True if the sequence satisfies all constraints
+   */
+  private static validateConstraints(
+    sequence: string[],
+    constraints: MCConstraints | undefined,
+    model: MarkovChainDTO
+  ): boolean {
+    if (!constraints) return true;
+
+    // Trim delimiters for constraint checking
+    const trimmed = sequence.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v));
+
+    // Check length constraints
+    if (constraints.minLength !== undefined && trimmed.length < constraints.minLength) return false;
+    if (constraints.maxLength !== undefined && trimmed.length > constraints.maxLength) return false;
+
+    // Check mustContain
+    if (constraints.mustContain) {
+      for (const required of constraints.mustContain) {
+        if (!trimmed.includes(required)) return false;
+      }
+    }
+
+    // Check mustNotContain
+    if (constraints.mustNotContain) {
+      for (const forbidden of constraints.mustNotContain) {
+        if (trimmed.includes(forbidden)) return false;
+      }
+    }
+
+    // Check pattern
+    if (constraints.pattern) {
+      const joined = trimmed.join('');
+      if (!constraints.pattern.test(joined)) return false;
+    }
+
+    // Check custom validator
+    if (constraints.validator && !constraints.validator(trimmed)) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -688,8 +1373,10 @@ export class MarkovChain {
 
     // Add the sequences.
     for (let i = 0; i < sequences.length; i += 1) {
-      if (m.sequences !== undefined) m.sequences.push(sequences[i]);
-      addSequence(m.grams, sequences[i], insert, 1, m.maxOrder, delimiters);
+      const sequence = sequences[i];
+      if (!sequence) continue;
+      if (m.sequences !== undefined) m.sequences.push(sequence);
+      addSequence(m.grams, sequence, insert, 1, m.maxOrder, delimiters);
     }
 
     return m;
@@ -738,7 +1425,11 @@ export class MarkovChain {
     const m = MarkovChain.clone(model);
 
     // Check to see if we need to calculate the id.
-    const id = Array.isArray(gram) ? getGramId(gram, m.delimiter[0]) : gram;
+    const delimiter = m.delimiter[0];
+    if (!delimiter) {
+      throw new Error('Invalid delimiter configuration');
+    }
+    const id = Array.isArray(gram) ? getGramId(gram, delimiter) : gram;
 
     // Add the edge.
     addEdge(m.grams, id, lastId, nextId, order, weight);
@@ -774,6 +1465,9 @@ export class MarkovChain {
     const eng = engine || new Random({});
     const seq = gramSequence ? gramSequence : next ? [model.startDelimiter] : [model.endDelimiter];
     const gram = MarkovChain.getGram(model, seq);
+    if (!gram) {
+      return undefined;
+    }
     return MarkovChain.pickGram(gram, next, mask, eng);
   }
 
@@ -823,75 +1517,90 @@ export class MarkovChain {
     mask,
     strict = defaultGenOptions.strict,
     trim = defaultGenOptions.trim,
+    constraints,
     engine,
   }: MCGeneratorStaticOptions) {
     const eng = engine || new Random({});
+    const maxRetries = constraints?.maxRetries ?? (constraints ? 100 : 1);
 
-    // SETUP
-    // Set the starting sequence and the terminating character.
-    const dirForward = direction === 'next';
-    const picks = start !== undefined ? [...start] : dirForward ? [model.startDelimiter] : [model.endDelimiter];
-    const terminator = dirForward ? model.endDelimiter : model.startDelimiter;
+    // If constraints are specified, wrap generation in retry logic
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      // SETUP
+      // Set the starting sequence and the terminating character.
+      const dirForward = direction === 'next';
+      const picks = start !== undefined ? [...start] : dirForward ? [model.startDelimiter] : [model.endDelimiter];
+      const terminator = dirForward ? model.endDelimiter : model.startDelimiter;
 
-    // Determine the order
-    const maxOrder = order !== undefined ? order : start ? start.length : model.maxOrder;
-    let curOrder = start !== undefined ? start.length : 1;
+      // Determine the order
+      const maxOrder = order !== undefined ? order : start ? start.length : model.maxOrder;
+      let curOrder = start !== undefined ? start.length : 1;
 
-    // Determine the offset for our picks.
-    // Removed this because it wasn't necessary and causing a bug.
-    // TODO: Keep as a reminder and then remove if there aren't any long term issues.
-    // const pickOffset = trim ? 0 : 0;
-    // const minPicks = min + pickOffset;
-    // const maxPicks = max + pickOffset;
+      // Determine the offset for our picks.
+      // Removed this because it wasn't necessary and causing a bug.
+      // TODO: Keep as a reminder and then remove if there aren't any long term issues.
+      // const pickOffset = trim ? 0 : 0;
+      // const minPicks = min + pickOffset;
+      // const maxPicks = max + pickOffset;
 
-    // Determine the temporary mask to use while sequence is less than min.
-    const tempMask = mask !== undefined ? [terminator, ...mask] : [terminator];
+      // Determine the temporary mask to use while sequence is less than min.
+      const tempMask = mask !== undefined ? [terminator, ...mask] : [terminator];
 
-    // Utility function for finding the current sequence given order and direction.
+      // Utility function for finding the current sequence given order and direction.
 
-    // MAKE THE PICKS
-    for (let i = 0; picks.length <= max; i += 1) {
-      // Increase the order if we're below the desired value.
-      if (curOrder < maxOrder) curOrder += 1;
+      // MAKE THE PICKS
+      for (let i = 0; picks.length <= max; i += 1) {
+        // Increase the order if we're below the desired value.
+        if (curOrder < maxOrder) curOrder += 1;
 
-      // Determine which mask we should use.
-      const pickMask = picks.length < min ? tempMask : mask;
+        // Determine which mask we should use.
+        const pickMask = picks.length < min ? tempMask : mask;
 
-      // Find the gram
-      const gram = strict
-        ? MarkovChain.getGram(model, MarkovChain.getSequence(picks, curOrder, dirForward))
-        : MarkovChain.findGram(model, picks, curOrder, direction);
+        // Find the gram
+        const gram = strict
+          ? MarkovChain.getGram(model, MarkovChain.getSequence(picks, curOrder, dirForward))
+          : MarkovChain.findGram(model, picks, curOrder, direction);
 
-      // If we can't find a gram, then we need to break;
-      if (gram === undefined) break;
+        // If we can't find a gram, then we need to break;
+        if (gram === undefined) break;
 
-      // Set the current order to the Gram's order.
-      curOrder = gram.order;
+        // Set the current order to the Gram's order.
+        curOrder = gram.order;
 
-      // Get the Gram sequence.
-      const gramSequence = gram.id.split(model.delimiter);
+        // Get the Gram sequence.
+        const gramSequence = gram.id.split(model.delimiter);
 
-      // Get the gram sequence and then make the pick.
-      const pick = MarkovChain.pick(model, gramSequence, dirForward, pickMask, eng);
+        // Get the gram sequence and then make the pick.
+        const pick = MarkovChain.pick(model, gramSequence, dirForward, pickMask, eng);
 
-      // If we have a pick, figure out whether we need to add it to the beginning or end of the picks array.
-      if (pick) {
-        if (dirForward) {
-          picks.push(pick);
+        // If we have a pick, figure out whether we need to add it to the beginning or end of the picks array.
+        if (pick) {
+          if (dirForward) {
+            picks.push(pick);
+          } else {
+            picks.unshift(pick);
+          }
+
+          // If we've picked the terminator, then break.
+          if (pick === terminator) break;
         } else {
-          picks.unshift(pick);
+          // If we don't have a pick, then break.
+          // This could result because of an error in the chain, or because all possible values are masked.
+          break;
         }
-
-        // If we've picked the terminator, then break.
-        if (pick === terminator) break;
-      } else {
-        // If we don't have a pick, then break.
-        // This could result because of an error in the chain, or because all possible values are masked.
-        break;
       }
+
+      // Validate constraints
+      if (MarkovChain.validateConstraints(picks, constraints, model)) {
+        // FORMAT THE RESULT
+        return trim ? picks.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v)) : picks;
+      }
+
+      // If constraints not satisfied and not the last attempt, continue to next iteration
     }
 
-    // FORMAT THE RESULT
+    // If all retries failed, return best effort (last attempt)
+    const dirForward = direction === 'next';
+    const picks = start !== undefined ? [...start] : dirForward ? [model.startDelimiter] : [model.endDelimiter];
     return trim ? picks.filter(v => ![model.startDelimiter, model.endDelimiter].includes(v)) : picks;
   }
 
@@ -956,11 +1665,15 @@ export class MarkovChain {
       const sinkState = sink[sink.length - 1];
       const sourceState = source[0];
 
-      if (sink !== undefined && results.sinks[sinkState] === undefined) results.sinks[sinkState] = 0;
-      if (source !== undefined && results.sources[sourceState] === undefined) results.sources[sourceState] = 0;
+      if (sinkState !== undefined) {
+        if (results.sinks[sinkState] === undefined) results.sinks[sinkState] = 0;
+        results.sinks[sinkState]! += 1;
+      }
 
-      results.sinks[sinkState] += 1;
-      results.sources[sourceState] += 1;
+      if (sourceState !== undefined) {
+        if (results.sources[sourceState] === undefined) results.sources[sourceState] = 0;
+        results.sources[sourceState]! += 1;
+      }
     }
 
     return normalize
@@ -996,16 +1709,23 @@ export class MarkovChain {
   static clone(model: MarkovChainDTO, stripSequences = false): MarkovChainDTO {
     const { sequences, grams, ...dtoData } = model;
 
-    const sequencesClone = sequences !== undefined && !stripSequences ? sequences.map(s => [...s]) : undefined;
-    const gramsClone = Object.keys(grams).reduce((l, k) => {
-      const gram = grams[k];
-      const gramClone = {
+    // Optimized: Use slice() instead of spread operator for arrays
+    const sequencesClone = sequences !== undefined && !stripSequences
+      ? sequences.map(s => s.slice())
+      : undefined;
+
+    // Optimized: Pre-allocate object and mutate instead of spreading accumulator
+    const gramsClone: GramDictionary = {};
+    for (const key in grams) {
+      const gram = grams[key];
+      if (!gram) continue;
+
+      gramsClone[key] = {
         ...gram,
         last: { ...gram.last },
         next: { ...gram.next },
       };
-      return { ...l, [k]: gramClone };
-    }, {});
+    }
 
     return sequencesClone !== undefined
       ? ({
@@ -1014,5 +1734,930 @@ export class MarkovChain {
           grams: gramsClone,
         } as MarkovChainDTO)
       : ({ ...dtoData, grams: gramsClone } as MarkovChainDTO);
+  }
+
+  /**
+   * Blend multiple Markov chains together with weighted combination.
+   * Creates a new chain where gram probabilities are combined according to weights.
+   *
+   * @param chains Array of chains with their weights
+   * @param options Blending options
+   * @returns A new blended chain
+   *
+   * @example
+   * ```ts
+   * const irish = new MarkovChain({ sequences: irishNames });
+   * const japanese = new MarkovChain({ sequences: japaneseNames });
+   *
+   * // 70% Irish, 30% Japanese
+   * const blended = MarkovChain.blend([
+   *   { chain: irish, weight: 0.7 },
+   *   { chain: japanese, weight: 0.3 }
+   * ]);
+   *
+   * // Generate from blended probabilities
+   * const name = blended.generate({ order: 2 });
+   * ```
+   */
+  static blend<T extends string = string>(
+    chains: ChainBlendConfig<T>[],
+    options?: BlendOptions
+  ): MarkovChain<T> {
+    if (chains.length === 0) {
+      throw new Error('Cannot blend zero chains');
+    }
+
+    if (chains.length === 1) {
+      return chains[0]!.chain.clone() as MarkovChain<T>;
+    }
+
+    const {
+      strategy = 'arithmetic',
+      normalize = true,
+      minWeight = 0
+    } = options || {};
+
+    // Normalize weights if requested
+    const totalWeight = chains.reduce((sum, c) => sum + c.weight, 0);
+    const normalizedChains = normalize
+      ? chains.map(c => ({ ...c, weight: c.weight / totalWeight }))
+      : chains;
+
+    // Collect all unique gram IDs from all chains
+    const allGramIds = new Set<string>();
+    for (const { chain } of chains) {
+      Object.keys(chain.model.grams).forEach(id => allGramIds.add(id));
+    }
+
+    // Blend grams
+    const blendedGrams: GramDictionary = {};
+
+    for (const gramId of allGramIds) {
+      // Collect this gram from all chains that have it
+      const gramConfigs: Array<{ gram: Gram; weight: number }> = [];
+
+      for (const { chain, weight } of normalizedChains) {
+        const gram = chain.model.grams[gramId];
+        if (gram) {
+          gramConfigs.push({ gram, weight });
+        }
+      }
+
+      if (gramConfigs.length === 0) continue;
+
+      // Blend the next distributions
+      const nextDists = gramConfigs.map(g => g.gram.next);
+      const weights = gramConfigs.map(g => g.weight);
+      const blendedNext = blendMultipleDistributions(nextDists, weights, strategy);
+
+      // Blend the last distributions
+      const lastDists = gramConfigs.map(g => g.gram.last);
+      const blendedLast = blendMultipleDistributions(lastDists, weights, strategy);
+
+      // Use properties from the first gram, but with blended distributions
+      const firstGram = gramConfigs[0]!.gram;
+
+      // Filter out low-weight states if threshold is set
+      if (minWeight > 0) {
+        const filteredNext = Object.fromEntries(
+          Object.entries(blendedNext.source).filter(([_, v]) => v >= minWeight)
+        );
+        const filteredLast = Object.fromEntries(
+          Object.entries(blendedLast.source).filter(([_, v]) => v >= minWeight)
+        );
+
+        blendedNext.source = filteredNext;
+        blendedNext.normal = normalizeObject(filteredNext);
+        blendedLast.source = filteredLast;
+        blendedLast.normal = normalizeObject(filteredLast);
+      }
+
+      blendedGrams[gramId] = {
+        id: firstGram.id,
+        order: firstGram.order,
+        next: blendedNext,
+        last: blendedLast,
+        frequency: gramConfigs.reduce((sum, { gram, weight }) => sum + gram.frequency * weight, 0),
+        degreeIn: Object.keys(blendedLast.source).length,
+        degreeOut: Object.keys(blendedNext.source).length,
+      };
+    }
+
+    // Create new chain with blended grams
+    // Use properties from the first chain as defaults
+    const baseChain = chains[0]!.chain;
+
+    return new MarkovChain<T>({
+      maxOrder: baseChain.maxOrder,
+      delimiter: baseChain.model.delimiter,
+      startDelimiter: baseChain.model.startDelimiter,
+      endDelimiter: baseChain.model.endDelimiter,
+      grams: blendedGrams,
+      // Don't include sequences as we've synthesized new probabilities
+    });
+  }
+}
+
+/**
+ # Batch Operations
+ */
+
+type BatchOperation = (model: MarkovChainDTO) => void;
+
+/**
+ * Batch builder for efficient bulk operations on Markov Chains.
+ * All operations are queued and applied in a single clone operation.
+ *
+ * @example
+ * ```ts
+ * const chain = new MarkovChain({ seed: 1 });
+ * const updated = chain.batch()
+ *   .addSequence(['a', 'b', 'c'])
+ *   .addSequence(['d', 'e', 'f'])
+ *   .addEdge(['a', 'b'], 'x', 'y', 2)
+ *   .commit();
+ * ```
+ */
+export class MarkovChainBatch<T extends string = string> {
+  private _operations: BatchOperation[] = [];
+  private _chain: MarkovChain<T>;
+
+  constructor(chain: MarkovChain<T>) {
+    this._chain = chain;
+  }
+
+  /**
+   * Add a single sequence to the chain.
+   * @param sequence  The sequence to be added.
+   * @param insert    Determines how sequences should be inserted.
+   */
+  public addSequence(sequence: string[], insert: MCInsertOption = false): this {
+    this._operations.push((model) => {
+      // Use the static method's internal logic
+      const updated = MarkovChain.addSequence(model, sequence, insert);
+      // Copy the updated grams and sequences back to the model
+      model.grams = updated.grams;
+      if (model.sequences !== undefined && updated.sequences !== undefined) {
+        model.sequences = updated.sequences;
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Add multiple sequences to the chain.
+   * @param sequences  The sequences to be added.
+   * @param insert     Determines how sequences should be inserted.
+   */
+  public addSequences(sequences: string[][], insert: MCInsertOption = false): this {
+    sequences.forEach(seq => this.addSequence(seq, insert));
+    return this;
+  }
+
+  /**
+   * Add an edge between states in the chain.
+   * @param gram    The id of a gram, or the gram sequence.
+   * @param lastId  The id of the previous gram in the sequence.
+   * @param nextId  The id of the next gram in the sequence.
+   * @param order   The order of the Gram we're adding.
+   * @param weight  The weight to add to the edge (default 1).
+   */
+  public addEdge(
+    gram: string | string[],
+    lastId: string | undefined,
+    nextId: string | undefined,
+    order: number,
+    weight = 1
+  ): this {
+    this._operations.push((model) => {
+      const updated = MarkovChain.addEdge(model, gram, lastId, nextId, order, weight);
+      model.grams = updated.grams;
+    });
+    return this;
+  }
+
+  /**
+   * Commit all queued operations and return a new MarkovChain instance.
+   * This performs a single clone operation for all queued changes.
+   */
+  public commit(): MarkovChain {
+    // If no operations, just return a clone
+    if (this._operations.length === 0) {
+      return this._chain.clone();
+    }
+
+    // Clone the model once
+    const cloned = MarkovChain.clone(this._chain.model);
+
+    // Apply all operations to the cloned model
+    for (const operation of this._operations) {
+      operation(cloned);
+    }
+
+    // Create and return a new MarkovChain instance
+    return new MarkovChain({
+      ...cloned,
+      seed: this._chain.seed,
+      uses: this._chain.uses,
+    });
+  }
+
+  /**
+   * Get the number of pending operations.
+   */
+  public get pending(): number {
+    return this._operations.length;
+  }
+
+  /**
+   * Clear all pending operations without committing.
+   */
+  public clear(): this {
+    this._operations = [];
+    return this;
+  }
+}
+
+/**
+ * # Chain Blending
+ *
+ * Utilities for blending and interpolating multiple Markov chains.
+ */
+
+/**
+ * Blending strategy for combining probability distributions
+ */
+export type BlendStrategy = 'arithmetic' | 'geometric' | 'harmonic' | 'max' | 'min';
+
+/**
+ * Configuration for blending a single chain
+ */
+export interface ChainBlendConfig<T extends string = string> {
+  chain: MarkovChain<T>;
+  weight: number;
+}
+
+/**
+ * Options for chain blending
+ */
+export interface BlendOptions {
+  strategy?: BlendStrategy;
+  normalize?: boolean;
+  minWeight?: number; // Minimum weight threshold to include a state
+}
+
+/**
+ * Helper function to blend multiple distributions
+ */
+function blendMultipleDistributions(
+  distributions: DistributionSourceDTO[],
+  weights: number[],
+  strategy: BlendStrategy = 'arithmetic'
+): DistributionSourceDTO {
+  if (distributions.length === 0) {
+    return { source: {}, normal: {} };
+  }
+
+  if (distributions.length === 1) {
+    return distributions[0]!;
+  }
+
+  // Collect all unique keys
+  const allKeys = new Set<string>();
+  for (const dist of distributions) {
+    Object.keys(dist.source).forEach(key => allKeys.add(key));
+  }
+
+  const blended: { [key: string]: number } = {};
+
+  for (const key of allKeys) {
+    const values = distributions.map((d, i) => ({
+      value: d.source[key] || 0,
+      weight: weights[i] || 0
+    }));
+
+    switch (strategy) {
+      case 'arithmetic':
+        blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        break;
+      case 'geometric': {
+        const nonZeroValues = values.filter(v => v.value > 0);
+        if (nonZeroValues.length === values.length) {
+          blended[key] = nonZeroValues.reduce((prod, { value, weight }) =>
+            prod * Math.pow(value, weight), 1
+          );
+        } else {
+          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        }
+        break;
+      }
+      case 'harmonic': {
+        const nonZeroValues = values.filter(v => v.value > 0);
+        if (nonZeroValues.length === values.length) {
+          const sum = nonZeroValues.reduce((s, { value, weight }) => s + weight / value, 0);
+          blended[key] = 1 / sum;
+        } else {
+          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        }
+        break;
+      }
+      case 'max':
+        blended[key] = Math.max(...values.map(v => v.value));
+        break;
+      case 'min': {
+        const nonZeroValues = values.filter(v => v.value > 0).map(v => v.value);
+        blended[key] = nonZeroValues.length > 0 ? Math.min(...nonZeroValues) : 0;
+        break;
+      }
+    }
+  }
+
+  return {
+    source: blended,
+    normal: normalizeObject(blended)
+  };
+}
+
+/**
+ * # Scaled States & Continuous Values
+ */
+
+/**
+ * Represents a state with both a categorical value and a continuous magnitude.
+ * Useful for modeling systems where states have associated numerical values.
+ */
+export interface ScaledState<T extends string = string> {
+  category: T;
+  magnitude: number;
+}
+
+/**
+ * Strategy for sampling magnitudes from stored distributions
+ */
+export type MagnitudeSamplingStrategy = 'mean' | 'median' | 'sample' | 'weighted-sample';
+
+/**
+ * Statistics for magnitude distributions
+ */
+export interface MagnitudeStats {
+  mean: number;
+  median: number;
+  std: number;
+  min: number;
+  max: number;
+  count: number;
+}
+
+/**
+ * Options for ScaledMarkovChain construction
+ */
+export interface ScaledMarkovChainOptions<T extends string = string> extends MarkovChainConstructor<T> {
+  magnitudeRange?: [number, number];
+  samplingStrategy?: MagnitudeSamplingStrategy;
+}
+
+/**
+ * Storage for magnitude samples associated with gram-category transitions
+ */
+interface MagnitudeStore {
+  [gramId: string]: {
+    [category: string]: number[];
+  };
+}
+
+/**
+ * MarkovChain that tracks both categorical states and continuous magnitude values.
+ * Useful for modeling systems where transitions have associated numerical values,
+ * such as market movements, physics simulations, or game states with attributes.
+ *
+ * @example
+ * ```typescript
+ * const marketChain = new ScaledMarkovChain<'up' | 'down' | 'stable'>({
+ *   maxOrder: 2,
+ *   magnitudeRange: [-100, 100]
+ * });
+ *
+ * marketChain.addScaledSequence([
+ *   { category: 'up', magnitude: 20 },
+ *   { category: 'up', magnitude: 35 },
+ *   { category: 'stable', magnitude: 2 },
+ *   { category: 'down', magnitude: -15 }
+ * ]);
+ *
+ * const next = marketChain.generateScaled({ order: 1, length: 5 });
+ * // Returns: [{ category: 'up', magnitude: 28 }, ...]
+ * ```
+ */
+export class ScaledMarkovChain<T extends string = string> {
+  private categoryChain: MarkovChain<T>;
+  private magnitudeStore: MagnitudeStore;
+  private samplingStrategy: MagnitudeSamplingStrategy;
+  private magnitudeRange?: [number, number];
+  private _engine: Random;
+  private categorySequences: string[][];
+  private chainOptions: MarkovChainOptions;
+
+  constructor(options: ScaledMarkovChainOptions<T> = { maxOrder: 2 }) {
+    this._engine = options.engine || new Random({ seed: options.seed, uses: options.uses });
+
+    // Store chain options for rebuilding
+    this.chainOptions = {
+      maxOrder: options.maxOrder || 2,
+      delimiter: options.delimiter || CONSTANTS.MC_GRAM_DELIMITER,
+      startDelimiter: options.startDelimiter || CONSTANTS.MC_START_DELIMITER,
+      endDelimiter: options.endDelimiter || CONSTANTS.MC_END_DELIMITER,
+      seed: options.seed,
+      uses: options.uses
+    };
+
+    this.categorySequences = [];
+
+    this.categoryChain = new MarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      sequences: [],  // Start with empty sequences
+      grams: options.grams
+    });
+    this.magnitudeStore = {};
+    this.samplingStrategy = options.samplingStrategy || 'mean';
+    this.magnitudeRange = options.magnitudeRange;
+  }
+
+  /**
+   * Add a sequence of scaled states to the chain
+   */
+  public addScaledSequence(
+    sequence: ScaledState<T>[]
+  ): ScaledMarkovChain<T> {
+    if (sequence.length === 0) return this;
+
+    // Extract categories for the category chain
+    const categories = sequence.map(s => s.category);
+
+    // Clone category sequences and add new one
+    const newCategorySequences = [...this.categorySequences, categories];
+
+    // Clone magnitude store
+    const newMagnitudeStore = this.cloneMagnitudeStore();
+
+    // Store magnitude samples for each transition
+    const maxOrder = this.chainOptions.maxOrder;
+
+    for (let i = 0; i < sequence.length; i++) {
+      const state = sequence[i]!;
+
+      // Track magnitude for each order
+      for (let order = 0; order <= Math.min(maxOrder, i); order++) {
+        const gramSequence = categories.slice(Math.max(0, i - order), i);
+        // Use start delimiter for empty gram (start context)
+        const gramId = gramSequence.length === 0
+          ? this.chainOptions.startDelimiter
+          : getGramId(gramSequence, this.chainOptions.delimiter);
+
+        // Initialize storage for this gram if needed
+        if (!newMagnitudeStore[gramId]) {
+          newMagnitudeStore[gramId] = {};
+        }
+        if (!newMagnitudeStore[gramId]![state.category]) {
+          newMagnitudeStore[gramId]![state.category] = [];
+        }
+
+        // Store the magnitude sample
+        newMagnitudeStore[gramId]![state.category]!.push(state.magnitude);
+      }
+    }
+
+    // Create new category chain with all sequences
+    // Note: Don't pass insert to constructor - it defaults to adding delimiters
+    // The insert parameter in addScaledSequence is for potential future use
+    const newCategoryChain = new MarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      sequences: newCategorySequences
+    });
+
+    // Create new instance with updated data
+    const updated = new ScaledMarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      samplingStrategy: this.samplingStrategy,
+      magnitudeRange: this.magnitudeRange
+    });
+    updated.categoryChain = newCategoryChain;
+    updated.categorySequences = newCategorySequences;
+    updated.magnitudeStore = newMagnitudeStore;
+    updated.samplingStrategy = this.samplingStrategy;
+    updated.magnitudeRange = this.magnitudeRange;
+    updated.chainOptions = this.chainOptions;
+
+    return updated;
+  }
+
+  /**
+   * Add multiple scaled sequences
+   */
+  public addScaledSequences(
+    sequences: ScaledState<T>[][]
+  ): ScaledMarkovChain<T> {
+    let result: ScaledMarkovChain<T> = this;
+    for (const seq of sequences) {
+      result = result.addScaledSequence(seq);
+    }
+    return result;
+  }
+
+  /**
+   * Generate a sequence of scaled states
+   */
+  public generateScaled(options: MCGeneratorOptions = {}): ScaledState<T>[] {
+    // First generate categories using the category chain
+    const categories = this.categoryChain.generate(options);
+
+    // Then sample magnitudes for each category
+    const result: ScaledState<T>[] = [];
+    const model = this.categoryChain.model;
+
+    for (let i = 0; i < categories.length; i++) {
+      const category = categories[i]!;
+
+      // Determine the gram context for this position
+      const order = options.order ?? model.maxOrder;
+      const gramSequence = categories.slice(Math.max(0, i - order), i);
+      const gramId = gramSequence.length === 0
+        ? model.startDelimiter
+        : getGramId(gramSequence, model.delimiter);
+
+      // Sample magnitude for this category given the gram context
+      const magnitude = this.sampleMagnitude(gramId, category);
+
+      result.push({ category: category as T, magnitude });
+    }
+
+    return result;
+  }
+
+  /**
+   * Pick a single next scaled state
+   */
+  public pickScaled(
+    current?: ScaledState<T>[] | string[],
+    next: boolean = true,
+    mask?: string[]
+  ): ScaledState<T> | undefined {
+    // Extract categories if scaled states provided
+    const categories = current
+      ? (typeof current[0] === 'object' && 'category' in current[0]
+        ? (current as ScaledState<T>[]).map(s => s.category)
+        : current as string[])
+      : undefined;
+
+    // Pick next category
+    const nextCategory = this.categoryChain.pick(categories, next, mask);
+    if (!nextCategory) return undefined;
+
+    // Determine gram context
+    const model = this.categoryChain.model;
+    const gramSequence = categories || [];
+    const gramId = gramSequence.length === 0
+      ? model.startDelimiter
+      : getGramId(gramSequence, model.delimiter);
+
+    // Sample magnitude
+    const magnitude = this.sampleMagnitude(gramId, nextCategory);
+
+    return { category: nextCategory as T, magnitude };
+  }
+
+  /**
+   * Get magnitude statistics for a category given a gram context
+   */
+  public getMagnitudeStats(
+    category: string,
+    gramContext?: string[]
+  ): MagnitudeStats | undefined {
+    const model = this.categoryChain.model;
+    const gramId = gramContext
+      ? getGramId(gramContext, model.delimiter)
+      : model.startDelimiter; // Use start context if none provided
+
+    const magnitudes = this.magnitudeStore[gramId]?.[category];
+    if (!magnitudes || magnitudes.length === 0) return undefined;
+
+    const sorted = magnitudes.slice().sort((a, b) => a - b);
+    const sum = magnitudes.reduce((s, m) => s + m, 0);
+    const mean = sum / magnitudes.length;
+    const variance = magnitudes.reduce((s, m) => s + Math.pow(m - mean, 2), 0) / magnitudes.length;
+
+    return {
+      mean,
+      median: sorted[Math.floor(sorted.length / 2)]!,
+      std: Math.sqrt(variance),
+      min: sorted[0]!,
+      max: sorted[sorted.length - 1]!,
+      count: magnitudes.length
+    };
+  }
+
+  /**
+   * Get all magnitude samples for a category given a gram context
+   */
+  public getMagnitudeSamples(
+    category: string,
+    gramContext?: string[]
+  ): number[] {
+    const model = this.categoryChain.model;
+    const gramId = gramContext
+      ? getGramId(gramContext, model.delimiter)
+      : model.startDelimiter;
+
+    return this.magnitudeStore[gramId]?.[category]?.slice() || [];
+  }
+
+  /**
+   * Clone the magnitude store
+   */
+  private cloneMagnitudeStore(): MagnitudeStore {
+    const clone: MagnitudeStore = {};
+    for (const gramId in this.magnitudeStore) {
+      clone[gramId] = {};
+      for (const category in this.magnitudeStore[gramId]) {
+        clone[gramId]![category] = this.magnitudeStore[gramId]![category]!.slice();
+      }
+    }
+    return clone;
+  }
+
+  /**
+   * Sample a magnitude value for a category given a gram context
+   */
+  private sampleMagnitude(gramId: string, category: string): number {
+    const magnitudes = this.magnitudeStore[gramId]?.[category];
+
+    // If no samples, return midpoint of range or 0
+    if (!magnitudes || magnitudes.length === 0) {
+      if (this.magnitudeRange) {
+        return (this.magnitudeRange[0] + this.magnitudeRange[1]) / 2;
+      }
+      return 0;
+    }
+
+    // Sample based on strategy
+    switch (this.samplingStrategy) {
+      case 'mean': {
+        const sum = magnitudes.reduce((s, m) => s + m, 0);
+        return sum / magnitudes.length;
+      }
+      case 'median': {
+        const sorted = magnitudes.slice().sort((a, b) => a - b);
+        return sorted[Math.floor(sorted.length / 2)]!;
+      }
+      case 'sample': {
+        // Random sample from observed values
+        const idx = Math.floor(Math.random() * magnitudes.length);
+        return magnitudes[idx]!;
+      }
+      case 'weighted-sample': {
+        // Sample using RNG for reproducibility
+        const idx = this._engine.integer(0, magnitudes.length - 1);
+        return magnitudes[idx]!;
+      }
+    }
+  }
+
+  /**
+   * Get the underlying category chain
+   */
+  public getCategoryChain(): MarkovChain<T> {
+    return this.categoryChain;
+  }
+
+  /**
+   * Clone this scaled chain
+   */
+  public clone(): ScaledMarkovChain<T> {
+    const cloned = new ScaledMarkovChain<T>({
+      ...this.chainOptions,
+      engine: this._engine,
+      samplingStrategy: this.samplingStrategy,
+      magnitudeRange: this.magnitudeRange
+    });
+    cloned.categoryChain = this.categoryChain.clone() as MarkovChain<T>;
+    cloned.categorySequences = [...this.categorySequences];
+    cloned.magnitudeStore = this.cloneMagnitudeStore();
+    cloned.samplingStrategy = this.samplingStrategy;
+    cloned.magnitudeRange = this.magnitudeRange;
+    cloned.chainOptions = { ...this.chainOptions };
+    cloned._engine = this._engine;
+    return cloned;
+  }
+}
+
+/**
+ * # Multi-Dimensional States
+ */
+
+/**
+ * Function that converts a structured state object to a unique string key
+ */
+export type StateKeyFunction<T> = (state: T) => string;
+
+/**
+ * Options for MultiDimMarkovChain construction
+ */
+export interface MultiDimMarkovChainOptions<T> extends RandomDTO {
+  maxOrder?: number;
+  delimiter?: string;
+  startDelimiter?: string;
+  endDelimiter?: string;
+  engine?: Random;
+  stateKey: StateKeyFunction<T>;
+}
+
+/**
+ * Storage for original structured states indexed by their string keys
+ */
+interface StateStore<T> {
+  [key: string]: T;
+}
+
+/**
+ * MarkovChain for multi-dimensional/structured state spaces.
+ * Solves the problem of having to flatten multi-attribute states into strings.
+ *
+ * Instead of: `${tile}_${x}_${y}` (loses structure)
+ * Use: `{ tile: 'grass', position: [0, 0], neighbors: [...] }`
+ *
+ * Perfect for:
+ * - Tile-based procedural generation (WFC-style)
+ * - States with multiple attributes
+ * - Spatial/coordinate-based systems
+ * - Any structured state space
+ *
+ * @example
+ * ```typescript
+ * interface TileState {
+ *   tile: string;
+ *   x: number;
+ *   y: number;
+ * }
+ *
+ * const chain = new MultiDimMarkovChain<TileState>({
+ *   maxOrder: 2,
+ *   stateKey: (s) => `${s.tile}_${s.x}_${s.y}`
+ * });
+ *
+ * chain.addSequence([
+ *   { tile: 'grass', x: 0, y: 0 },
+ *   { tile: 'water', x: 0, y: 1 },
+ *   { tile: 'grass', x: 0, y: 2 }
+ * ]);
+ *
+ * const generated = chain.generate({ order: 1, length: 5 });
+ * // Returns array of TileState objects with full structure
+ * ```
+ */
+export class MultiDimMarkovChain<T> {
+  private internalChain: MarkovChain<string>;
+  private stateStore: StateStore<T>;
+  private stateKeyFn: StateKeyFunction<T>;
+  private _engine: Random;
+
+  constructor(options: MultiDimMarkovChainOptions<T>) {
+    this._engine = options.engine || new Random({ seed: options.seed, uses: options.uses });
+    this.stateKeyFn = options.stateKey;
+    this.stateStore = {};
+
+    this.internalChain = new MarkovChain<string>({
+      maxOrder: options.maxOrder || 2,
+      delimiter: options.delimiter,
+      startDelimiter: options.startDelimiter,
+      endDelimiter: options.endDelimiter,
+      engine: this._engine,
+      sequences: []
+    });
+  }
+
+  /**
+   * Add a sequence of structured states
+   */
+  public addSequence(sequence: T[]): MultiDimMarkovChain<T> {
+    if (sequence.length === 0) return this;
+
+    // Convert structured states to string keys
+    const keys = sequence.map(state => {
+      const key = this.stateKeyFn(state);
+      // Store the original structured state
+      this.stateStore[key] = state;
+      return key;
+    });
+
+    // Create new internal chain with the key sequence
+    const newInternalChain = this.internalChain.addSequence(keys);
+
+    // Create new instance with updated data
+    const updated = new MultiDimMarkovChain<T>({
+      maxOrder: this.internalChain.model.maxOrder,
+      delimiter: this.internalChain.model.delimiter,
+      startDelimiter: this.internalChain.model.startDelimiter,
+      endDelimiter: this.internalChain.model.endDelimiter,
+      engine: this._engine,
+      stateKey: this.stateKeyFn
+    });
+    updated.internalChain = newInternalChain;
+    updated.stateStore = { ...this.stateStore };
+    updated.stateKeyFn = this.stateKeyFn;
+    updated._engine = this._engine;
+
+    return updated;
+  }
+
+  /**
+   * Add multiple sequences of structured states
+   */
+  public addSequences(sequences: T[][]): MultiDimMarkovChain<T> {
+    let result: MultiDimMarkovChain<T> = this;
+    for (const seq of sequences) {
+      result = result.addSequence(seq);
+    }
+    return result;
+  }
+
+  /**
+   * Generate a sequence of structured states
+   */
+  public generate(options: MCGeneratorOptions = {}): T[] {
+    // Generate keys using internal chain
+    const keys = this.internalChain.generate(options);
+
+    // Map keys back to structured states
+    return keys.map(key => this.stateStore[key]!).filter(state => state !== undefined);
+  }
+
+  /**
+   * Pick a single next structured state
+   */
+  public pick(
+    current?: T[],
+    next: boolean = true,
+    mask?: T[]
+  ): T | undefined {
+    // Convert structured states to keys
+    const currentKeys = current?.map(s => this.stateKeyFn(s));
+    const maskKeys = mask?.map(s => this.stateKeyFn(s));
+
+    // Pick next key
+    const nextKey = this.internalChain.pick(currentKeys, next, maskKeys);
+    if (!nextKey) return undefined;
+
+    // Return structured state
+    return this.stateStore[nextKey];
+  }
+
+  /**
+   * Get statistics about the internal chain
+   */
+  public getStats() {
+    return this.internalChain.getStats();
+  }
+
+  /**
+   * Get all unique states that have been observed
+   */
+  public getStates(): T[] {
+    return Object.values(this.stateStore);
+  }
+
+  /**
+   * Check if a state exists in the chain
+   */
+  public hasState(state: T): boolean {
+    const key = this.stateKeyFn(state);
+    return this.stateStore[key] !== undefined;
+  }
+
+  /**
+   * Get the internal MarkovChain (for advanced use)
+   */
+  public getInternalChain(): MarkovChain<string> {
+    return this.internalChain;
+  }
+
+  /**
+   * Clone this multi-dimensional chain
+   */
+  public clone(): MultiDimMarkovChain<T> {
+    const cloned = new MultiDimMarkovChain<T>({
+      maxOrder: this.internalChain.model.maxOrder,
+      delimiter: this.internalChain.model.delimiter,
+      startDelimiter: this.internalChain.model.startDelimiter,
+      endDelimiter: this.internalChain.model.endDelimiter,
+      engine: this._engine,
+      stateKey: this.stateKeyFn
+    });
+    cloned.internalChain = this.internalChain.clone();
+    cloned.stateStore = { ...this.stateStore };
+    cloned.stateKeyFn = this.stateKeyFn;
+    cloned._engine = this._engine;
+    return cloned;
   }
 }
