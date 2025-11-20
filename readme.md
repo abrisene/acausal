@@ -19,10 +19,12 @@ Version 3.6 introduces **Wave Function Collapse (WFC)** as a first-class primiti
 - 🎯 **Topology-Agnostic**: Works on 2D grids, 3D voxels, graphs, or custom structures
 - 🧠 **Constraint Learning**: Automatically extract rules from example grids
 - 🎲 **Three Entropy Modes**: Count (fast), Shannon, Weighted-Shannon (frequency-aware)
-- 📐 **Grid2D Adapter**: Convenient interface for 2D tile-based generation
+- 🔄 **Backtracking**: Intelligent contradiction recovery with configurable depth
+- 🔀 **Symmetry Transforms**: Dimension-agnostic symmetry for automatic constraint generation
+- 📐 **Boundary Conditions**: Wrap, open, and fixed boundaries with per-dimension configuration
 - 🔄 **Composable**: Integrates with Distribution and MarkovChain for hybrid generation
-- ✅ **29 Tests**: Complete test coverage with 100% pass rate
-- 📚 **Comprehensive Docs**: ~700 lines of API reference, examples, and optimization guides
+- ✅ **236 Tests**: Complete test coverage with 100% pass rate
+- 📚 **Comprehensive Docs**: 1,900+ line dedicated documentation with full API reference
 
 ```typescript
 import { WFC, WFCGrid2D, WFCConstraintLearner } from 'acausal';
@@ -32,12 +34,12 @@ const constraints = WFCConstraintLearner.learn2DConstraints([exampleLevel]);
 const states = WFCConstraintLearner.extractStates([exampleLevel]);
 
 // Create WFC and generate
-const wfc = new WFC({ seed: 42, states, constraints });
+const wfc = new WFC({ seed: 42, states, constraints, backtrack: true });
 const grid = new WFCGrid2D({ width: 20, height: 20, wfc });
 const level = grid.generate(); // Returns 2D array of tiles
 ```
 
-[See WFC Documentation →](./readme/advanced.md#wave-function-collapse-wfc)
+[See WFC Documentation →](./readme/wfc.md)
 
 ## What's New in v3.0
 
@@ -102,6 +104,7 @@ rand.integer(1, 6); // Roll 1d6
 - [_acausal_ Home](https://github.com/abrisene/acausal/#readme)
 - [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/readme/distribution.md#acausal-)
 - [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
+- [Wave Function Collapse Quickstart](https://github.com/abrisene/acausal/blob/master/readme/wfc.md#acausal-)
 
 ### Game Development Guides
 - [Procedural Generation for Games](https://github.com/abrisene/acausal/blob/master/readme/game-generation.md) - Character names, quests, dialogue, dungeons, weather
