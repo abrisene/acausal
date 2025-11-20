@@ -1,0 +1,2412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  
+    <defs>
+      <!-- Wave pattern -->
+      <pattern id="waves" patternUnits="userSpaceOnUse" width="20" height="10">
+        <path d="M0 5 Q 5 0, 10 5 T 20 5" stroke="white" stroke-width="1" fill="none" opacity="0.3"/>
+      </pattern>
+
+      <!-- Dots pattern -->
+      <pattern id="dots" patternUnits="userSpaceOnUse" width="10" height="10">
+        <circle cx="5" cy="5" r="1.5" fill="white" opacity="0.4"/>
+      </pattern>
+
+      <!-- Grass pattern -->
+      <pattern id="grass" patternUnits="userSpaceOnUse" width="8" height="12">
+        <line x1="2" y1="12" x2="2" y2="6" stroke="white" stroke-width="1" opacity="0.3"/>
+        <line x1="6" y1="12" x2="6" y2="4" stroke="white" stroke-width="1" opacity="0.3"/>
+      </pattern>
+
+      <!-- Trees pattern -->
+      <pattern id="trees" patternUnits="userSpaceOnUse" width="16" height="16">
+        <circle cx="8" cy="12" r="4" fill="white" opacity="0.2"/>
+        <rect x="7" y="12" width="2" height="4" fill="white" opacity="0.3"/>
+      </pattern>
+
+      <!-- Mountain peaks pattern -->
+      <pattern id="peaks" patternUnits="userSpaceOnUse" width="20" height="15">
+        <path d="M0 15 L 5 5 L 10 15 L 15 8 L 20 15" stroke="white" stroke-width="1.5" fill="none" opacity="0.3"/>
+      </pattern>
+
+      <!-- Brick pattern -->
+      <pattern id="brick" patternUnits="userSpaceOnUse" width="20" height="10">
+        <rect x="0" y="0" width="10" height="5" stroke="white" stroke-width="0.5" fill="none" opacity="0.3"/>
+        <rect x="10" y="0" width="10" height="5" stroke="white" stroke-width="0.5" fill="none" opacity="0.3"/>
+        <rect x="-5" y="5" width="10" height="5" stroke="white" stroke-width="0.5" fill="none" opacity="0.3"/>
+        <rect x="5" y="5" width="10" height="5" stroke="white" stroke-width="0.5" fill="none" opacity="0.3"/>
+        <rect x="15" y="5" width="10" height="5" stroke="white" stroke-width="0.5" fill="none" opacity="0.3"/>
+      </pattern>
+
+      <!-- Floor tiles pattern -->
+      <pattern id="tiles" patternUnits="userSpaceOnUse" width="15" height="15">
+        <rect x="0" y="0" width="15" height="15" stroke="white" stroke-width="0.5" fill="none" opacity="0.2"/>
+        <line x1="0" y1="7.5" x2="15" y2="7.5" stroke="white" stroke-width="0.3" opacity="0.15"/>
+        <line x1="7.5" y1="0" x2="7.5" y2="15" stroke="white" stroke-width="0.3" opacity="0.15"/>
+      </pattern>
+
+      <!-- Wood grain pattern -->
+      <pattern id="wood" patternUnits="userSpaceOnUse" width="30" height="8">
+        <path d="M0 4 Q 7.5 2, 15 4 T 30 4" stroke="white" stroke-width="1" fill="none" opacity="0.2"/>
+        <path d="M0 6 Q 7.5 4, 15 6 T 30 6" stroke="white" stroke-width="0.5" fill="none" opacity="0.15"/>
+      </pattern>
+
+      <!-- Stone pattern -->
+      <pattern id="stone" patternUnits="userSpaceOnUse" width="25" height="25">
+        <circle cx="8" cy="8" r="3" stroke="white" stroke-width="0.5" fill="none" opacity="0.2"/>
+        <circle cx="18" cy="15" r="2.5" stroke="white" stroke-width="0.5" fill="none" opacity="0.2"/>
+      </pattern>
+
+      <!-- Circuit lines pattern -->
+      <pattern id="lines" patternUnits="userSpaceOnUse" width="20" height="20">
+        <line x1="0" y1="10" x2="20" y2="10" stroke="white" stroke-width="1.5" opacity="0.4"/>
+        <circle cx="10" cy="10" r="2" fill="white" opacity="0.5"/>
+      </pattern>
+
+      <!-- Circuit node pattern -->
+      <pattern id="circle" patternUnits="userSpaceOnUse" width="20" height="20">
+        <circle cx="10" cy="10" r="6" stroke="white" stroke-width="1.5" fill="none" opacity="0.4"/>
+        <circle cx="10" cy="10" r="3" fill="white" opacity="0.5"/>
+      </pattern>
+
+      <!-- Circuit gate pattern -->
+      <pattern id="square" patternUnits="userSpaceOnUse" width="20" height="20">
+        <rect x="5" y="5" width="10" height="10" stroke="white" stroke-width="1.5" fill="none" opacity="0.4"/>
+        <rect x="8" y="8" width="4" height="4" fill="white" opacity="0.5"/>
+      </pattern>
+
+      <!-- Circuit grid pattern -->
+      <pattern id="grid" patternUnits="userSpaceOnUse" width="10" height="10">
+        <line x1="0" y1="0" x2="0" y2="10" stroke="white" stroke-width="0.3" opacity="0.2"/>
+        <line x1="0" y1="0" x2="10" y2="0" stroke="white" stroke-width="0.3" opacity="0.2"/>
+      </pattern>
+
+      <!-- Diagonal patterns -->
+      <pattern id="diagonal1" patternUnits="userSpaceOnUse" width="10" height="10">
+        <line x1="0" y1="0" x2="10" y2="10" stroke="white" stroke-width="1.5" opacity="0.3"/>
+      </pattern>
+
+      <pattern id="diagonal2" patternUnits="userSpaceOnUse" width="10" height="10">
+        <line x1="10" y1="0" x2="0" y2="10" stroke="white" stroke-width="1.5" opacity="0.3"/>
+      </pattern>
+
+      <!-- Circle scatter pattern -->
+      <pattern id="circles" patternUnits="userSpaceOnUse" width="15" height="15">
+        <circle cx="5" cy="5" r="2" fill="white" opacity="0.3"/>
+        <circle cx="12" cy="10" r="1.5" fill="white" opacity="0.3"/>
+      </pattern>
+
+      <!-- Square scatter pattern -->
+      <pattern id="squares" patternUnits="userSpaceOnUse" width="12" height="12">
+        <rect x="2" y="2" width="3" height="3" fill="white" opacity="0.3"/>
+        <rect x="7" y="7" width="2" height="2" fill="white" opacity="0.3"/>
+      </pattern>
+    </defs>
+  
+  <rect width="600" height="400" fill="#f8f9fa"/>
+  
+    <defs>
+      <linearGradient id="grad-grass-0-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-0-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-50-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-50-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-100-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-100-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-150-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-150-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-200-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-200-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-250-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-250-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-350-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-350-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-400-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-400-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-water-450-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#2E5266;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#4A7C8C;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-water-450-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#waves)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-water-500-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#2E5266;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#4A7C8C;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-water-500-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#waves)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-550-0" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-550-0)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="0"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-0-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-0-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-50-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-50-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-100-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-100-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-150-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-150-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-200-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-200-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-250-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-250-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-350-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-350-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-400-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-400-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-450-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-450-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-water-500-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#2E5266;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#4A7C8C;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-water-500-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#waves)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-water-550-50" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#2E5266;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#4A7C8C;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#grad-water-550-50)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="50"
+      width="50"
+      height="50"
+      fill="url(#waves)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-0-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-0-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-50-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-50-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-100-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-100-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-150-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-150-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-200-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-200-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-250-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-250-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-350-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-350-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-400-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-400-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-450-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-450-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-500-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-500-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-water-550-100" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#2E5266;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#4A7C8C;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#grad-water-550-100)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="100"
+      width="50"
+      height="50"
+      fill="url(#waves)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-0-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-0-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-50-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-50-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-100-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-100-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-150-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-150-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-200-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-200-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-250-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-250-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-350-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-350-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-400-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-400-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-450-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-450-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-500-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-500-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-water-550-150" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#2E5266;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#4A7C8C;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#grad-water-550-150)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="150"
+      width="50"
+      height="50"
+      fill="url(#waves)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-0-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-0-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-50-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-50-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-100-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-100-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-150-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-150-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-200-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-200-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-250-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-250-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-350-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-350-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-400-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-400-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-450-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-450-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-500-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-500-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-550-200" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-550-200)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="200"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-0-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-0-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-50-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-50-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-100-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-100-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-150-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-150-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-200-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-200-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-250-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-250-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-350-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-350-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-400-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-400-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-450-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-450-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-500-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-500-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-550-250" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-550-250)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="250"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-0-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-0-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-50-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-50-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-100-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-100-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-150-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-150-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-200-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-200-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-250-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-250-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-350-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-350-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-400-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-400-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-450-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-450-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-500-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-500-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-550-300" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-550-300)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="300"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-0-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="0"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-0-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="0"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-50-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="50"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-50-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="50"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-100-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="100"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-100-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="100"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-150-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="150"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-150-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="150"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-200-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="200"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-200-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="200"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-250-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="250"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-250-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="250"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-300-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="300"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-300-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="300"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-350-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="350"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-350-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="350"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-400-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="400"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-400-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="400"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-450-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="450"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-450-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="450"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-grass-500-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#6B9A3F;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="500"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-grass-500-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="500"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grass)"
+    />
+  
+    <defs>
+      <linearGradient id="grad-sand-550-350" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#E8C468;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#F4D58D;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    <rect
+      x="550"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#grad-sand-550-350)"
+      stroke="#ffffff"
+      stroke-width="1"
+      stroke-opacity="0.3"
+    />
+    <rect
+      x="550"
+      y="350"
+      width="50"
+      height="50"
+      fill="url(#dots)"
+    />
+  
+</svg>

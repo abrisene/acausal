@@ -201,7 +201,7 @@ export class WFCSymmetry {
 
         // Apply forward mapping: fromDim -> toDim
         for (const [fromDim, toDim] of Object.entries(transform.mapping)) {
-          if (currentRules[fromDim] && !currentRules[toDim]) {
+          if (currentRules[fromDim] && !currentRules[toDim] && result[state]) {
             result[state][toDim] = currentRules[fromDim];
             changed = true;
           }
@@ -209,7 +209,7 @@ export class WFCSymmetry {
 
         // Apply inverse mapping: toDim <- fromDim
         for (const [toDim, fromDim] of Object.entries(inverseMapping)) {
-          if (currentRules[toDim] && !currentRules[fromDim]) {
+          if (currentRules[toDim] && !currentRules[fromDim] && result[state]) {
             result[state][fromDim] = currentRules[toDim];
             changed = true;
           }
@@ -272,8 +272,10 @@ export class WFCSymmetry {
       // Generate remaining rotations by composing
       for (let i = 0; i < 4; i++) {
         const prev = transforms[transforms.length - 1];
-        const composed = this.composeTransforms(prev, rotate60);
-        transforms.push(composed);
+        if (prev) {
+          const composed = this.composeTransforms(prev, rotate60);
+          transforms.push(composed);
+        }
       }
     } else {
       // Custom transforms
@@ -389,7 +391,7 @@ export class WFCSymmetry {
     constraints: ConstraintRules,
     transform: SymmetryTransform
   ): boolean {
-    for (const [state, rules] of Object.entries(constraints)) {
+    for (const [_state, rules] of Object.entries(constraints)) {
       for (const [fromDim, toDim] of Object.entries(transform.mapping)) {
         const fromStates = this.normalizeConstraint(rules[fromDim]);
         const toStates = this.normalizeConstraint(rules[toDim]);

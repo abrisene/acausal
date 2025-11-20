@@ -292,7 +292,7 @@ export class WFCGrid2D {
         return config;
       } else if (Array.isArray(config) && config.length > 0) {
         // For now, just use the first state if multiple provided
-        return config[0];
+        return config[0] ?? null;
       }
     }
 
@@ -302,7 +302,7 @@ export class WFCGrid2D {
       if (typeof config === 'string') {
         return config;
       } else if (Array.isArray(config) && config.length > 0) {
-        return config[0];
+        return config[0] ?? null;
       }
     }
 
@@ -312,7 +312,7 @@ export class WFCGrid2D {
       if (typeof config === 'string') {
         return config;
       } else if (Array.isArray(config) && config.length > 0) {
-        return config[0];
+        return config[0] ?? null;
       }
     }
 
@@ -322,7 +322,7 @@ export class WFCGrid2D {
       if (typeof config === 'string') {
         return config;
       } else if (Array.isArray(config) && config.length > 0) {
-        return config[0];
+        return config[0] ?? null;
       }
     }
 

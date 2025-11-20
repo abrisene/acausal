@@ -747,7 +747,7 @@ export class WFC {
    */
   private getNextUntriedState(
     snapshot: GraphSnapshot,
-    graph: WFCGraph
+    _graph: WFCGraph
   ): State | null {
     const cellState = snapshot.cellStates.get(snapshot.cellId);
     if (!cellState) return null;

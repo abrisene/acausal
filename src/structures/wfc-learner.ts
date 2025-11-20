@@ -68,34 +68,46 @@ export class WFCConstraintLearner {
 
       for (let y = 0; y < height; y++) {
         const row = example[y];
+        if (!row) continue;
         const width = row.length;
 
         for (let x = 0; x < width; x++) {
           const state = row[x];
+          if (!state) continue;
           ensureState(state);
 
           // North neighbor
           if (y > 0) {
-            const northState = example[y - 1][x];
-            adjacencies[state].north.add(northState);
+            const northRow = example[y - 1];
+            if (northRow) {
+              const northState = northRow[x];
+              if (northState && adjacencies[state])
+                adjacencies[state].north.add(northState);
+            }
           }
 
           // South neighbor
           if (y < height - 1) {
-            const southState = example[y + 1][x];
-            adjacencies[state].south.add(southState);
+            const southRow = example[y + 1];
+            if (southRow) {
+              const southState = southRow[x];
+              if (southState && adjacencies[state])
+                adjacencies[state].south.add(southState);
+            }
           }
 
           // East neighbor
           if (x < width - 1) {
             const eastState = row[x + 1];
-            adjacencies[state].east.add(eastState);
+            if (eastState && adjacencies[state])
+              adjacencies[state].east.add(eastState);
           }
 
           // West neighbor
           if (x > 0) {
             const westState = row[x - 1];
-            adjacencies[state].west.add(westState);
+            if (westState && adjacencies[state])
+              adjacencies[state].west.add(westState);
           }
         }
       }
@@ -172,34 +184,46 @@ export class WFCConstraintLearner {
 
       for (let y = 0; y < height; y++) {
         const row = example[y];
+        if (!row) continue;
         const width = row.length;
 
         for (let x = 0; x < width; x++) {
           const state = row[x];
+          if (!state) continue;
           ensureState(state);
 
           // North neighbor
           if (y > 0) {
-            const northState = example[y - 1][x];
-            incrementFreq(frequencies[state].north, northState);
+            const northRow = example[y - 1];
+            if (northRow) {
+              const northState = northRow[x];
+              if (northState && frequencies[state])
+                incrementFreq(frequencies[state].north, northState);
+            }
           }
 
           // South neighbor
           if (y < height - 1) {
-            const southState = example[y + 1][x];
-            incrementFreq(frequencies[state].south, southState);
+            const southRow = example[y + 1];
+            if (southRow) {
+              const southState = southRow[x];
+              if (southState && frequencies[state])
+                incrementFreq(frequencies[state].south, southState);
+            }
           }
 
           // East neighbor
           if (x < width - 1) {
             const eastState = row[x + 1];
-            incrementFreq(frequencies[state].east, eastState);
+            if (eastState && frequencies[state])
+              incrementFreq(frequencies[state].east, eastState);
           }
 
           // West neighbor
           if (x > 0) {
             const westState = row[x - 1];
-            incrementFreq(frequencies[state].west, westState);
+            if (westState && frequencies[state])
+              incrementFreq(frequencies[state].west, westState);
           }
         }
       }
