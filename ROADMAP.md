@@ -68,57 +68,19 @@ All features should adhere to the core design principles:
 - Integration guides for D3.js, Cytoscape, Graphviz
 - Use cases: debugging, A/B testing, analytics
 
+### v3.6.0 - Wave Function Collapse (2025)
+- Complete WFC implementation as first-class primitive
+- Topology-agnostic core working on any graph structure
+- `WFCGrid2D` adapter for convenient 2D grid generation
+- `WFCConstraintLearner` for extracting rules from examples
+- `WFCSymmetry` for dimension-agnostic symmetry transformations
+- Boundary conditions (wrap, open, fixed) with per-dimension configuration
+- Backtracking for intelligent contradiction recovery
+- Three entropy modes: count, Shannon, weighted-Shannon
+- 215 comprehensive tests with 100% pass rate
+- Use cases: tile-based generation, texture synthesis, constraint satisfaction
+
 ## Planned Versions
-
-### v3.6.0 - Wave Function Collapse (Future)
-**Goal**: Add WFC as a first-class primitive alongside Distribution and MarkovChain
-
-#### Core Features
-- **Graph-based constraints**: Not opinionated towards grids
-- **Multi-dimensional support**: Works in 2D, 3D, and beyond
-- **Irregular topologies**: Support for Voronoi, hex grids, custom graphs
-- **Composable primitives**: Core collapse algorithm separate from topology
-- **Rule learning**: Extract constraint rules from example data
-- **Serializable models**: Store and transfer trained WFC models
-
-#### API Design
-```typescript
-// Low-level: Define your own topology
-const wfc = new WFC({
-  seed: 42,
-  states: ['grass', 'water', 'sand'],
-  constraints: {
-    // Adjacency rules per dimension/direction
-    grass: { north: ['grass', 'sand'], south: ['grass', 'water'] },
-    water: { north: ['sand', 'water'], south: ['water'] },
-    sand: { north: ['grass', 'sand'], south: ['water', 'sand'] }
-  }
-});
-
-// Collapse over your own graph structure
-const result = wfc.collapse({
-  nodes: customNodeArray,
-  getNeighbors: (node) => node.neighbors,
-  getDimension: (node, neighbor) => calculateDimension(node, neighbor)
-});
-
-// High-level: Built-in topologies
-const grid = new WFCGrid2D({ width: 50, height: 50, wfc });
-const hex = new WFCHexGrid({ radius: 20, wfc });
-const voronoi = new WFCVoronoi({ points: seeds, wfc });
-```
-
-#### Integration with Existing Primitives
-- Use Distribution for weighted tile selection
-- Use MarkovChain to learn sequential patterns in tile placement
-- Combine with multi-dimensional chains for complex state spaces
-
-#### Use Cases
-- Tile-based dungeon/map generation
-- 3D voxel world generation
-- Irregular city layouts (Townscaper-style)
-- Puzzle generation with hard constraints
-- Building interiors with architectural rules
 
 ### v3.7.0 - L-Systems (Planned)
 **Goal**: Add L-Systems for recursive/branching generation
