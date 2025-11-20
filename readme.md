@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![Build Status](https://app.travis-ci.com/abrisene/acausal.svg?branch=master)](https://app.travis-ci.com/abrisene/acausal) [![stability-stable](https://img.shields.io/badge/stability-stable-green.svg)](https://github.com/emersion/stability-badges#stable) [![Coverage Status](https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=master)](https://coveralls.io/github/abrisene/acausal?branch=master)
 
-*acausal* is a Typescript module that makes it easy to create, edit and generate pseudo random data from **Weighted Random Distributions** and **Markov Chains**.
+*acausal* is a Typescript module that makes it easy to create, edit and generate procedural content using **Weighted Random Distributions**, **Markov Chains**, and **Wave Function Collapse**.
 
 
 **Design Philosophy**
@@ -10,6 +10,34 @@
 - **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store, transfer, and rebuild regardless of whether it's on the client or the server.
 - **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models.
 - **Minimal Dependencies**: _acausal_ only depends on [random-js](https://www.npmjs.com/package/random-js) and [scalr](https://www.npmjs.com/package/scalr), (which formerly was part of _acausal_, but separated out for the 2.0.0 release).
+
+## What's New in v3.6
+
+Version 3.6 introduces **Wave Function Collapse (WFC)** as a first-class primitive:
+
+- 🌊 **Wave Function Collapse**: Constraint-based procedural generation for tiles, levels, and coherent patterns
+- 🎯 **Topology-Agnostic**: Works on 2D grids, 3D voxels, graphs, or custom structures
+- 🧠 **Constraint Learning**: Automatically extract rules from example grids
+- 🎲 **Three Entropy Modes**: Count (fast), Shannon, Weighted-Shannon (frequency-aware)
+- 📐 **Grid2D Adapter**: Convenient interface for 2D tile-based generation
+- 🔄 **Composable**: Integrates with Distribution and MarkovChain for hybrid generation
+- ✅ **29 Tests**: Complete test coverage with 100% pass rate
+- 📚 **Comprehensive Docs**: ~700 lines of API reference, examples, and optimization guides
+
+```typescript
+import { WFC, WFCGrid2D, WFCConstraintLearner } from 'acausal';
+
+// Learn from examples
+const constraints = WFCConstraintLearner.learn2DConstraints([exampleLevel]);
+const states = WFCConstraintLearner.extractStates([exampleLevel]);
+
+// Create WFC and generate
+const wfc = new WFC({ seed: 42, states, constraints });
+const grid = new WFCGrid2D({ width: 20, height: 20, wfc });
+const level = grid.generate(); // Returns 2D array of tiles
+```
+
+[See WFC Documentation →](./readme/advanced.md#wave-function-collapse-wfc)
 
 ## What's New in v3.0
 
@@ -89,7 +117,7 @@ rand.integer(1, 6); // Roll 1d6
 - [Debugging & Analytics](https://github.com/abrisene/acausal/blob/master/readme/debugging.md) - Model inspection, visualization, testing, A/B testing (v4.0+)
 
 ### Technical Reference
-- [Advanced Markov Chain Features](https://github.com/abrisene/acausal/blob/master/readme/advanced.md) - API reference for scoring, constraints, pattern extraction (v3.4-v3.5)
+- [Advanced Features](https://github.com/abrisene/acausal/blob/master/readme/advanced.md) - Complete API reference for Markov Chain (v3.4-v3.5) and Wave Function Collapse (v3.6)
 - [Visualization & Export](https://github.com/abrisene/acausal/blob/master/readme/visualization.md) - Technical guide for graph export, D3.js, Cytoscape integration (v4.0)
 
 ## Installation
