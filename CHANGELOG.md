@@ -8,14 +8,17 @@
 **Wave Function Collapse (WFC) - First-Class Primitive**
 * Added complete WFC implementation as a new first-class structure alongside Distribution and MarkovChain
 * Topology-agnostic constraint-based procedural generation system
-* 29 comprehensive tests with 100% pass rate
+* 215 comprehensive tests with 100% pass rate
 
 ### WFC Core Features
 * **`WFC` Class**: Main collapse algorithm with configurable entropy modes and constraint propagation
 * **`WFCGrid2D` Adapter**: Convenient 2D grid generation with cardinal directions
 * **`WFCConstraintLearner`**: Automatic constraint extraction from example grids
+* **`WFCSymmetry`**: Dimension-agnostic symmetry transformations for automatic constraint generation
 * **Three Entropy Modes**: Count (fast), Shannon (balanced), Weighted-Shannon (frequency-aware)
 * **Custom Entropy Functions**: Define your own collapse priority logic
+* **Boundary Conditions**: Wrap (toroidal), open, and fixed boundaries with per-dimension configuration
+* **Backtracking**: Intelligent contradiction recovery with configurable depth and retry limits
 * **Deterministic Generation**: Seeded randomness for reproducible results
 * **Serialization**: Full JSON serialization via toJSON/fromJSON
 * **Statistics**: Model introspection with getStats()
@@ -49,28 +52,67 @@ const result = grid.generate();
 * **Efficient Propagation**: Queue-based algorithm with visited tracking
 * **Contradiction Detection**: Immediate failure on impossible states
 
+### Boundary Conditions (Phase 3.2)
+* **Three Boundary Modes**: Wrap (toroidal), open (no connections), fixed (preset states)
+* **Per-Dimension Configuration**: Different boundary modes for each dimension
+* **Global or Granular**: Simple string for all boundaries, or config object for fine control
+* **Fixed State Specification**: Single state or array of valid states for fixed boundaries
+* **Automatic Edge Handling**: Grid2D adapter automatically applies boundaries to edges
+* **11 Comprehensive Tests**: Full coverage of all boundary modes and configurations
+
+### Symmetry Support (Phase 3.3)
+* **Dimension-Agnostic Design**: Works with 2D grids, 3D voxels, hex grids, and custom topologies
+* **SymmetryTransform Interface**: Arbitrary dimension mappings for any topology
+* **SYMMETRY_PRESETS**: Built-in transforms for grid2D (rotate90, rotate180, rotate270, flipH, flipV), hex (rotate60, etc.), and voxel3D (rotateX, rotateY, rotateZ)
+* **Automatic Constraint Generation**: Apply symmetries to fill in missing constraint rules
+* **Transform Composition**: Combine multiple transforms to create complex symmetries
+* **Iterative Bidirectional Application**: Ensures all reachable dimensions are filled
+* **Symmetry Detection**: Check if constraints are already symmetric
+* **22 Comprehensive Tests**: 2D, 3D, hex, custom topologies, composition, and WFC integration
+
+### Backtracking (Phase 3.4)
+* **Intelligent Contradiction Recovery**: Explore alternative states instead of failing immediately
+* **GraphSnapshot System**: Save/restore graph state at decision points
+* **Configurable Limits**: maxDepth (default 100) and maxAttempts (default 1000)
+* **State Exploration**: Track tried states per cell to avoid retrying failures
+* **Boolean or Config**: Simple `backtrack: true` or detailed BacktrackConfig
+* **Metadata Reporting**: Backtrack count included in WFCResult metadata
+* **Automatic Fallback**: Separate paths for standard and backtracking collapse
+* **13 Comprehensive Tests**: Configuration, behavior, edge cases, and contradiction handling
+
 ### Use Cases
 * **Tile-Based Level Generation**: Dungeons, maps, puzzles with coherent tile placement
 * **Texture Synthesis**: Generate seamless patterns matching example textures
 * **Procedural Content**: Create content with local consistency constraints
 * **Constraint Satisfaction**: Solve problems with adjacency rules
 * **Pattern Learning**: Extract rules from hand-crafted examples
+* **Toroidal Worlds**: Wrap-around maps with seamless edges
+* **Fixed Boundaries**: Lock borders to specific states (walls, edges, etc.)
+* **Symmetric Patterns**: Auto-generate constraints with rotational/reflective symmetry
+* **Difficult Constraints**: Backtracking solves problems that would otherwise fail
 
 ### Implementation
 * Topology-agnostic core (works on 2D grids, 3D voxels, graphs, custom structures)
 * Constraint propagation with bidirectional rules
+* Boundary condition support with per-dimension configuration
+* Dimension-agnostic symmetry transformations with snapshot-based iteration
+* Backtracking with GraphSnapshot system for contradiction recovery
 * Integration with Distribution for weighted state selection
 * Composable with MarkovChain for hybrid generation
-* 35 type tests + 29 API tests (64 total tests for WFC)
+* 215 comprehensive tests across all features (35 type + 180 API/feature tests)
 * Comprehensive documentation in readme/advanced.md
 
 ### Files Added
-* `src/structures/wfc-types.ts` - Complete type system (375 lines)
-* `src/structures/wfc.ts` - Core WFC implementation (593 lines)
-* `src/structures/wfc-grid2d.ts` - 2D grid adapter (212 lines)
+* `src/structures/wfc-types.ts` - Complete type system (400+ lines)
+* `src/structures/wfc.ts` - Core WFC implementation with backtracking (880+ lines)
+* `src/structures/wfc-grid2d.ts` - 2D grid adapter with boundaries (280+ lines)
 * `src/structures/wfc-learner.ts` - Constraint learning (282 lines)
+* `src/structures/wfc-symmetry.ts` - Dimension-agnostic symmetry (240+ lines)
 * `src/__tests__/wfc-types.spec.ts` - Type tests (502 lines)
-* `src/__tests__/wfc-api.spec.ts` - API tests (partial - 1355 lines total)
+* `src/__tests__/wfc-api.spec.ts` - API tests (1355+ lines)
+* `src/__tests__/wfc-boundaries.spec.ts` - Boundary tests (445 lines)
+* `src/__tests__/wfc-symmetry.spec.ts` - Symmetry tests (570+ lines)
+* `src/__tests__/wfc-backtracking.spec.ts` - Backtracking tests (480+ lines)
 
 ### Documentation
 * Comprehensive WFC section in readme/advanced.md (~700 lines)
