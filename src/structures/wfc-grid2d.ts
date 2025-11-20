@@ -25,6 +25,8 @@ import type {
   WFCGenerateOptions,
   CellId,
   Adjacency,
+  BoundaryMode,
+  BoundaryConfig,
 } from './wfc-types';
 
 /**
@@ -39,6 +41,9 @@ export interface Grid2DOptions {
 
   /** WFC instance to use for generation */
   wfc: WFC;
+
+  /** Boundary condition strategy (optional) */
+  boundaries?: BoundaryMode | BoundaryConfig;
 }
 
 /**
@@ -50,6 +55,7 @@ export class WFCGrid2D {
   private readonly _width: number;
   private readonly _height: number;
   private readonly _wfc: WFC;
+  private readonly _boundaries: BoundaryMode | BoundaryConfig;
 
   /**
    * Create a new 2D grid adapter
@@ -62,6 +68,7 @@ export class WFCGrid2D {
     this._width = options.width;
     this._height = options.height;
     this._wfc = options.wfc;
+    this._boundaries = options.boundaries || 'open';
   }
 
   /**
@@ -113,11 +120,21 @@ export class WFCGrid2D {
     for (let y = 0; y < this._height; y++) {
       for (let x = 0; x < this._width; x++) {
         const id = this.coordsToId(x, y);
-        cells.set(id, {
+        const cell: WFCCell = {
           id,
           possibleStates: new Set(), // Will be initialized by WFC
           collapsed: false,
-        });
+        };
+
+        // Handle fixed boundaries - pre-collapse edge cells
+        const fixedState = this.getFixedBoundaryState(x, y);
+        if (fixedState) {
+          cell.possibleStates = new Set([fixedState]);
+          cell.collapsed = true;
+          cell.collapsedState = fixedState;
+        }
+
+        cells.set(id, cell);
       }
     }
 
@@ -127,33 +144,61 @@ export class WFCGrid2D {
       const neighbors: Adjacency[] = [];
 
       // North
-      if (y > 0) {
+      const northY = y - 1;
+      if (northY >= 0) {
         neighbors.push({
-          neighbor: this.coordsToId(x, y - 1),
+          neighbor: this.coordsToId(x, northY),
+          dimension: 'north',
+        });
+      } else if (this.getBoundaryMode('north') === 'wrap') {
+        // Wrap to bottom
+        neighbors.push({
+          neighbor: this.coordsToId(x, this._height - 1),
           dimension: 'north',
         });
       }
 
       // South
-      if (y < this._height - 1) {
+      const southY = y + 1;
+      if (southY < this._height) {
         neighbors.push({
-          neighbor: this.coordsToId(x, y + 1),
+          neighbor: this.coordsToId(x, southY),
+          dimension: 'south',
+        });
+      } else if (this.getBoundaryMode('south') === 'wrap') {
+        // Wrap to top
+        neighbors.push({
+          neighbor: this.coordsToId(x, 0),
           dimension: 'south',
         });
       }
 
       // East
-      if (x < this._width - 1) {
+      const eastX = x + 1;
+      if (eastX < this._width) {
         neighbors.push({
-          neighbor: this.coordsToId(x + 1, y),
+          neighbor: this.coordsToId(eastX, y),
+          dimension: 'east',
+        });
+      } else if (this.getBoundaryMode('east') === 'wrap') {
+        // Wrap to left
+        neighbors.push({
+          neighbor: this.coordsToId(0, y),
           dimension: 'east',
         });
       }
 
       // West
-      if (x > 0) {
+      const westX = x - 1;
+      if (westX >= 0) {
         neighbors.push({
-          neighbor: this.coordsToId(x - 1, y),
+          neighbor: this.coordsToId(westX, y),
+          dimension: 'west',
+        });
+      } else if (this.getBoundaryMode('west') === 'wrap') {
+        // Wrap to right
+        neighbors.push({
+          neighbor: this.coordsToId(this._width - 1, y),
           dimension: 'west',
         });
       }
@@ -204,6 +249,84 @@ export class WFCGrid2D {
     const x = id % this._width;
     const y = Math.floor(id / this._width);
     return [x, y];
+  }
+
+  /**
+   * Get boundary mode for a specific dimension
+   */
+  private getBoundaryMode(dimension: 'north' | 'south' | 'east' | 'west'): BoundaryMode {
+    if (typeof this._boundaries === 'string') {
+      return this._boundaries;
+    }
+
+    // Check per-dimension config
+    const perDim = this._boundaries.perDimension?.[dimension];
+    if (perDim) {
+      // Check if it's a BoundaryMode string
+      if (perDim === 'wrap' || perDim === 'open' || perDim === 'fixed') {
+        return perDim as BoundaryMode;
+      }
+      // Otherwise it's a state or array of states, treat as 'fixed'
+      return 'fixed';
+    }
+
+    // Fall back to default
+    return this._boundaries.default || 'open';
+  }
+
+  /**
+   * Get fixed boundary state for a cell if it's on a fixed boundary
+   */
+  private getFixedBoundaryState(x: number, y: number): State | null {
+    if (typeof this._boundaries === 'string') {
+      return null; // Not a fixed boundary
+    }
+
+    const perDim = this._boundaries.perDimension;
+    if (!perDim) return null;
+
+    // Check if on north edge
+    if (y === 0) {
+      const config = perDim.north;
+      if (typeof config === 'string') {
+        return config;
+      } else if (Array.isArray(config) && config.length > 0) {
+        // For now, just use the first state if multiple provided
+        return config[0];
+      }
+    }
+
+    // Check if on south edge
+    if (y === this._height - 1) {
+      const config = perDim.south;
+      if (typeof config === 'string') {
+        return config;
+      } else if (Array.isArray(config) && config.length > 0) {
+        return config[0];
+      }
+    }
+
+    // Check if on east edge
+    if (x === this._width - 1) {
+      const config = perDim.east;
+      if (typeof config === 'string') {
+        return config;
+      } else if (Array.isArray(config) && config.length > 0) {
+        return config[0];
+      }
+    }
+
+    // Check if on west edge
+    if (x === 0) {
+      const config = perDim.west;
+      if (typeof config === 'string') {
+        return config;
+      } else if (Array.isArray(config) && config.length > 0) {
+        return config[0];
+      }
+    }
+
+    return null;
   }
 
   /**
