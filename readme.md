@@ -71,8 +71,8 @@ rand.integer(1, 6); // Roll 1d6
 ### Advanced Features
 - [Quality Control & Filtering](https://github.com/abrisene/acausal/blob/master/readme/quality-control.md) - Scoring, filtering bad content, bot detection, autocomplete (v3.4+)
 - [Recommendation Systems](https://github.com/abrisene/acausal/blob/master/readme/recommendations.md) - Pattern analysis, similarity search, matchmaking (v3.5+)
-- [Hybrid Algorithms](https://github.com/abrisene/acausal/blob/master/readme/hybrid-algorithms.md) - Wave Function Collapse, Perlin noise, L-Systems, genetic algorithms
-- [Debugging & Analytics](https://github.com/abrisene/acausal/blob/master/readme/debugging.md) - Model inspection, visualization, testing, A/B testing (v4.0+)
+- [Hybrid Algorithms](https://github.com/abrisene/acausal/blob/master/readme/hybrid-algorithms.md) - Wave Function Collapse, Perlin noise, L-Systems, genetic algorithms (v3.6+)
+- [Debugging & Analytics](https://github.com/abrisene/acausal/blob/master/readme/debugging.md) - Model inspection, visualization, testing, A/B testing (v3.9+)
 
 ## Installation
 

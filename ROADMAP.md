@@ -175,7 +175,7 @@ const quest = grammar.generate('quest');
 - Structured data generation
 - Template-based content
 
-### v4.0.0 - Graph Export & Visualization (Planned)
+### v3.9.0 - Graph Export & Visualization (Planned)
 - Export models to JSON, graph formats, CSV
 - Model comparison and analysis
 - Statistical introspection
@@ -183,7 +183,7 @@ const quest = grammar.generate('quest');
 
 ## Future Versions
 
-### v4.1.0+ - Gen-AI Integration (Research)
+### v3.10+ - Gen-AI Integration (Research)
 **Goal**: Integrate with LLM APIs for context generation and parameter tuning
 
 #### Core Features
@@ -282,5 +282,7 @@ We follow semantic versioning:
 Current development priorities:
 1. Complete v3.0-v3.5 features (modernization, blending, scaling, multi-dim, scoring, patterns)
 2. Add new primitives in v3.6-v3.8 (WFC, L-Systems, Grammar)
-3. Release v4.0 with export/visualization
-4. Research Gen-AI integration for future releases
+3. Add export/visualization in v3.9
+4. Research Gen-AI integration for v3.10+ releases
+
+All v3.x releases are additive features maintaining backward compatibility. A v4.0 major version would only occur with breaking API changes.
