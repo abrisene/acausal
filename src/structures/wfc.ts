@@ -37,6 +37,24 @@ import type {
 import {isEntropyFunction} from './wfc-types';
 
 /**
+ * Snapshot of graph state for backtracking
+ */
+interface GraphSnapshot {
+  /** Cell ID that was collapsed at this decision point */
+  cellId: CellId;
+
+  /** States that have been tried for this cell */
+  triedStates: Set<State>;
+
+  /** Snapshot of all cells' possible states */
+  cellStates: Map<CellId, {
+    possibleStates: Set<State>;
+    collapsed: boolean;
+    collapsedState?: State;
+  }>;
+}
+
+/**
  * Wave Function Collapse class
  *
  * Implements the WFC algorithm for constraint-based generation on arbitrary graphs.
@@ -92,6 +110,18 @@ export class WFC {
     let steps = 0;
     let backtracks = 0;
 
+    // Check if backtracking is enabled
+    const backtrackEnabled = this._options.backtrack === true ||
+      (typeof this._options.backtrack === 'object' && this._options.backtrack?.enabled);
+
+    const maxDepth = typeof this._options.backtrack === 'object'
+      ? (this._options.backtrack.maxDepth ?? 100)
+      : 100;
+
+    const maxAttempts = typeof this._options.backtrack === 'object'
+      ? (this._options.backtrack.maxAttempts ?? 1000)
+      : 1000;
+
     try {
       // Initialize all cells with all possible states
       this.initialize(graph);
@@ -116,49 +146,18 @@ export class WFC {
         }
       }
 
-      // Main WFC loop: observe → propagate until done or contradiction
-      while (true) {
-        // Find cell with minimum entropy
-        const cell = this.findMinEntropyCell(graph, options);
-
-        // Check if we're done
-        if (cell === null) {
-          const allCollapsed = this.allCellsCollapsed(graph);
-
-          return {
-            success: allCollapsed,
-            graph,
-            contradiction: !allCollapsed,
-            error: allCollapsed ? undefined : 'Contradiction detected',
-            metadata: {
-              steps,
-              backtracks,
-              timeMs: Date.now() - startTime,
-            },
-          };
-        }
-
-        // Collapse the cell
-        this.collapseCell(cell);
-        steps++;
-
-        // Propagate constraints
-        const propagated = this.propagate(cell.id, graph);
-
-        if (!propagated) {
-          // Contradiction detected
-          return {
-            success: false,
-            graph,
-            contradiction: true,
-            error: `Contradiction detected after collapsing cell ${cell.id}`,
-            metadata: {
-              steps,
-              backtracks,
-              timeMs: Date.now() - startTime,
-            },
-          };
-        }
+      if (backtrackEnabled) {
+        // Backtracking-enabled collapse
+        return this.collapseWithBacktracking(
+          graph,
+          options,
+          maxDepth,
+          maxAttempts,
+          startTime
+        );
+      } else {
+        // Standard collapse without backtracking
+        return this.collapseStandard(graph, options, startTime);
       }
     } catch (error) {
       return {
@@ -173,6 +172,209 @@ export class WFC {
         },
       };
     }
+  }
+
+  /**
+   * Standard collapse without backtracking
+   */
+  private collapseStandard(
+    graph: WFCGraph,
+    options: WFCGenerateOptions | undefined,
+    startTime: number
+  ): WFCResult {
+    let steps = 0;
+    const backtracks = 0;
+
+    // Main WFC loop: observe → propagate until done or contradiction
+    while (true) {
+      // Find cell with minimum entropy
+      const cell = this.findMinEntropyCell(graph, options);
+
+      // Check if we're done
+      if (cell === null) {
+        const allCollapsed = this.allCellsCollapsed(graph);
+
+        return {
+          success: allCollapsed,
+          graph,
+          contradiction: !allCollapsed,
+          error: allCollapsed ? undefined : 'Contradiction detected',
+          metadata: {
+            steps,
+            backtracks,
+            timeMs: Date.now() - startTime,
+          },
+        };
+      }
+
+      // Collapse the cell
+      this.collapseCell(cell);
+      steps++;
+
+      // Propagate constraints
+      const propagated = this.propagate(cell.id, graph);
+
+      if (!propagated) {
+        // Contradiction detected
+        return {
+          success: false,
+          graph,
+          contradiction: true,
+          error: `Contradiction detected after collapsing cell ${cell.id}`,
+          metadata: {
+            steps,
+            backtracks,
+            timeMs: Date.now() - startTime,
+          },
+        };
+      }
+    }
+  }
+
+  /**
+   * Collapse with backtracking support
+   */
+  private collapseWithBacktracking(
+    graph: WFCGraph,
+    options: WFCGenerateOptions | undefined,
+    maxDepth: number,
+    maxAttempts: number,
+    startTime: number
+  ): WFCResult {
+    let steps = 0;
+    let backtracks = 0;
+    let attempts = 0;
+    const snapshotStack: GraphSnapshot[] = [];
+
+    // Main WFC loop with backtracking
+    while (attempts < maxAttempts) {
+      attempts++;
+
+      // Find cell with minimum entropy
+      const cell = this.findMinEntropyCell(graph, options);
+
+      // Check if we're done
+      if (cell === null) {
+        const allCollapsed = this.allCellsCollapsed(graph);
+
+        if (allCollapsed) {
+          return {
+            success: true,
+            graph,
+            contradiction: false,
+            metadata: {
+              steps,
+              backtracks,
+              timeMs: Date.now() - startTime,
+            },
+          };
+        }
+
+        // Contradiction detected - backtrack
+        if (snapshotStack.length === 0) {
+          return {
+            success: false,
+            graph,
+            contradiction: true,
+            error: 'Contradiction detected with no backtrack points',
+            metadata: {
+              steps,
+              backtracks,
+              timeMs: Date.now() - startTime,
+            },
+          };
+        }
+
+        // Backtrack
+        backtracks++;
+        const snapshot = snapshotStack.pop()!;
+        this.restoreSnapshot(snapshot, graph);
+        continue;
+      }
+
+      // Create snapshot before collapsing
+      const snapshot = this.createSnapshot(cell.id, graph);
+
+      // Check depth limit
+      if (snapshotStack.length >= maxDepth) {
+        return {
+          success: false,
+          graph,
+          contradiction: true,
+          error: `Maximum backtrack depth (${maxDepth}) exceeded`,
+          metadata: {
+            steps,
+            backtracks,
+            timeMs: Date.now() - startTime,
+          },
+        };
+      }
+
+      // Collapse the cell
+      this.collapseCell(cell);
+      snapshot.triedStates.add(cell.collapsedState!);
+      snapshotStack.push(snapshot);
+      steps++;
+
+      // Propagate constraints
+      const propagated = this.propagate(cell.id, graph);
+
+      if (!propagated) {
+        // Contradiction detected - try to backtrack
+        backtracks++;
+
+        // Try next state for current cell
+        const lastSnapshot = snapshotStack.pop()!;
+        this.restoreSnapshot(lastSnapshot, graph);
+
+        const nextState = this.getNextUntriedState(lastSnapshot, graph);
+
+        if (nextState) {
+          // Try next state for same cell
+          const cellToRetry = graph.cells.get(lastSnapshot.cellId);
+          if (cellToRetry) {
+            this.collapseCellToState(cellToRetry, nextState);
+            lastSnapshot.triedStates.add(nextState);
+            snapshotStack.push(lastSnapshot);
+            steps++;
+
+            // Propagate again
+            const retriedPropagation = this.propagate(cellToRetry.id, graph);
+            if (!retriedPropagation) {
+              // Still failed, continue loop to backtrack further
+              continue;
+            }
+          }
+        } else {
+          // No more states to try for this cell, backtrack further
+          if (snapshotStack.length === 0) {
+            return {
+              success: false,
+              graph,
+              contradiction: true,
+              error: 'Exhausted all backtrack options',
+              metadata: {
+                steps,
+                backtracks,
+                timeMs: Date.now() - startTime,
+              },
+            };
+          }
+        }
+      }
+    }
+
+    return {
+      success: false,
+      graph,
+      contradiction: true,
+      error: `Maximum attempts (${maxAttempts}) exceeded`,
+      metadata: {
+        steps,
+        backtracks,
+        timeMs: Date.now() - startTime,
+      },
+    };
   }
 
   /**
@@ -495,6 +697,78 @@ export class WFC {
     }
 
     return allowed;
+  }
+
+  /**
+   * Backtracking Methods
+   */
+
+  /**
+   * Create a snapshot of the current graph state
+   */
+  private createSnapshot(cellId: CellId, graph: WFCGraph): GraphSnapshot {
+    const cellStates = new Map<CellId, {
+      possibleStates: Set<State>;
+      collapsed: boolean;
+      collapsedState?: State;
+    }>();
+
+    for (const [id, cell] of graph.cells.entries()) {
+      cellStates.set(id, {
+        possibleStates: new Set(cell.possibleStates),
+        collapsed: cell.collapsed,
+        collapsedState: cell.collapsedState,
+      });
+    }
+
+    return {
+      cellId,
+      triedStates: new Set(),
+      cellStates,
+    };
+  }
+
+  /**
+   * Restore graph state from a snapshot
+   */
+  private restoreSnapshot(snapshot: GraphSnapshot, graph: WFCGraph): void {
+    for (const [id, cellState] of snapshot.cellStates.entries()) {
+      const cell = graph.cells.get(id);
+      if (cell) {
+        cell.possibleStates = new Set(cellState.possibleStates);
+        cell.collapsed = cellState.collapsed;
+        cell.collapsedState = cellState.collapsedState;
+      }
+    }
+  }
+
+  /**
+   * Get next untried state for a cell from a snapshot
+   */
+  private getNextUntriedState(
+    snapshot: GraphSnapshot,
+    graph: WFCGraph
+  ): State | null {
+    const cellState = snapshot.cellStates.get(snapshot.cellId);
+    if (!cellState) return null;
+
+    // Find states that haven't been tried yet
+    for (const state of cellState.possibleStates) {
+      if (!snapshot.triedStates.has(state)) {
+        return state;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Collapse a cell to a specific state (for backtracking)
+   */
+  private collapseCellToState(cell: WFCCell, state: State): void {
+    cell.collapsedState = state;
+    cell.possibleStates = new Set<State>([state]);
+    cell.collapsed = true;
   }
 
   /**
