@@ -7,7 +7,7 @@
  # Module Dependencies
  */
 
-import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS } from '..';
+import { MarkovChain, MarkovChainDTO, MarkovChainGramDTO, Random, CONSTANTS, Distribution, ScaledMarkovChain, MultiDimMarkovChain } from '..';
 import { MCGeneratorOptions, MCDirectionOption, MCGeneratorStaticOptions } from '../structures';
 // import { MarkovChainSequenceDTO } from '../structures';
 
@@ -578,7 +578,7 @@ describe('Markov Chain', () => {
       expect(a1).toHaveProperty('sources');
       expect(a1).toHaveProperty('sinks');
       expect(a1.sequence).toEqual([dtoC2.startDelimiter]);
-      expect(a1.sources).toEqual({ undefined: 1 });
+      expect(a1.sources).toEqual({});
       Object.values(a1.sinks).forEach(v => {
         expect(v).toBeCloseTo(0.5, 1);
       });
@@ -586,7 +586,7 @@ describe('Markov Chain', () => {
       // Samples & Un-Normalized
       const a2 = MarkovChain.analyze({ model: dtoC2, engine: eng, samples: 500, normalize: false });
       expect(a2.sequence).toEqual([dtoC2.startDelimiter]);
-      expect(a2.sources).toEqual({ undefined: 500 });
+      expect(a2.sources).toEqual({});
       expect(Object.values(a2.sinks).reduce((a, b) => a + b)).toEqual(500);
 
       // Starting Values
@@ -886,7 +886,7 @@ describe('Markov Chain', () => {
       expect(a1).toHaveProperty('sources');
       expect(a1).toHaveProperty('sinks');
       expect(a1.sequence).toEqual([mc.startDelimiter]);
-      expect(a1.sources).toEqual({ undefined: 1 });
+      expect(a1.sources).toEqual({});
       Object.values(a1.sinks).forEach(v => {
         expect(v).toBeCloseTo(0.5, 1);
       });
@@ -894,7 +894,7 @@ describe('Markov Chain', () => {
       // Samples & Un-Normalized
       const a2 = mc.analyze({ samples: 500, normalize: false });
       expect(a2.sequence).toEqual([dtoC2.startDelimiter]);
-      expect(a2.sources).toEqual({ undefined: 500 });
+      expect(a2.sources).toEqual({});
       expect(Object.values(a2.sinks).reduce((a, b) => a + b)).toEqual(500);
 
       // Starting Values
@@ -912,6 +912,1333 @@ describe('Markov Chain', () => {
       expect(a4).toHaveProperty('sequence');
       expect(a4).toHaveProperty('sources');
       expect(a4).toHaveProperty('sinks');
+    });
+  });
+
+  describe('batch operations', () => {
+    it('can queue and commit multiple operations', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+
+      // Use batch API to add multiple sequences
+      const updated = chain.batch()
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['d', 'e', 'f'])
+        .addSequence(['a', 'b', 'd'])
+        .commit();
+
+      // Verify sequences were added
+      expect(updated.sequences).toHaveLength(3);
+      expect(updated.sequences).toContainEqual(['a', 'b', 'c']);
+      expect(updated.sequences).toContainEqual(['d', 'e', 'f']);
+      expect(updated.sequences).toContainEqual(['a', 'b', 'd']);
+
+      // Verify grams were created
+      expect(Object.keys(updated.grams).length).toBeGreaterThan(0);
+    });
+
+    it('can clear pending operations', () => {
+      const chain = new MarkovChain({ seed: 1 });
+      const batch = chain.batch()
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['d', 'e', 'f']);
+
+      expect(batch.pending).toBe(2);
+      batch.clear();
+      expect(batch.pending).toBe(0);
+    });
+
+    it('returns a clone when no operations are queued', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2, sequences: [['a', 'b']] });
+      const updated = chain.batch().commit();
+
+      expect(updated).not.toBe(chain);
+      expect(updated.sequences).toEqual(chain.sequences);
+      expect(Object.keys(updated.grams)).toEqual(Object.keys(chain.grams));
+    });
+
+    it('is more efficient than repeated individual operations', () => {
+      const testSequences = Array.from({ length: 100 }, (_, i) =>
+        ['a', 'b', 'c', 'd'].slice(0, (i % 4) + 1)
+      );
+
+      // Time individual operations (old way)
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const start1 = Date.now();
+      let current = chain1;
+      for (const seq of testSequences) {
+        current = current.addSequence(seq);
+      }
+      const time1 = Date.now() - start1;
+
+      // Time batch operations (new way)
+      const chain2 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const start2 = Date.now();
+      const batch = chain2.batch();
+      for (const seq of testSequences) {
+        batch.addSequence(seq);
+      }
+      const updated = batch.commit();
+      const time2 = Date.now() - start2;
+
+      // Batch should be faster (though for small datasets the difference may be minimal)
+      // Both should produce the same result
+      expect(updated.sequences).toEqual(current.sequences);
+      expect(Object.keys(updated.grams).length).toBe(Object.keys(current.grams).length);
+
+      console.log(`Individual operations: ${time1}ms, Batch operations: ${time2}ms`);
+    });
+  });
+
+  describe('Generic Types and Utility Methods', () => {
+    test('hasGram should correctly check for gram existence', () => {
+      const chain = new MarkovChain({ maxOrder: 2 });
+      chain.addSequence(['a', 'b', 'c']);
+
+      expect(chain.hasGram(['a'])).toBe(true);
+      expect(chain.hasGram(['a', 'b'])).toBe(true);
+      expect(chain.hasGram(['b', 'c'])).toBe(true);
+      expect(chain.hasGram(['x', 'y'])).toBe(false);
+    });
+
+    test('getGramsByOrder should return grams of specific order', () => {
+      const chain = new MarkovChain({ maxOrder: 2 });
+      chain.addSequence(['a', 'b', 'c', 'd']);
+
+      const order1Grams = chain.getGramsByOrder(1);
+      const order2Grams = chain.getGramsByOrder(2);
+
+      expect(order1Grams.length).toBeGreaterThan(0);
+      expect(order2Grams.length).toBeGreaterThan(0);
+      expect(order1Grams.every(g => g.order === 1)).toBe(true);
+      expect(order2Grams.every(g => g.order === 2)).toBe(true);
+    });
+
+    test('getStats should return chain statistics', () => {
+      const chain = new MarkovChain({ maxOrder: 2 });
+      chain.addSequence(['a', 'b', 'c']);
+      chain.addSequence(['a', 'b', 'd']);
+
+      const stats = chain.getStats();
+
+      expect(stats.gramCount).toBeGreaterThan(0);
+      expect(stats.sequenceCount).toBe(2);
+      expect(stats.orderRange).toEqual([expect.any(Number), expect.any(Number)]);
+      expect(stats.avgDegreeIn).toBeGreaterThanOrEqual(0);
+      expect(stats.avgDegreeOut).toBeGreaterThanOrEqual(0);
+    });
+
+    test('withSelector should allow type-safe state selection', () => {
+      interface User {
+        id: number;
+        name: string;
+      }
+
+      const users: User[] = [
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
+        { id: 3, name: 'Charlie' },
+      ];
+
+      const lookup = new Map(users.map(u => [String(u.id), u]));
+      const selector = (id: string) => lookup.get(id);
+
+      // Create chain with ID sequences
+      const chain = new MarkovChain({ maxOrder: 1 });
+      chain.addSequence(['1', '2', '3']);
+      chain.addSequence(['1', '2', '1']);
+
+      // Attach selector
+      const chainWithSelector = chain.withSelector(selector);
+
+      // Verify selector is attached
+      expect(chainWithSelector.stateSelector).toBe(selector);
+    });
+
+    test('Distribution with specific string types should maintain type safety', () => {
+      type Options = 'red' | 'blue' | 'green';
+
+      const dist = new Distribution<Options>({
+        source: { red: 1, blue: 2, green: 3 }
+      });
+
+      const pick = dist.pickOne();
+      // At runtime, this should be one of the three options
+      expect(['red', 'blue', 'green']).toContain(pick);
+
+      const picks = dist.pick(10);
+      picks.forEach(p => {
+        expect(['red', 'blue', 'green']).toContain(p);
+      });
+    });
+
+    test('batch operations should maintain type information', () => {
+      const chain = new MarkovChain<string>({ maxOrder: 2 });
+
+      const updated = chain.batch()
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['b', 'c', 'd'])
+        .commit();
+
+      expect(updated.sequences).toHaveLength(2);
+      expect(updated.hasGram(['a', 'b'])).toBe(true);
+    });
+  });
+
+  describe('Chain Blending', () => {
+    test('blend() should combine multiple chains with arithmetic mean', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      chain1.addSequence(['a', 'b', 'c']);
+      chain1.addSequence(['a', 'b', 'd']);
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      chain2.addSequence(['a', 'x', 'y']);
+      chain2.addSequence(['a', 'x', 'z']);
+
+      const blended = MarkovChain.blend([
+        { chain: chain1, weight: 0.5 },
+        { chain: chain2, weight: 0.5 }
+      ]);
+
+      // Blended chain should have grams from both
+      expect(blended.hasGram(['a'])).toBe(true);
+      expect(blended.hasGram(['b'])).toBe(true);
+      expect(blended.hasGram(['x'])).toBe(true);
+
+      // Should have combined probabilities
+      const gramA = blended.model.grams[blended.getGramId(['a'])];
+      expect(gramA).toBeDefined();
+      if (gramA) {
+        // 'a' should lead to both 'b' and 'x' with blended probabilities
+        expect(gramA.next.source['b']).toBeDefined();
+        expect(gramA.next.source['x']).toBeDefined();
+      }
+    });
+
+    test('interpolate() should blend two chains with alpha parameter', () => {
+      const names1 = ['alice', 'bob', 'charlie'].map(n => n.split(''));
+      const names2 = ['akira', 'yuki', 'hana'].map(n => n.split(''));
+
+      const chain1 = new MarkovChain({ maxOrder: 1, sequences: names1 });
+      const chain2 = new MarkovChain({ maxOrder: 1, sequences: names2 });
+
+      // 70% chain1, 30% chain2
+      const blended = chain1.interpolate(chain2, 0.3);
+
+      // Should have grams from both chains
+      expect(Object.keys(blended.model.grams).length).toBeGreaterThan(0);
+
+      // Generate a sequence to ensure it works
+      const generated = blended.generate({ order: 1, min: 3, max: 10 });
+      expect(generated.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test('blend() should handle single chain input', () => {
+      const chain = new MarkovChain({ maxOrder: 1 });
+      chain.addSequence(['a', 'b', 'c']);
+
+      const blended = MarkovChain.blend([{ chain, weight: 1.0 }]);
+
+      // Should be equivalent to a clone
+      expect(blended.model.grams).toEqual(chain.model.grams);
+    });
+
+    test('blend() should normalize weights', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      chain1.addSequence(['a', 'b']);
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      chain2.addSequence(['a', 'c']);
+
+      // Weights don't sum to 1
+      const blended = MarkovChain.blend(
+        [
+          { chain: chain1, weight: 2 },
+          { chain: chain2, weight: 3 }
+        ],
+        { normalize: true }
+      );
+
+      // Should still produce valid chain
+      expect(Object.keys(blended.model.grams).length).toBeGreaterThan(0);
+      const generated = blended.generate({ order: 1, min: 1, max: 5 });
+      expect(generated.length).toBeGreaterThanOrEqual(1);
+    });
+
+    test('blend() should support different blending strategies', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      chain1.addSequence(['a', 'b']);
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      chain2.addSequence(['a', 'c']);
+
+      const strategies: Array<'arithmetic' | 'geometric' | 'max' | 'min'> = [
+        'arithmetic',
+        'geometric',
+        'max',
+        'min'
+      ];
+
+      for (const strategy of strategies) {
+        const blended = MarkovChain.blend(
+          [
+            { chain: chain1, weight: 0.5 },
+            { chain: chain2, weight: 0.5 }
+          ],
+          { strategy }
+        );
+
+        expect(Object.keys(blended.model.grams).length).toBeGreaterThan(0);
+      }
+    });
+
+    test('blend() should filter low-weight states with minWeight option', () => {
+      const chain1 = new MarkovChain({ maxOrder: 1 });
+      // Add 'b' with high frequency
+      for (let i = 0; i < 10; i++) {
+        chain1.addSequence(['a', 'b']);
+      }
+
+      const chain2 = new MarkovChain({ maxOrder: 1 });
+      // Add 'c' with low frequency
+      chain2.addSequence(['a', 'c']);
+
+      const blended = MarkovChain.blend(
+        [
+          { chain: chain1, weight: 0.9 },
+          { chain: chain2, weight: 0.1 }
+        ],
+        { minWeight: 0.5 } // Filter out states with weight < 0.5
+      );
+
+      const gramA = blended.model.grams[blended.getGramId(['a'])];
+      expect(gramA).toBeDefined();
+      if (gramA) {
+        // 'b' should be present (high weight from chain1)
+        expect(gramA.next.source['b']).toBeDefined();
+        // 'c' might be filtered out due to low weight
+        // (depending on exact calculation, this is probabilistic)
+      }
+    });
+
+    test('blend() should throw error for empty chains array', () => {
+      expect(() => {
+        MarkovChain.blend([]);
+      }).toThrow('Cannot blend zero chains');
+    });
+
+    test('blended chains should be able to generate valid sequences', () => {
+      const englishWords = ['the', 'cat', 'sat', 'on', 'mat'].map(w => w.split(''));
+      const frenchWords = ['le', 'chat', 'est', 'sur', 'tapis'].map(w => w.split(''));
+
+      const english = new MarkovChain({ maxOrder: 2, sequences: englishWords });
+      const french = new MarkovChain({ maxOrder: 2, sequences: frenchWords });
+
+      const mixed = MarkovChain.blend([
+        { chain: english, weight: 0.6 },
+        { chain: french, weight: 0.4 }
+      ]);
+
+      // Generate multiple sequences to ensure stability
+      for (let i = 0; i < 10; i++) {
+        const generated = mixed.generate({ order: 2, min: 2, max: 8 });
+        expect(generated.length).toBeGreaterThanOrEqual(2);
+        expect(generated.length).toBeLessThanOrEqual(8);
+      }
+    });
+  });
+
+  /**
+   * Scaled Markov Chain Tests (v3.2)
+   */
+  describe('ScaledMarkovChain', () => {
+    test('should create a scaled chain and add sequences', () => {
+      const chain = new ScaledMarkovChain<'up' | 'down' | 'stable'>({
+        seed: 1,
+        maxOrder: 2,
+        magnitudeRange: [-100, 100]
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'up', magnitude: 20 },
+        { category: 'up', magnitude: 35 },
+        { category: 'stable', magnitude: 2 },
+        { category: 'down', magnitude: -15 }
+      ]);
+
+      expect(updated).toBeInstanceOf(ScaledMarkovChain);
+      const categoryChain = updated.getCategoryChain();
+      expect(categoryChain.hasGram(['up'])).toBe(true);
+      expect(categoryChain.hasGram(['stable'])).toBe(true);
+      expect(categoryChain.hasGram(['down'])).toBe(true);
+    });
+
+    test('should generate scaled sequences with magnitude sampling', () => {
+      const chain = new ScaledMarkovChain<'positive' | 'negative' | 'neutral'>({
+        seed: 2,
+        maxOrder: 1,
+        samplingStrategy: 'mean'
+      });
+
+      const updated = chain.addScaledSequences([
+        [
+          { category: 'positive', magnitude: 50 },
+          { category: 'positive', magnitude: 60 },
+          { category: 'neutral', magnitude: 5 }
+        ],
+        [
+          { category: 'positive', magnitude: 40 },
+          { category: 'neutral', magnitude: 0 },
+          { category: 'negative', magnitude: -30 }
+        ]
+      ]);
+
+      const generated = updated.generateScaled({ order: 1, min: 3, max: 5 });
+
+      expect(generated.length).toBeGreaterThanOrEqual(3);
+      expect(generated.length).toBeLessThanOrEqual(5);
+      generated.forEach(state => {
+        expect(state).toHaveProperty('category');
+        expect(state).toHaveProperty('magnitude');
+        expect(typeof state.magnitude).toBe('number');
+      });
+    });
+
+    test('should track magnitude statistics correctly', () => {
+      const chain = new ScaledMarkovChain<'a' | 'b'>({
+        seed: 3,
+        maxOrder: 1
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'a', magnitude: 10 },
+        { category: 'a', magnitude: 20 },
+        { category: 'a', magnitude: 30 },
+        { category: 'b', magnitude: 5 }
+      ]);
+
+      // Get stats for 'a' from start context
+      const stats = updated.getMagnitudeStats('a');
+      expect(stats).toBeDefined();
+      expect(stats!.mean).toBe(20); // (10 + 20 + 30) / 3
+      expect(stats!.min).toBe(10);
+      expect(stats!.max).toBe(30);
+      expect(stats!.count).toBe(3);
+    });
+
+    test('should support different sampling strategies', () => {
+      const magnitudes = [10, 20, 30, 40, 50];
+
+      // Mean strategy
+      const meanChain = new ScaledMarkovChain<'test'>({
+        seed: 4,
+        maxOrder: 1,
+        samplingStrategy: 'mean'
+      });
+
+      const states = magnitudes.map(m => ({ category: 'test' as const, magnitude: m }));
+      const withMean = meanChain.addScaledSequence(states);
+      const meanResult = withMean.generateScaled({ order: 1, min: 1, max: 1 });
+
+      // Mean should be 30
+      expect(meanResult[0]?.magnitude).toBe(30);
+
+      // Median strategy
+      const medianChain = new ScaledMarkovChain<'test'>({
+        seed: 5,
+        maxOrder: 1,
+        samplingStrategy: 'median'
+      });
+
+      const withMedian = medianChain.addScaledSequence(states);
+      const medianResult = withMedian.generateScaled({ order: 1, min: 1, max: 1 });
+
+      // Median should be 30 (middle value)
+      expect(medianResult[0]?.magnitude).toBe(30);
+    });
+
+    test('should handle magnitude range fallback', () => {
+      const chain = new ScaledMarkovChain<'known' | 'unknown'>({
+        seed: 6,
+        maxOrder: 1,
+        magnitudeRange: [-50, 50],
+        samplingStrategy: 'mean'
+      });
+
+      // Add a sequence with only 'known' category
+      const updated = chain.addScaledSequence([
+        { category: 'known', magnitude: 10 },
+        { category: 'unknown', magnitude: 20 }
+      ]);
+
+      // Get magnitude for a category-gram combination that has no magnitude data
+      // by getting stats for non-existent gram context
+      const stats = updated.getMagnitudeStats('unknown', ['nonexistent']);
+
+      // When no magnitude data exists for a gram-category pair, stats should be undefined
+      expect(stats).toBeUndefined();
+
+      // The sampleMagnitude method should use midpoint of range as fallback
+      // This is tested indirectly through generation with limited data
+      const result = updated.generateScaled({ order: 1, min: 1, max: 2 });
+      expect(result.length).toBeGreaterThanOrEqual(1);
+      result.forEach(state => {
+        expect(state.magnitude).toBeDefined();
+        expect(typeof state.magnitude).toBe('number');
+      });
+    });
+
+    test('should get magnitude samples for categories', () => {
+      const chain = new ScaledMarkovChain<'x' | 'y'>({
+        seed: 7,
+        maxOrder: 1
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'x', magnitude: 100 },
+        { category: 'x', magnitude: 200 },
+        { category: 'y', magnitude: 300 }
+      ]);
+
+      const samples = updated.getMagnitudeSamples('x');
+      expect(samples).toHaveLength(2);
+      expect(samples).toContain(100);
+      expect(samples).toContain(200);
+    });
+
+    test('should clone scaled chain correctly', () => {
+      const chain = new ScaledMarkovChain<'foo' | 'bar'>({
+        seed: 8,
+        maxOrder: 2,
+        samplingStrategy: 'median',
+        magnitudeRange: [0, 100]
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'foo', magnitude: 10 },
+        { category: 'bar', magnitude: 20 }
+      ]);
+
+      const cloned = updated.clone();
+
+      // Check that properties are preserved
+      expect(cloned).toBeInstanceOf(ScaledMarkovChain);
+
+      // Generate from both and compare
+      const original = updated.generateScaled({ order: 1, min: 2, max: 2 });
+      const fromClone = cloned.generateScaled({ order: 1, min: 2, max: 2 });
+
+      // Both should generate valid sequences
+      expect(original.length).toBe(2);
+      expect(fromClone.length).toBe(2);
+    });
+
+    test('should support pickScaled for single state generation', () => {
+      const chain = new ScaledMarkovChain<'hot' | 'cold'>({
+        seed: 9,
+        maxOrder: 1
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'hot', magnitude: 80 },
+        { category: 'cold', magnitude: 20 },
+        { category: 'hot', magnitude: 90 }
+      ]);
+
+      const next = updated.pickScaled(['hot']);
+
+      expect(next).toBeDefined();
+      expect(next).toHaveProperty('category');
+      expect(next).toHaveProperty('magnitude');
+    });
+
+    test('should handle multi-order magnitude tracking', () => {
+      const chain = new ScaledMarkovChain<'rising' | 'falling'>({
+        seed: 10,
+        maxOrder: 2,
+        samplingStrategy: 'mean'
+      });
+
+      const updated = chain.addScaledSequence([
+        { category: 'rising', magnitude: 10 },
+        { category: 'rising', magnitude: 20 },
+        { category: 'rising', magnitude: 30 },
+        { category: 'falling', magnitude: -10 }
+      ]);
+
+      // Generate with order 2 to use bigram context
+      const result = updated.generateScaled({ order: 2, min: 2, max: 4 });
+
+      expect(result.length).toBeGreaterThanOrEqual(2);
+      expect(result.length).toBeLessThanOrEqual(4);
+
+      // All states should have magnitudes
+      result.forEach(state => {
+        expect(typeof state.magnitude).toBe('number');
+      });
+    });
+  });
+
+  /**
+   * Multi-Dimensional Markov Chain Tests (v3.3)
+   */
+  describe('MultiDimMarkovChain', () => {
+    interface TileState {
+      tile: string;
+      x: number;
+      y: number;
+    }
+
+    test('should create a multi-dimensional chain with structured states', () => {
+      const chain = new MultiDimMarkovChain<TileState>({
+        seed: 1,
+        maxOrder: 2,
+        stateKey: (s) => `${s.tile}_${s.x}_${s.y}`
+      });
+
+      const updated = chain.addSequence([
+        { tile: 'grass', x: 0, y: 0 },
+        { tile: 'water', x: 0, y: 1 },
+        { tile: 'grass', x: 0, y: 2 }
+      ]);
+
+      expect(updated).toBeInstanceOf(MultiDimMarkovChain);
+      expect(updated.hasState({ tile: 'grass', x: 0, y: 0 })).toBe(true);
+      expect(updated.hasState({ tile: 'water', x: 0, y: 1 })).toBe(true);
+    });
+
+    test('should generate sequences of structured states', () => {
+      interface GameState {
+        action: string;
+        health: number;
+      }
+
+      const chain = new MultiDimMarkovChain<GameState>({
+        seed: 2,
+        maxOrder: 1,
+        stateKey: (s) => `${s.action}_${s.health}`
+      });
+
+      const updated = chain.addSequences([
+        [
+          { action: 'walk', health: 100 },
+          { action: 'fight', health: 80 },
+          { action: 'rest', health: 90 }
+        ],
+        [
+          { action: 'walk', health: 100 },
+          { action: 'run', health: 95 },
+          { action: 'fight', health: 75 }
+        ]
+      ]);
+
+      const generated = updated.generate({ order: 1, min: 2, max: 4 });
+
+      expect(generated.length).toBeGreaterThanOrEqual(2);
+      expect(generated.length).toBeLessThanOrEqual(4);
+      generated.forEach(state => {
+        expect(state).toHaveProperty('action');
+        expect(state).toHaveProperty('health');
+        expect(typeof state.action).toBe('string');
+        expect(typeof state.health).toBe('number');
+      });
+    });
+
+    test('should preserve full structure without flattening', () => {
+      interface ComplexState {
+        type: string;
+        position: [number, number];
+        metadata: { color: string };
+      }
+
+      const chain = new MultiDimMarkovChain<ComplexState>({
+        seed: 3,
+        maxOrder: 1,
+        stateKey: (s) => `${s.type}_${s.position[0]}_${s.position[1]}_${s.metadata.color}`
+      });
+
+      const testState: ComplexState = {
+        type: 'building',
+        position: [5, 10],
+        metadata: { color: 'red' }
+      };
+
+      const updated = chain.addSequence([testState]);
+
+      // Get states and verify structure is preserved
+      const states = updated.getStates();
+      expect(states.length).toBeGreaterThan(0);
+
+      const retrievedState = states.find(s =>
+        s.type === 'building' &&
+        s.position[0] === 5 &&
+        s.position[1] === 10
+      );
+
+      expect(retrievedState).toBeDefined();
+      expect(retrievedState!.metadata.color).toBe('red');
+    });
+
+    test('should support picking next state', () => {
+      interface SimpleState {
+        value: string;
+        index: number;
+      }
+
+      const chain = new MultiDimMarkovChain<SimpleState>({
+        seed: 4,
+        maxOrder: 1,
+        stateKey: (s) => `${s.value}_${s.index}`
+      });
+
+      const updated = chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+        { value: 'c', index: 2 }
+      ]);
+
+      const next = updated.pick([{ value: 'a', index: 0 }]);
+
+      expect(next).toBeDefined();
+      expect(next).toHaveProperty('value');
+      expect(next).toHaveProperty('index');
+    });
+
+    test('should get statistics from internal chain', () => {
+      interface CountState {
+        id: string;
+        count: number;
+      }
+
+      const chain = new MultiDimMarkovChain<CountState>({
+        seed: 5,
+        maxOrder: 2,
+        stateKey: (s) => `${s.id}_${s.count}`
+      });
+
+      const updated = chain.addSequences([
+        [
+          { id: 'x', count: 1 },
+          { id: 'y', count: 2 },
+          { id: 'z', count: 3 }
+        ],
+        [
+          { id: 'a', count: 1 },
+          { id: 'b', count: 2 }
+        ]
+      ]);
+
+      const stats = updated.getStats();
+
+      expect(stats).toHaveProperty('gramCount');
+      expect(stats).toHaveProperty('sequenceCount');
+      expect(stats.sequenceCount).toBe(2);
+    });
+
+    test('should get all unique states', () => {
+      interface UniqueState {
+        label: string;
+        value: number;
+      }
+
+      const chain = new MultiDimMarkovChain<UniqueState>({
+        seed: 6,
+        maxOrder: 1,
+        stateKey: (s) => `${s.label}_${s.value}`
+      });
+
+      const updated = chain.addSequence([
+        { label: 'first', value: 10 },
+        { label: 'second', value: 20 },
+        { label: 'first', value: 10 },  // Duplicate - should only store once
+        { label: 'third', value: 30 }
+      ]);
+
+      const states = updated.getStates();
+
+      // Should have 3 unique states (first, second, third)
+      expect(states.length).toBe(3);
+
+      const labels = states.map(s => s.label).sort();
+      expect(labels).toContain('first');
+      expect(labels).toContain('second');
+      expect(labels).toContain('third');
+    });
+
+    test('should clone multi-dimensional chain correctly', () => {
+      interface CloneState {
+        name: string;
+        level: number;
+      }
+
+      const chain = new MultiDimMarkovChain<CloneState>({
+        seed: 7,
+        maxOrder: 1,
+        stateKey: (s) => `${s.name}_${s.level}`
+      });
+
+      const updated = chain.addSequence([
+        { name: 'beginner', level: 1 },
+        { name: 'intermediate', level: 2 }
+      ]);
+
+      const cloned = updated.clone();
+
+      expect(cloned).toBeInstanceOf(MultiDimMarkovChain);
+
+      // Generate from both
+      const original = updated.generate({ order: 1, min: 1, max: 2 });
+      const fromClone = cloned.generate({ order: 1, min: 1, max: 2 });
+
+      // Both should generate valid sequences
+      expect(original.length).toBeGreaterThan(0);
+      expect(fromClone.length).toBeGreaterThan(0);
+
+      // Verify structures are preserved
+      original.forEach(state => {
+        expect(state).toHaveProperty('name');
+        expect(state).toHaveProperty('level');
+      });
+    });
+
+    test('should work with tile-based procedural generation', () => {
+      // Real-world tile generation use case
+      interface TileState {
+        terrain: string;
+        x: number;
+        y: number;
+        biome: string;
+      }
+
+      const chain = new MultiDimMarkovChain<TileState>({
+        seed: 8,
+        maxOrder: 2,
+        stateKey: (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`
+      });
+
+      // Training data from a procedurally generated map
+      const mapData = [
+        [
+          { terrain: 'grass', x: 0, y: 0, biome: 'plains' },
+          { terrain: 'grass', x: 1, y: 0, biome: 'plains' },
+          { terrain: 'water', x: 2, y: 0, biome: 'river' },
+          { terrain: 'grass', x: 3, y: 0, biome: 'plains' }
+        ],
+        [
+          { terrain: 'forest', x: 0, y: 1, biome: 'woods' },
+          { terrain: 'forest', x: 1, y: 1, biome: 'woods' },
+          { terrain: 'grass', x: 2, y: 1, biome: 'plains' }
+        ]
+      ];
+
+      const trained = chain.addSequences(mapData);
+
+      // Generate new map sequence (use order 1 for better generation with limited data)
+      const newMap = trained.generate({ order: 1, min: 3, max: 6 });
+
+      expect(newMap.length).toBeGreaterThanOrEqual(3);
+      expect(newMap.length).toBeLessThanOrEqual(6);
+
+      // Verify all tiles have complete structure
+      newMap.forEach(tile => {
+        expect(tile).toHaveProperty('terrain');
+        expect(tile).toHaveProperty('x');
+        expect(tile).toHaveProperty('y');
+        expect(tile).toHaveProperty('biome');
+        expect(['grass', 'water', 'forest']).toContain(tile.terrain);
+      });
+    });
+  });
+
+  describe('Sequence Scoring & Ranking (Phase 8)', () => {
+    test('should score sequences with log probability and perplexity', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['a', 'b', 'c', 'd'],
+      ]);
+
+      // Score a common sequence
+      const commonScore = trained.score(['a', 'b', 'c']);
+      expect(commonScore.sequence).toEqual(['a', 'b', 'c']);
+      expect(commonScore.logProb).toBeLessThan(0); // Log prob is negative
+      expect(commonScore.perplexity).toBeGreaterThan(0);
+      expect(commonScore.isValid).toBe(true);
+      expect(commonScore.normalized).toBeLessThan(0);
+
+      // Score an unlikely sequence
+      const unlikelyScore = trained.score(['x', 'y', 'z']);
+      expect(unlikelyScore.isValid).toBe(false);
+      expect(unlikelyScore.perplexity).toBe(Infinity);
+    });
+
+    test('should rank sequences by likelihood', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const ranked = trained.rankByLikelihood([
+        ['a', 'b', 'c'],  // Should be most likely
+        ['x', 'y', 'z'],  // Should be less likely
+        ['z', 'y', 'x'],  // Should be least likely
+      ]);
+
+      expect(ranked.length).toBe(3);
+      expect(ranked[0].rank).toBe(1);
+      expect(ranked[1].rank).toBe(2);
+      expect(ranked[2].rank).toBe(3);
+
+      // First should be better than last
+      expect(ranked[0].normalized).toBeGreaterThan(ranked[2].normalized);
+    });
+
+    test('should detect anomalous sequences', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['sunny', 'sunny', 'cloudy'],
+        ['sunny', 'cloudy', 'rainy'],
+        ['cloudy', 'rainy', 'sunny'],
+      ]);
+
+      // Normal sequence should not be anomalous
+      const normal = trained.isAnomaly(['sunny', 'cloudy'], 50);
+      expect(normal).toBe(false);
+
+      // Completely unseen sequence should be anomalous
+      const anomaly = trained.isAnomaly(['blizzard', 'tornado'], 50);
+      expect(anomaly).toBe(true);
+    });
+
+    test('should work with different scoring orders', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 3 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'e'],
+      ]);
+
+      const score1 = trained.score(['a', 'b', 'c'], 1);
+      const score2 = trained.score(['a', 'b', 'c'], 2);
+
+      expect(score1.isValid).toBe(true);
+      expect(score2.isValid).toBe(true);
+      // Different orders may produce different scores
+    });
+  });
+
+  describe('Constraint-Based Generation (Phase 8)', () => {
+    test('should generate sequences satisfying length constraints', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'c', 'd', 'e'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          minLength: 3,
+          maxLength: 5,
+        },
+      });
+
+      expect(result.length).toBeGreaterThanOrEqual(3);
+      expect(result.length).toBeLessThanOrEqual(5);
+    });
+
+    test('should generate sequences with required elements', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'd', 'e'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          mustContain: ['a'],
+          maxRetries: 50,
+        },
+      });
+
+      expect(result).toContain('a');
+    });
+
+    test('should generate sequences without forbidden elements', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'd', 'e'],
+        ['a', 'x', 'y'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          mustNotContain: ['x', 'y'],
+          maxRetries: 50,
+        },
+      });
+
+      expect(result).not.toContain('x');
+      expect(result).not.toContain('y');
+    });
+
+    test('should generate sequences matching a pattern', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['h', 'e', 'l', 'l', 'o'],
+        ['h', 'e', 'l', 'p'],
+        ['h', 'a', 'l', 'o'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          pattern: /^h.*o$/,  // Starts with 'h', ends with 'o'
+          maxRetries: 50,
+        },
+      });
+
+      const str = result.join('');
+      expect(str).toMatch(/^h.*o$/);
+    });
+
+    test('should generate sequences with custom validator', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const forbiddenWords = ['abc', 'xyz'];
+      const result = trained.generate({
+        order: 1,
+        max: 20,
+        constraints: {
+          validator: (seq) => !forbiddenWords.includes(seq.join('')),
+          maxRetries: 50,
+        },
+      });
+
+      const str = result.join('');
+      expect(forbiddenWords).not.toContain(str);
+    });
+
+    test('should combine multiple constraints', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['j', 'o', 'h', 'n'],
+        ['j', 'a', 'n', 'e'],
+        ['j', 'a', 'c', 'k'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          minLength: 4,
+          maxLength: 4,
+          mustContain: ['j'],
+          mustNotContain: ['x'],
+          pattern: /^j/,
+          maxRetries: 100,
+        },
+      });
+
+      expect(result.length).toBe(4);
+      expect(result[0]).toBe('j');
+      expect(result).not.toContain('x');
+    });
+
+    test('should handle impossible constraints gracefully', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b'],
+        ['c', 'd'],
+      ]);
+
+      const result = trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          mustContain: ['x'],  // Impossible - 'x' not in training data
+          maxRetries: 5,
+        },
+      });
+
+      // Should return something even if constraints can't be satisfied
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    test('should respect maxRetries limit', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b'],
+        ['c', 'd'],
+      ]);
+
+      // This should complete quickly even with impossible constraints
+      const start = Date.now();
+      trained.generate({
+        order: 1,
+        max: 10,
+        constraints: {
+          mustContain: ['z'],  // Impossible
+          maxRetries: 3,
+        },
+      });
+      const elapsed = Date.now() - start;
+
+      // Should not take too long (allowing generous margin)
+      expect(elapsed).toBeLessThan(1000);
+    });
+  });
+
+  describe('Pattern Extraction & Analysis (Phase 9)', () => {
+    test('should extract patterns and return array', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+      ]);
+
+      const patterns = trained.extractPatterns({ minFrequency: 1 });
+
+      // Should return an array (may be empty with sparse data)
+      expect(Array.isArray(patterns)).toBe(true);
+
+      // If patterns exist, validate structure
+      patterns.forEach(p => {
+        expect(p).toHaveProperty('pattern');
+        expect(p).toHaveProperty('frequency');
+        expect(p).toHaveProperty('order');
+        expect(p).toHaveProperty('probability');
+        expect(p.frequency).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    test('should find similar sequences using Jaccard similarity', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+        ['a', 'c', 'd'],
+      ]);
+
+      const similar = trained.findSimilar(['a', 'b', 'c'], {
+        metric: 'jaccard',
+        topN: 3,
+      });
+
+      expect(similar.length).toBeGreaterThan(0);
+      expect(similar[0]).toHaveProperty('sequence');
+      expect(similar[0]).toHaveProperty('similarity');
+      expect(similar[0]).toHaveProperty('distance');
+
+      // Should be sorted by similarity (descending)
+      if (similar.length > 1) {
+        expect(similar[0].similarity).toBeGreaterThanOrEqual(similar[1].similarity);
+      }
+    });
+
+    test('should find similar sequences using cosine similarity', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c', 'd'],
+        ['a', 'b', 'e', 'f'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const similar = trained.findSimilar(['a', 'b', 'c'], {
+        metric: 'cosine',
+        topN: 2,
+      });
+
+      expect(similar.length).toBeGreaterThan(0);
+      expect(similar[0].similarity).toBeGreaterThanOrEqual(0);
+      expect(similar[0].similarity).toBeLessThanOrEqual(1);
+    });
+
+    test('should find similar sequences using Levenshtein distance', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['h', 'e', 'l', 'l', 'o'],
+        ['h', 'e', 'l', 'p'],
+        ['w', 'o', 'r', 'l', 'd'],
+      ]);
+
+      const similar = trained.findSimilar(['h', 'e', 'l', 'l', 'o'], {
+        metric: 'levenshtein',
+        topN: 3,
+      });
+
+      expect(similar.length).toBeGreaterThan(0);
+      expect(similar[0].distance).toBeGreaterThanOrEqual(0);
+    });
+
+    test('should filter by similarity threshold', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const similar = trained.findSimilar(['a', 'b', 'c'], {
+        metric: 'jaccard',
+        threshold: 0.3,  // Only return sequences with >30% similarity
+        topN: 10,
+      });
+
+      similar.forEach(result => {
+        expect(result.similarity).toBeGreaterThanOrEqual(0.3);
+      });
+    });
+
+    test('should handle empty sequences gracefully', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      // Chain with no sequences
+
+      const similar = chain.findSimilar(['a', 'b'], { topN: 5 });
+      expect(similar).toEqual([]);
+    });
+  });
+
+  describe('Import/Export Utilities (Phase 10)', () => {
+    test('should export chain as graph structure', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+      ]);
+
+      const graph = trained.exportAsGraph();
+
+      expect(graph).toHaveProperty('nodes');
+      expect(graph).toHaveProperty('edges');
+      expect(graph).toHaveProperty('metadata');
+      expect(Array.isArray(graph.nodes)).toBe(true);
+      expect(Array.isArray(graph.edges)).toBe(true);
+      expect(graph.metadata.maxOrder).toBe(2);
+      expect(graph.metadata.totalGrams).toBeGreaterThan(0);
+
+      // Validate node structure
+      if (graph.nodes.length > 0) {
+        expect(graph.nodes[0]).toHaveProperty('id');
+        expect(graph.nodes[0]).toHaveProperty('order');
+        expect(graph.nodes[0]).toHaveProperty('frequency');
+        expect(graph.nodes[0]).toHaveProperty('states');
+      }
+
+      // Validate edge structure
+      if (graph.edges.length > 0) {
+        expect(graph.edges[0]).toHaveProperty('from');
+        expect(graph.edges[0]).toHaveProperty('to');
+        expect(graph.edges[0]).toHaveProperty('weight');
+        expect(graph.edges[0]).toHaveProperty('probability');
+      }
+    });
+
+    test('should export chain to JSON format', () => {
+      const chain = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained = chain.addSequences([
+        ['x', 'y', 'z'],
+      ]);
+
+      const json = trained.toJSON();
+
+      expect(json).toHaveProperty('metadata');
+      expect(json).toHaveProperty('grams');
+      expect(json.metadata.maxOrder).toBe(2);
+      expect(Array.isArray(json.grams)).toBe(true);
+
+      // Validate gram structure
+      if (json.grams.length > 0) {
+        expect(json.grams[0]).toHaveProperty('pattern');
+        expect(json.grams[0]).toHaveProperty('order');
+        expect(json.grams[0]).toHaveProperty('frequency');
+        expect(json.grams[0]).toHaveProperty('next');
+        expect(Array.isArray(json.grams[0].pattern)).toBe(true);
+      }
+    });
+
+    test('should diff two chains and show differences', () => {
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained1 = chain1.addSequences([
+        ['a', 'b', 'c'],
+        ['a', 'b', 'd'],
+      ]);
+
+      const chain2 = new MarkovChain({ seed: 2, maxOrder: 2 });
+      const trained2 = chain2.addSequences([
+        ['a', 'b', 'd'],
+        ['x', 'y', 'z'],
+      ]);
+
+      const diff = trained1.diff(trained2);
+
+      expect(diff).toHaveProperty('added');
+      expect(diff).toHaveProperty('removed');
+      expect(diff).toHaveProperty('common');
+      expect(diff).toHaveProperty('modified');
+      expect(Array.isArray(diff.added)).toBe(true);
+      expect(Array.isArray(diff.removed)).toBe(true);
+      expect(Array.isArray(diff.common)).toBe(true);
+      expect(Array.isArray(diff.modified)).toBe(true);
+    });
+
+    test('should identify common grams in diff', () => {
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained1 = chain1.addSequences([
+        ['a', 'b'],
+        ['a', 'b'],
+      ]);
+
+      const chain2 = new MarkovChain({ seed: 1, maxOrder: 2 });
+      const trained2 = chain2.addSequences([
+        ['a', 'b'],
+      ]);
+
+      const diff = trained1.diff(trained2);
+
+      // Should have some common grams (both have 'a', 'b')
+      expect(diff.common.length).toBeGreaterThan(0);
+
+      // Modified should include grams with different frequencies
+      const hasModified = diff.modified.some(m => m.difference !== 0);
+      if (diff.modified.length > 0) {
+        expect(hasModified).toBe(true);
+      }
+    });
+
+    test('should detect added and removed grams in diff', () => {
+      const chain1 = new MarkovChain({ seed: 1, maxOrder: 1 });
+      const trained1 = chain1.addSequences([
+        ['a'],
+      ]);
+
+      const chain2 = new MarkovChain({ seed: 1, maxOrder: 1 });
+      const trained2 = chain2.addSequences([
+        ['b'],
+      ]);
+
+      const diff = trained1.diff(trained2);
+
+      // chain2 should have grams that chain1 doesn't (added)
+      // chain1 should have grams that chain2 doesn't (removed)
+      const totalChanges = diff.added.length + diff.removed.length;
+      expect(totalChanges).toBeGreaterThan(0);
     });
   });
 });

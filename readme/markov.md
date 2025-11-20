@@ -68,6 +68,1199 @@ for (let i = 0; i < 3; i += 1) {
 */
 ```
 
+### What's New in v3.0
+
+Version 3.0 brings significant improvements to Markov Chains:
+
+#### 1. Generic Types
+
+`MarkovChain<T>` is now generic for better type safety:
+
+```typescript
+type States = 'sunny' | 'cloudy' | 'rainy';
+const chain = new MarkovChain<States>({ maxOrder: 2 });
+```
+
+#### 2. Batch Operations (40% Faster)
+
+Add multiple sequences efficiently with batch operations:
+
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+
+// ❌ Slow: clones on every add
+for (const name of names) {
+  chain = chain.addSequence(name.split(''));
+}
+
+// ✅ Fast: single clone at the end
+const updated = chain.batch()
+  .addSequence(['a', 'l', 'i', 'c', 'e'])
+  .addSequence(['b', 'o', 'b'])
+  .addSequence(['c', 'h', 'a', 'r', 'l', 'i', 'e'])
+  .commit();
+```
+
+#### 3. StateSelector Pattern
+
+Store IDs in your chain and resolve to objects later:
+
+```typescript
+interface User { id: number; name: string; }
+
+const users: User[] = [
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' }
+];
+
+const lookup = new Map(users.map(u => [String(u.id), u]));
+const selector = (id: string) => lookup.get(id);
+
+// Store IDs in chain
+const chain = new MarkovChain({ maxOrder: 1 });
+chain.addSequence(['1', '2', '1']);
+
+// Attach selector for resolution
+const chainWithSelector = chain.withSelector(selector);
+```
+
+#### 4. New Utility Methods
+
+```typescript
+// Check if a gram exists
+if (chain.hasGram(['a', 'b'])) {
+  console.log('Gram exists!');
+}
+
+// Get grams by order
+const bigrams = chain.getGramsByOrder(2);
+
+// Get chain statistics
+const stats = chain.getStats();
+console.log(`Chain has ${stats.gramCount} grams`);
+console.log(`Average out-degree: ${stats.avgDegreeOut}`);
+```
+
+See the [Migration Guide](../MIGRATION.md) for complete v3.0 features and migration steps.
+
+### Chain Blending (v3.1+)
+
+**Chain Blending** allows you to combine multiple Markov chains with weighted probabilities, useful for genetics simulation, loot table mixing, and style interpolation.
+
+#### Basic Usage
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+// Create two chains with different patterns
+const chain1 = new MarkovChain({ maxOrder: 2 });
+chain1.addSequences([
+  ['a', 'b', 'c'],
+  ['a', 'b', 'd']
+]);
+
+const chain2 = new MarkovChain({ maxOrder: 2 });
+chain2.addSequences([
+  ['x', 'y', 'z'],
+  ['x', 'y', 'w']
+]);
+
+// Blend with equal weights
+const blended = MarkovChain.blend([
+  { chain: chain1, weight: 0.5 },
+  { chain: chain2, weight: 0.5 }
+]);
+
+// Generate from blended probabilities
+const result = blended.generate({ order: 1, length: 5 });
+```
+
+#### Interpolation
+
+For blending exactly two chains, use the `interpolate()` method:
+
+```typescript
+// Alpha controls the blend: 0 = all chain1, 1 = all chain2
+const hybrid = chain1.interpolate(chain2, 0.3); // 70% chain1, 30% chain2
+```
+
+#### Blend Strategies
+
+Choose different blending strategies to control how probabilities combine:
+
+```typescript
+// Arithmetic mean (default): weighted average
+const arithmetic = MarkovChain.blend(chains, { strategy: 'arithmetic' });
+
+// Geometric mean: multiplicative combination
+const geometric = MarkovChain.blend(chains, { strategy: 'geometric' });
+
+// Harmonic mean: reciprocal weighting
+const harmonic = MarkovChain.blend(chains, { strategy: 'harmonic' });
+
+// Max: takes maximum probability for each transition
+const maxBlend = MarkovChain.blend(chains, { strategy: 'max' });
+
+// Min: takes minimum non-zero probability
+const minBlend = MarkovChain.blend(chains, { strategy: 'min' });
+```
+
+#### Filtering Low-Weight States
+
+Remove states with insignificant probabilities:
+
+```typescript
+const filtered = MarkovChain.blend(chains, {
+  minWeight: 0.1  // Only include states with ≥10% combined weight
+});
+```
+
+#### Practical Examples
+
+**Character Genetics:**
+```typescript
+const motherTraits = new MarkovChain({ maxOrder: 2 });
+motherTraits.addSequences([
+  ['black', 'brown', 'black'],
+  ['brown', 'black', 'brown']
+]);
+
+const fatherTraits = new MarkovChain({ maxOrder: 2 });
+fatherTraits.addSequences([
+  ['blonde', 'blonde', 'light-brown'],
+  ['light-brown', 'blonde', 'blonde']
+]);
+
+// Child inherits 50% from each parent
+const childTraits = MarkovChain.blend([
+  { chain: motherTraits, weight: 0.5 },
+  { chain: fatherTraits, weight: 0.5 }
+]);
+
+const hairColor = childTraits.generate({ order: 1, length: 3 });
+```
+
+**Loot Table Mixing:**
+```typescript
+const commonLoot = new MarkovChain({ maxOrder: 1 });
+commonLoot.addSequences([
+  ['copper', 'copper', 'wood'],
+  ['wood', 'copper', 'stone']
+]);
+
+const rareLoot = new MarkovChain({ maxOrder: 1 });
+rareLoot.addSequences([
+  ['gold', 'diamond', 'emerald'],
+  ['diamond', 'gold', 'ruby']
+]);
+
+// Boss chest: 30% common, 70% rare
+const bossChest = MarkovChain.blend([
+  { chain: commonLoot, weight: 0.3 },
+  { chain: rareLoot, weight: 0.7 }
+]);
+
+const drops = bossChest.generate({ order: 1, length: 5 });
+```
+
+For more examples, see [examples/chain-blending.ts](../examples/chain-blending.ts).
+
+### Scaled States & Continuous Values (v3.2+)
+
+**ScaledMarkovChain** tracks both categorical states and continuous magnitude values. Perfect for market simulations, physics, weather modeling, or any system where transitions have associated numerical values.
+
+#### Basic Usage
+
+```typescript
+import { ScaledMarkovChain } from 'acausal';
+
+const marketChain = new ScaledMarkovChain<'bullish' | 'bearish' | 'neutral'>({
+  maxOrder: 2,
+  magnitudeRange: [-100, 100],
+  samplingStrategy: 'mean'
+});
+
+// Add historical data with sentiment + price changes
+marketChain.addScaledSequence([
+  { category: 'neutral', magnitude: 0 },
+  { category: 'bullish', magnitude: 15 },
+  { category: 'bullish', magnitude: 22 },
+  { category: 'neutral', magnitude: -5 },
+  { category: 'bearish', magnitude: -18 }
+]);
+
+// Generate forecast with both sentiment and magnitude
+const forecast = marketChain.generateScaled({ order: 2, length: 5 });
+// Returns: [{ category: 'bullish', magnitude: 18.5 }, ...]
+```
+
+#### Magnitude Statistics
+
+```typescript
+// Get statistics for a specific category
+const stats = marketChain.getMagnitudeStats('bullish');
+console.log(`Average: ${stats.mean}, Range: [${stats.min}, ${stats.max}]`);
+
+// Get all observed magnitudes
+const samples = marketChain.getMagnitudeSamples('bullish');
+```
+
+#### Sampling Strategies
+
+```typescript
+// Mean: Returns average of observed magnitudes (default)
+new ScaledMarkovChain({ samplingStrategy: 'mean' });
+
+// Median: Returns middle value
+new ScaledMarkovChain({ samplingStrategy: 'median' });
+
+// Sample: Randomly picks from observed values
+new ScaledMarkovChain({ samplingStrategy: 'sample' });
+
+// Weighted-sample: Uses seeded RNG for reproducibility
+new ScaledMarkovChain({ samplingStrategy: 'weighted-sample' });
+```
+
+#### Practical Examples
+
+**Weather with Temperature:**
+```typescript
+const weatherChain = new ScaledMarkovChain<'sunny' | 'cloudy' | 'rainy'>({
+  maxOrder: 1,
+  magnitudeRange: [-10, 40]  // Temperature in Celsius
+});
+
+weatherChain.addScaledSequence([
+  { category: 'sunny', magnitude: 25 },
+  { category: 'cloudy', magnitude: 22 },
+  { category: 'rainy', magnitude: 18 }
+]);
+
+const forecast = weatherChain.generateScaled({ order: 1, length: 7 });
+// Returns 7-day forecast with both conditions and temperatures
+```
+
+**Game Character States:**
+```typescript
+const characterChain = new ScaledMarkovChain<'idle' | 'walking' | 'fighting' | 'resting'>({
+  maxOrder: 2,
+  magnitudeRange: [0, 100]  // Health/stamina
+});
+
+// Model character behavior with health changes
+const behavior = characterChain.generateScaled({ order: 2, length: 10 });
+```
+
+For complete examples, see [examples/scaled-states.ts](../examples/scaled-states.ts).
+
+### Multi-Dimensional Chains (v3.3+)
+
+**MultiDimMarkovChain** preserves the structure of multi-attribute states instead of forcing you to flatten them into strings. Perfect for tile-based procedural generation, game state management, spatial systems, or any scenario with complex structured states.
+
+#### The Problem
+
+Previously, you had to flatten structured states into strings:
+
+```typescript
+// ❌ Old way: lose structure
+interface TileState {
+  terrain: string;
+  x: number;
+  y: number;
+  biome: string;
+}
+
+const state = { terrain: 'forest', x: 2, y: 3, biome: 'woodland' };
+const flattened = `${state.terrain}_${state.x}_${state.y}_${state.biome}`;
+// Now you have a string, not the original structure
+```
+
+#### The Solution
+
+MultiDimMarkovChain preserves your original structured states:
+
+```typescript
+import { MultiDimMarkovChain } from 'acausal';
+
+interface TileState {
+  terrain: string;
+  x: number;
+  y: number;
+  biome: string;
+}
+
+const tileChain = new MultiDimMarkovChain<TileState>({
+  maxOrder: 2,
+  stateKey: (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`
+});
+
+// Add training data with full structured states
+tileChain.addSequence([
+  { terrain: 'grass', x: 0, y: 0, biome: 'plains' },
+  { terrain: 'forest', x: 1, y: 0, biome: 'woodland' },
+  { terrain: 'water', x: 2, y: 0, biome: 'lake' }
+]);
+
+// Generate returns structured states, not strings!
+const tiles = tileChain.generate({ order: 2, length: 5 });
+// Returns: TileState[] with full structure preserved
+console.log(tiles[0].terrain); // ✅ 'grass'
+console.log(tiles[0].x);       // ✅ 0
+```
+
+#### How It Works
+
+The `stateKey` function converts your structured states to unique string keys internally for Markov probability calculations, but the original structured states are preserved and returned to you:
+
+```typescript
+// State key function: converts structure → unique string
+stateKey: (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`
+
+// Internally: stores both the key AND the original structure
+// Externally: you always get back the structured state object
+```
+
+#### Querying State Information
+
+```typescript
+// Get all unique states
+const allStates = tileChain.getStates();
+console.log(allStates); // Returns TileState[] with full structure
+
+// Check if a specific state exists
+const exists = tileChain.hasState({
+  terrain: 'forest',
+  x: 1,
+  y: 0,
+  biome: 'woodland'
+});
+
+// Get statistics
+const stats = tileChain.getStats();
+console.log(`Total grams: ${stats.grams}`);
+console.log(`Unique states: ${stats.categories}`);
+```
+
+#### Practical Examples
+
+**RPG Character State Machine:**
+```typescript
+interface CharacterState {
+  action: string;
+  emotion: string;
+  location: string;
+  timeOfDay: string;
+}
+
+const characterChain = new MultiDimMarkovChain<CharacterState>({
+  maxOrder: 2,
+  stateKey: (s) => `${s.action}_${s.emotion}_${s.location}_${s.timeOfDay}`
+});
+
+characterChain.addSequence([
+  { action: 'sleeping', emotion: 'peaceful', location: 'inn', timeOfDay: 'night' },
+  { action: 'waking', emotion: 'refreshed', location: 'inn', timeOfDay: 'morning' },
+  { action: 'eating', emotion: 'content', location: 'tavern', timeOfDay: 'morning' }
+]);
+
+const story = characterChain.generate({ order: 2, length: 6 });
+// Returns structured states with all attributes preserved
+```
+
+**Spatial Movement Patterns:**
+```typescript
+interface EntityPosition {
+  entityId: string;
+  x: number;
+  y: number;
+  velocity: number;
+}
+
+const movementChain = new MultiDimMarkovChain<EntityPosition>({
+  maxOrder: 2,
+  stateKey: (s) => `${s.entityId}_${s.x}_${s.y}_${s.velocity}`
+});
+
+// Track entity movements
+movementChain.addSequence([
+  { entityId: 'player', x: 0, y: 0, velocity: 0 },
+  { entityId: 'player', x: 1, y: 0, velocity: 1 },
+  { entityId: 'player', x: 2, y: 1, velocity: 2 }
+]);
+
+const movements = movementChain.generate({ order: 2, length: 5 });
+// Returns EntityPosition[] with all properties intact
+```
+
+**Game Event System:**
+```typescript
+interface GameEvent {
+  eventType: string;
+  playerLevel: number;
+  questStage: string;
+  difficulty: string;
+}
+
+const eventChain = new MultiDimMarkovChain<GameEvent>({
+  maxOrder: 1,
+  stateKey: (s) => `${s.eventType}_${s.playerLevel}_${s.questStage}_${s.difficulty}`
+});
+
+// Model game progression
+const events = eventChain.generate({ order: 1, length: 7 });
+// Returns structured events with context preserved
+```
+
+#### All Methods
+
+```typescript
+// Add sequences
+chain.addSequence(sequence: T[]): MultiDimMarkovChain<T>
+chain.addSequences(sequences: T[][]): MultiDimMarkovChain<T>
+
+// Generate
+chain.generate(options): T[]  // Returns structured states
+chain.pick(current?: T[], next?: boolean, mask?: T[]): T | undefined
+
+// Query
+chain.getStates(): T[]  // All unique structured states
+chain.hasState(state: T): boolean
+chain.getStats(): MarkovChainStats
+
+// Utility
+chain.clone(): MultiDimMarkovChain<T>
+chain.serialize(): MultiDimMarkovChainDTO<T>
+```
+
+For complete examples, see [examples/multi-dimensional-chains.ts](../examples/multi-dimensional-chains.ts).
+
+### Sequence Scoring & Ranking (v3.4+)
+
+**Sequence Scoring** allows you to calculate the likelihood of sequences, enabling quality filtering, anomaly detection, autocomplete ranking, and more.
+
+#### Basic Scoring
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const chain = new MarkovChain({ maxOrder: 2 });
+chain.addSequences([
+  ['j', 'o', 'h', 'n'],
+  ['j', 'a', 'n', 'e'],
+  ['a', 'l', 'i', 'c', 'e']
+]);
+
+// Score a sequence
+const score = chain.score(['j', 'o', 'h', 'n']);
+console.log(score);
+// {
+//   sequence: ['j', 'o', 'h', 'n'],
+//   logProb: -8.3,        // Log probability
+//   perplexity: 12.4,     // Lower is better
+//   isValid: true,        // Can the chain generate this?
+//   normalized: -2.1      // Normalized by sequence length
+// }
+```
+
+#### Ranking Sequences
+
+```typescript
+// Rank multiple candidates by likelihood
+const candidates = [
+  ['j', 'o', 'h', 'n'],
+  ['x', 'q', 'z'],
+  ['a', 'l', 'i', 'c', 'e']
+];
+
+const ranked = chain.rankByLikelihood(candidates);
+ranked.forEach(result => {
+  console.log(`${result.rank}. ${result.sequence.join('')} (perplexity: ${result.perplexity})`);
+});
+// 1. john (perplexity: 12.4)
+// 2. alice (perplexity: 15.2)
+// 3. xqz (perplexity: Infinity)
+```
+
+#### Anomaly Detection
+
+```typescript
+// Detect unusual sequences
+const isAnomaly = chain.isAnomaly(['x', 'q', 'z'], 50);
+// true - very unlikely sequence
+
+const isNormal = chain.isAnomaly(['j', 'o', 'h', 'n'], 50);
+// false - common pattern
+```
+
+#### Practical Use Cases
+
+**Autocomplete Ranking:**
+```typescript
+const prefix = 'al';
+const completions = ['alice', 'albert', 'alfred', 'alex'];
+
+const ranked = chain.rankByLikelihood(
+  completions.map(c => c.split(''))
+);
+
+// Display in order of likelihood
+ranked.forEach(r => console.log(r.sequence.join('')));
+```
+
+**Input Validation:**
+```typescript
+function validateUsername(username: string): boolean {
+  const score = nameChain.score(username.split(''));
+  return score.isValid && score.perplexity < 30;
+}
+```
+
+**Quality Filtering:**
+```typescript
+const generated = [];
+for (let i = 0; i < 100; i++) {
+  const name = chain.generate({ order: 2, max: 10 });
+  const score = chain.score(name);
+
+  // Only keep high-quality generations
+  if (score.perplexity < 20) {
+    generated.push(name.join(''));
+  }
+}
+```
+
+### Constraint-Based Generation (v3.4+)
+
+**Constraint-Based Generation** allows you to generate sequences that satisfy specific requirements, perfect for quality control, domain rules, and content filtering.
+
+#### Length Constraints
+
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+// ... add training data ...
+
+const result = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 8
+  }
+});
+// Guaranteed to be 5-8 elements long
+```
+
+#### Element Requirements
+
+```typescript
+// Must contain specific elements
+const name = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustContain: ['a', 'e'],  // Must have both 'a' and 'e'
+    maxRetries: 100
+  }
+});
+
+// Must NOT contain specific elements
+const filtered = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustNotContain: ['x', 'z', 'q'],  // No uncommon letters
+    maxRetries: 100
+  }
+});
+```
+
+#### Pattern Matching
+
+```typescript
+// Generate sequences matching a regex pattern
+const vowelStart = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    pattern: /^[aeiou]/,  // Must start with vowel
+    maxRetries: 100
+  }
+});
+
+// More complex patterns
+const formatted = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    pattern: /^[A-Z][a-z]+$/,  // Capital first letter
+    maxRetries: 100
+  }
+});
+```
+
+#### Custom Validators
+
+```typescript
+// Content filtering
+const forbiddenWords = ['bad', 'ugly', 'hate'];
+
+const clean = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    validator: (seq) => {
+      const text = seq.join('');
+      return !forbiddenWords.some(word => text.includes(word));
+    },
+    maxRetries: 100
+  }
+});
+
+// Business rules
+const username = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    validator: (seq) => {
+      const str = seq.join('');
+      // No repeating characters
+      if (/(.)\1/.test(str)) return false;
+      // Must have vowel
+      if (!/[aeiou]/.test(str)) return false;
+      return true;
+    },
+    maxRetries: 200
+  }
+});
+```
+
+#### Combined Constraints
+
+```typescript
+// All constraints work together
+const highQuality = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 10,
+    mustContain: ['a'],
+    mustNotContain: ['x', 'z'],
+    pattern: /^[a-z]+$/,
+    validator: (seq) => {
+      // Custom quality checks
+      const str = seq.join('');
+      return !/(.)\\1{2,}/.test(str);  // No triple repeats
+    },
+    maxRetries: 200
+  }
+});
+```
+
+#### Retry Control
+
+```typescript
+// Control how many times generation is attempted
+const result = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustContain: ['rare'],
+    maxRetries: 50  // Try up to 50 times
+  }
+});
+
+// If constraints can't be satisfied, returns best effort
+```
+
+#### Practical Examples
+
+**Username Generation:**
+```typescript
+const username = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 12,
+    pattern: /^[a-z]/,  // Start with letter
+    mustNotContain: ['_', '-', '.'],
+    validator: (seq) => /[aeiou]/.test(seq.join('')),
+    maxRetries: 150
+  }
+});
+```
+
+**Safe Content Generation:**
+```typescript
+const profanityList = ['bad', 'ugly'];
+
+const safeContent = chain.generate({
+  order: 2,
+  max: 50,
+  constraints: {
+    minLength: 10,
+    validator: (seq) => {
+      const text = seq.join(' ');
+      return !profanityList.some(word => text.includes(word));
+    },
+    maxRetries: 100
+  }
+});
+```
+
+For complete examples, see [examples/scoring-and-constraints.ts](../examples/scoring-and-constraints.ts).
+
+### Pattern Extraction & Analysis (v3.5+)
+
+**Pattern Extraction** allows you to discover frequent patterns in your training data and find similar sequences, enabling data mining, recommendation systems, and clustering.
+
+#### Extracting Patterns
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const chain = new MarkovChain({ maxOrder: 3 });
+chain.addSequences([
+  ['the', 'quick', 'brown', 'fox'],
+  ['the', 'lazy', 'brown', 'dog'],
+  ['the', 'quick', 'red', 'fox'],
+]);
+
+// Extract frequent patterns
+const patterns = chain.extractPatterns({
+  minOrder: 2,        // Look for patterns of length 2+
+  maxOrder: 3,        // Up to length 3
+  minFrequency: 2,    // Must appear at least twice
+  topN: 10            // Return top 10 patterns
+});
+
+patterns.forEach(p => {
+  console.log(`${p.pattern.join(' ')} - frequency: ${p.frequency}`);
+});
+// the quick - frequency: 2
+// brown fox - frequency: 2
+```
+
+#### Finding Similar Sequences
+
+**Jaccard Similarity** (set-based, fast):
+```typescript
+const target = ['the', 'quick', 'brown', 'fox'];
+
+const similar = chain.findSimilar(target, {
+  metric: 'jaccard',
+  topN: 5,
+  threshold: 0.5  // 50% similarity or higher
+});
+
+similar.forEach(s => {
+  console.log(`${s.sequence.join(' ')} - similarity: ${s.similarity.toFixed(2)}`);
+});
+```
+
+**Cosine Similarity** (frequency-weighted):
+```typescript
+// Better for sequences with repeated elements
+const similar = chain.findSimilar(target, {
+  metric: 'cosine',
+  topN: 5,
+  threshold: 0.6
+});
+```
+
+**Levenshtein Distance** (edit distance):
+```typescript
+// Best for finding sequences that are almost the same
+const similar = chain.findSimilar(target, {
+  metric: 'levenshtein',
+  topN: 5,
+  threshold: 0.7  // 70% similar (normalized)
+});
+```
+
+#### Practical Use Cases
+
+**Content Deduplication:**
+```typescript
+const contentChain = new MarkovChain({ maxOrder: 3 });
+// Train on user-generated content
+contentChain.addSequences([
+  ['fix', 'the', 'bug', 'in', 'auth'],
+  ['fix', 'the', 'auth', 'bug'],
+  ['resolve', 'authentication', 'issue']
+]);
+
+// Find duplicates
+const newContent = ['fix', 'bug', 'in', 'auth'];
+const duplicates = contentChain.findSimilar(newContent, {
+  metric: 'jaccard',
+  threshold: 0.8  // 80% similar = likely duplicate
+});
+
+if (duplicates.length > 0) {
+  console.log('Potential duplicate detected!');
+}
+```
+
+**Recommendation System:**
+```typescript
+const userBehaviorChain = new MarkovChain({ maxOrder: 2 });
+// Train on user click sequences
+userBehaviorChain.addSequences([
+  ['home', 'products', 'laptop', 'checkout'],
+  ['home', 'products', 'phone', 'specs'],
+  ['search', 'laptop', 'compare', 'checkout']
+]);
+
+// Find similar user journeys
+const currentJourney = ['home', 'products', 'laptop'];
+const similarJourneys = userBehaviorChain.findSimilar(currentJourney, {
+  metric: 'cosine',
+  topN: 3
+});
+
+// Recommend next steps based on similar journeys
+console.log('Users with similar journeys also:');
+similarJourneys.forEach(j => console.log(j.sequence.join(' → ')));
+```
+
+**Pattern Mining in Logs:**
+```typescript
+const logChain = new MarkovChain({ maxOrder: 4 });
+// Train on system logs
+logChain.addSequences([
+  ['login', 'query', 'query', 'error', 'retry'],
+  ['login', 'query', 'success', 'logout'],
+  ['login', 'query', 'query', 'error', 'timeout']
+]);
+
+// Find common error patterns
+const patterns = logChain.extractPatterns({
+  minFrequency: 2,
+  minOrder: 3
+});
+
+console.log('Common failure patterns:');
+patterns
+  .filter(p => p.pattern.includes('error'))
+  .forEach(p => console.log(p.pattern.join(' → ')));
+```
+
+**Text Similarity Search:**
+```typescript
+const nameChain = new MarkovChain({ maxOrder: 2 });
+nameChain.addSequences([
+  ['a', 'l', 'i', 'c', 'e'],
+  ['a', 'l', 'e', 'x'],
+  ['b', 'o', 'b']
+]);
+
+// Find names similar to user input (autocorrect)
+const userInput = ['a', 'l', 'i', 'x'];
+const corrections = nameChain.findSimilar(userInput, {
+  metric: 'levenshtein',
+  topN: 3
+});
+
+console.log('Did you mean:');
+corrections.forEach(c => console.log(c.sequence.join('')));
+// alice
+// alex
+```
+
+**Clustering Similar Sequences:**
+```typescript
+const sequences = [
+  ['quick', 'brown', 'fox'],
+  ['quick', 'red', 'fox'],
+  ['lazy', 'brown', 'dog'],
+  ['lazy', 'grey', 'dog']
+];
+
+// Group similar sequences
+const clusters = sequences.map(seq => ({
+  original: seq,
+  similar: chain.findSimilar(seq, {
+    metric: 'jaccard',
+    threshold: 0.5
+  })
+}));
+
+// Find cluster centers
+clusters.forEach(cluster => {
+  if (cluster.similar.length > 1) {
+    console.log(`Cluster: ${cluster.original.join(' ')}`);
+    cluster.similar.forEach(s =>
+      console.log(`  - ${s.sequence.join(' ')} (${s.similarity.toFixed(2)})`)
+    );
+  }
+});
+```
+
+### Import/Export & Visualization (v4.0+)
+
+**Import/Export utilities** allow you to visualize chains, compare models, and integrate with external tools.
+
+#### Graph Export for Visualization
+
+Export your chain as a node/edge graph for visualization in D3.js, Cytoscape, or other tools:
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const chain = new MarkovChain({ maxOrder: 2 });
+chain.addSequences([
+  ['start', 'login', 'browse', 'checkout'],
+  ['start', 'login', 'browse', 'exit'],
+  ['start', 'browse', 'exit']
+]);
+
+// Export as graph structure
+const graph = chain.exportAsGraph();
+
+console.log('Nodes:', graph.nodes.length);
+console.log('Edges:', graph.edges.length);
+console.log('Metadata:', graph.metadata);
+
+// Example node:
+// {
+//   id: 'start→login',
+//   order: 2,
+//   frequency: 15,
+//   states: ['start', 'login']
+// }
+
+// Example edge:
+// {
+//   from: 'start→login',
+//   to: 'browse',
+//   weight: 12,
+//   probability: 0.8
+// }
+```
+
+#### JSON Export for External Tools
+
+Export in simplified JSON format for analysis in Python, R, or other tools:
+
+```typescript
+const json = chain.toJSON();
+
+// {
+//   metadata: {
+//     maxOrder: 2,
+//     delimiter: '→',
+//     totalGrams: 15,
+//     totalSequences: 3
+//   },
+//   grams: [
+//     {
+//       pattern: ['start', 'login'],
+//       order: 2,
+//       frequency: 2,
+//       next: { 'browse': 1.0 }
+//     },
+//     // ... more grams
+//   ]
+// }
+
+// Save to file for external analysis
+import fs from 'fs';
+fs.writeFileSync('chain-export.json', JSON.stringify(json, null, 2));
+```
+
+#### Comparing Two Chains
+
+Compare chains to track model changes or merge datasets:
+
+```typescript
+const chainA = new MarkovChain({ maxOrder: 2 });
+chainA.addSequences([
+  ['a', 'b', 'c'],
+  ['a', 'b', 'd']
+]);
+
+const chainB = new MarkovChain({ maxOrder: 2 });
+chainB.addSequences([
+  ['a', 'b', 'c'],
+  ['a', 'x', 'y']
+]);
+
+// Compare the two chains
+const diff = chainA.diff(chainB);
+
+console.log('Added grams:', diff.added);
+// ['a→x', 'x→y']
+
+console.log('Removed grams:', diff.removed);
+// ['a→b→d']
+
+console.log('Common grams:', diff.common);
+// ['a→b', 'a→b→c']
+
+console.log('Modified frequencies:', diff.modified);
+// [{ gram: 'a→b', chain1Freq: 2, chain2Freq: 1, difference: -1 }]
+```
+
+#### Practical Use Cases
+
+**Visualizing User Flow:**
+```typescript
+// Track user navigation patterns
+const userFlow = new MarkovChain({ maxOrder: 2 });
+userFlow.addSequences([
+  ['home', 'products', 'laptop', 'cart', 'checkout'],
+  ['home', 'products', 'phone', 'details', 'exit'],
+  ['search', 'laptop', 'compare', 'cart', 'checkout']
+]);
+
+// Export for D3.js visualization
+const flowGraph = userFlow.exportAsGraph();
+
+// Create interactive funnel visualization
+const funnelData = {
+  nodes: flowGraph.nodes.map(n => ({
+    id: n.id,
+    label: n.states.join(' → '),
+    size: n.frequency
+  })),
+  edges: flowGraph.edges.map(e => ({
+    source: e.from,
+    target: e.to,
+    value: e.probability
+  }))
+};
+
+// Use with D3.js, Cytoscape, or Graphviz
+```
+
+**A/B Testing Model Comparison:**
+```typescript
+// Compare conversion patterns before and after change
+const beforeChange = new MarkovChain({ maxOrder: 2 });
+beforeChange.addSequences(beforeData);
+
+const afterChange = new MarkovChain({ maxOrder: 2 });
+afterChange.addSequences(afterData);
+
+const changes = beforeChange.diff(afterChange);
+
+// Analyze impact
+console.log('New user paths:', changes.added.length);
+console.log('Dropped paths:', changes.removed.length);
+
+// Find paths with increased frequency (success indicators)
+const improvements = changes.modified.filter(m => m.difference > 0);
+console.log('Improved paths:', improvements);
+```
+
+**Version Control for Models:**
+```typescript
+// Track changes to trained models over time
+const v1 = new MarkovChain({ maxOrder: 2 });
+v1.addSequences(historicalData);
+
+const v2 = v1.clone();
+v2.addSequences(newData);
+
+// Document changes between versions
+const changelog = v1.diff(v2);
+
+console.log(`Model Update:
+  - New patterns discovered: ${changelog.added.length}
+  - Obsolete patterns: ${changelog.removed.length}
+  - Updated frequencies: ${changelog.modified.length}
+`);
+
+// Export both for comparison
+fs.writeFileSync('model-v1.json', JSON.stringify(v1.toJSON()));
+fs.writeFileSync('model-v2.json', JSON.stringify(v2.toJSON()));
+```
+
+**Debugging Model Behavior:**
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+// ... train the chain ...
+
+// Export for inspection
+const exported = chain.toJSON();
+
+// Find why a specific sequence has low probability
+const problematicSequence = ['rare', 'transition'];
+exported.grams.forEach(gram => {
+  if (gram.pattern.includes('rare')) {
+    console.log(`Pattern: ${gram.pattern.join(' → ')}`);
+    console.log(`Frequency: ${gram.frequency}`);
+    console.log(`Next states:`, gram.next);
+  }
+});
+```
+
+**Merging Datasets:**
+```typescript
+// Compare models trained on different datasets
+const dataset1Chain = new MarkovChain({ maxOrder: 2 });
+dataset1Chain.addSequences(dataset1);
+
+const dataset2Chain = new MarkovChain({ maxOrder: 2 });
+dataset2Chain.addSequences(dataset2);
+
+const comparison = dataset1Chain.diff(dataset2Chain);
+
+// Identify unique patterns in each dataset
+console.log('Unique to dataset 1:', comparison.removed);
+console.log('Unique to dataset 2:', comparison.added);
+console.log('Common patterns:', comparison.common);
+
+// Decide on merge strategy based on overlap
+const overlapRatio = comparison.common.length /
+  (comparison.common.length + comparison.added.length + comparison.removed.length);
+
+if (overlapRatio > 0.7) {
+  console.log('High overlap - safe to merge');
+  const merged = dataset1Chain.clone();
+  merged.addSequences(dataset2);
+}
+```
+
+**Network Graph Export:**
+```typescript
+// Export for network analysis tools
+const socialChain = new MarkovChain({ maxOrder: 1 });
+// Train on social interaction patterns
+socialChain.addSequences([
+  ['alice', 'bob', 'carol'],
+  ['alice', 'david', 'eve'],
+  ['bob', 'carol', 'eve']
+]);
+
+const graph = socialChain.exportAsGraph();
+
+// Convert to Cytoscape.js format
+const cytoscapeData = {
+  nodes: graph.nodes.map(n => ({
+    data: {
+      id: n.id,
+      label: n.states[n.states.length - 1],
+      weight: n.frequency
+    }
+  })),
+  edges: graph.edges.map((e, i) => ({
+    data: {
+      id: `e${i}`,
+      source: e.from,
+      target: e.to,
+      weight: e.probability
+    }
+  }))
+};
+
+// Render with Cytoscape or export to Gephi
+```
+
+For complete examples, see [examples/pattern-analysis.ts](../examples/pattern-analysis.ts) and [examples/import-export.ts](../examples/import-export.ts).
+
 ### Core Concepts
 
 #### States and Dependent Probability

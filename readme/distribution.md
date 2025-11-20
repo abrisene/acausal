@@ -80,6 +80,40 @@ console.log(picks);
 
 */
 ```
+
+### What's New in v3.0
+
+Version 3.0 adds **generic type support** for `Distribution<T>`, allowing you to specify exact string literal types for type-safe picks:
+
+```typescript
+import { Distribution } from 'acausal';
+
+// Define specific color options
+type Colors = 'red' | 'blue' | 'green' | 'yellow';
+
+// Create a type-safe distribution
+const colorDist = new Distribution<Colors>({
+  seed: 1,
+  source: { red: 10, blue: 5, green: 3, yellow: 1 }
+});
+
+// TypeScript now knows pickOne() returns Colors | undefined
+const color = colorDist.pickOne();
+// color has type: Colors | undefined
+
+// Type-safe picks array
+const colors = colorDist.pick(5);
+// colors has type: Colors[]
+```
+
+**Benefits:**
+- Full TypeScript autocomplete for distribution keys
+- Compile-time error checking
+- Better IDE support
+- Backward compatible (defaults to `string` if no type parameter)
+
+See the [Migration Guide](../MIGRATION.md) for more v3.0 features.
+
 ### Core Concepts
 
 ### How to use Random Distributions
