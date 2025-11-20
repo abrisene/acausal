@@ -9,3 +9,4 @@
 
 export * from './distribution';
 export * from './markov';
+export * from './wfc-types';
