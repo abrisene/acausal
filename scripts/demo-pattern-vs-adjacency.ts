@@ -220,6 +220,7 @@ async function main() {
   });
 
   let order3Output: string[][] | null = null;
+  let pillarPatterns = 0;
 
   if (result.success && result.grid) {
     console.log('✅ SUCCESS! Generated structured output');
@@ -229,20 +230,23 @@ async function main() {
     order3Output = result.grid;
 
     // Analyze structure
-    let pillarPatterns = 0;
     for (let y = 0; y < result.grid.length - 2; y++) {
       for (let x = 0; x < result.grid[y].length - 2; x++) {
         // Check for 3x3 pillar pattern
+        const r0 = result.grid[y];
+        const r1 = result.grid[y + 1];
+        const r2 = result.grid[y + 2];
         if (
-          result.grid[y][x] === '#' &&
-          result.grid[y][x + 1] === '#' &&
-          result.grid[y][x + 2] === '#' &&
-          result.grid[y + 1][x] === '#' &&
-          result.grid[y + 1][x + 1] === '.' &&
-          result.grid[y + 1][x + 2] === '#' &&
-          result.grid[y + 2][x] === '#' &&
-          result.grid[y + 2][x + 1] === '#' &&
-          result.grid[y + 2][x + 2] === '#'
+          r0 && r1 && r2 &&
+          r0[x] === '#' &&
+          r0[x + 1] === '#' &&
+          r0[x + 2] === '#' &&
+          r1[x] === '#' &&
+          r1[x + 1] === '.' &&
+          r1[x + 2] === '#' &&
+          r2[x] === '#' &&
+          r2[x + 1] === '#' &&
+          r2[x + 2] === '#'
         ) {
           pillarPatterns++;
         }

@@ -34,7 +34,7 @@
  * ```
  */
 
-import {Distribution} from './distribution';
+// import {Distribution} from './distribution'; // TODO: Use for weighted pattern selection
 
 // ============================================================================
 // TYPES
@@ -186,7 +186,12 @@ export class WFCPatternUtils {
 
     for (let y = 0; y < n; y++) {
       for (let x = 0; x < n; x++) {
-        rotated[x][n - 1 - y] = pattern[y][x];
+        const srcRow = pattern[y];
+        const dstRow = rotated[x];
+        const tile = srcRow?.[x];
+        if (srcRow && dstRow && tile !== undefined) {
+          dstRow[n - 1 - y] = tile;
+        }
       }
     }
 
@@ -257,17 +262,26 @@ export class WFCPatternUtils {
     const patternMap = new Map<PatternId, Pattern>();
 
     // Extract all patterns
+    const firstRow = grid[0];
+    if (!firstRow) return [];
+
     for (let y = 0; y <= grid.length - patternSize; y++) {
-      for (let x = 0; x <= grid[0].length - patternSize; x++) {
+      for (let x = 0; x <= firstRow.length - patternSize; x++) {
         // Extract NxN pattern
         const pattern: Pattern = [];
         for (let py = 0; py < patternSize; py++) {
           const row: string[] = [];
           for (let px = 0; px < patternSize; px++) {
-            row.push(grid[y + py][x + px]);
+            const gridRow = grid[y + py];
+            const tile = gridRow?.[x + px];
+            if (tile === undefined) continue;
+            row.push(tile);
           }
-          pattern.push(row);
+          if (row.length === patternSize) {
+            pattern.push(row);
+          }
         }
+        if (pattern.length !== patternSize) continue;
 
         // Generate symmetries
         const symmetries = this.generateSymmetries(
@@ -317,28 +331,40 @@ export class WFCPatternUtils {
       case 'east':
         // pattern1's right edge must match pattern2's left edge
         for (let y = 0; y < n; y++) {
-          if (pattern1[y][n - 1] !== pattern2[y][0]) return false;
+          const row1 = pattern1[y];
+          const row2 = pattern2[y];
+          if (!row1 || !row2) return false;
+          if (row1[n - 1] !== row2[0]) return false;
         }
         return true;
 
       case 'west':
         // pattern1's left edge must match pattern2's right edge
         for (let y = 0; y < n; y++) {
-          if (pattern1[y][0] !== pattern2[y][n - 1]) return false;
+          const row1 = pattern1[y];
+          const row2 = pattern2[y];
+          if (!row1 || !row2) return false;
+          if (row1[0] !== row2[n - 1]) return false;
         }
         return true;
 
       case 'south':
         // pattern1's bottom edge must match pattern2's top edge
+        const bottomRow = pattern1[n - 1];
+        const topRow = pattern2[0];
+        if (!bottomRow || !topRow) return false;
         for (let x = 0; x < n; x++) {
-          if (pattern1[n - 1][x] !== pattern2[0][x]) return false;
+          if (bottomRow[x] !== topRow[x]) return false;
         }
         return true;
 
       case 'north':
         // pattern1's top edge must match pattern2's bottom edge
+        const topRow1 = pattern1[0];
+        const bottomRow2 = pattern2[n - 1];
+        if (!topRow1 || !bottomRow2) return false;
         for (let x = 0; x < n; x++) {
-          if (pattern1[0][x] !== pattern2[n - 1][x]) return false;
+          if (topRow1[x] !== bottomRow2[x]) return false;
         }
         return true;
     }
@@ -362,18 +388,21 @@ export class WFCPatternUtils {
 
     // Check all pairs
     for (const p1 of patterns) {
+      const p1Constraints = constraints[p1.id];
+      if (!p1Constraints) continue;
+
       for (const p2 of patterns) {
         if (this.canBeAdjacent(p1.pattern, p2.pattern, 'east')) {
-          constraints[p1.id].east.add(p2.id);
+          p1Constraints.east.add(p2.id);
         }
         if (this.canBeAdjacent(p1.pattern, p2.pattern, 'west')) {
-          constraints[p1.id].west.add(p2.id);
+          p1Constraints.west.add(p2.id);
         }
         if (this.canBeAdjacent(p1.pattern, p2.pattern, 'south')) {
-          constraints[p1.id].south.add(p2.id);
+          p1Constraints.south.add(p2.id);
         }
         if (this.canBeAdjacent(p1.pattern, p2.pattern, 'north')) {
-          constraints[p1.id].north.add(p2.id);
+          p1Constraints.north.add(p2.id);
         }
       }
     }
@@ -403,7 +432,7 @@ export class WFCPattern {
   private readonly periodic: boolean;
 
   private rng: number;
-  private patternDistribution: Distribution<PatternId>;
+  // private patternDistribution: Distribution<PatternId>; // TODO: Use for weighted pattern selection
 
   constructor(options: WFCPatternOptions) {
     this.seed = options.seed;
@@ -422,16 +451,15 @@ export class WFCPattern {
     // Setup RNG
     this.rng = this.seed;
 
-    // Create weighted distribution for pattern selection
-    const weights: {[id: PatternId]: number} = {};
-    for (const p of this.patterns) {
-      weights[p.id] = p.frequency;
-    }
-
-    this.patternDistribution = new Distribution({
-      seed: this.seed,
-      source: weights,
-    });
+    // TODO: Create weighted distribution for pattern selection
+    // const weights: {[id: PatternId]: number} = {};
+    // for (const p of this.patterns) {
+    //   weights[p.id] = p.frequency;
+    // }
+    // this.patternDistribution = new Distribution({
+    //   seed: this.seed,
+    //   source: weights,
+    // });
   }
 
   /**
@@ -519,8 +547,28 @@ export class WFCPattern {
       if (!minCell) break;
 
       // Collapse cell
-      const possibleIds = Array.from(minCell.possiblePatterns);
+      const possibleIds = Array.from(minCell.possiblePatterns).filter(
+        (id): id is PatternId => id !== undefined
+      );
+      if (possibleIds.length === 0) {
+        contradictions++;
+        return {
+          success: false,
+          grid: null,
+          patternGrid: null,
+          metadata: {
+            contradictions,
+            backtracks,
+            patternSize: this.patternSize,
+            totalPatterns: this.patterns.length,
+          },
+        };
+      }
       const selectedId = possibleIds[Math.floor(this.random() * possibleIds.length)];
+      if (!selectedId) {
+        contradictions++;
+        continue;
+      }
       minCell.selectedPattern = selectedId;
       minCell.collapsed = true;
       minCell.possiblePatterns = new Set([selectedId]);
@@ -569,19 +617,31 @@ export class WFCPattern {
         const nx = cell.x + dx;
         const ny = cell.y + dy;
 
-        if (nx < 0 || nx >= cells[0].length || ny < 0 || ny >= cells.length) {
+        const firstRow = cells[0];
+        if (
+          !firstRow ||
+          nx < 0 ||
+          nx >= firstRow.length ||
+          ny < 0 ||
+          ny >= cells.length
+        ) {
           if (!this.periodic) continue;
           // TODO: Handle periodic boundaries
           continue;
         }
 
-        const neighbor = cells[ny][nx];
-        if (neighbor.collapsed) continue;
+        const neighborRow = cells[ny];
+        if (!neighborRow) continue;
+        const neighbor = neighborRow[nx];
+        if (!neighbor || neighbor.collapsed) continue;
 
         // Remove incompatible patterns from neighbor
         const allowedPatterns = new Set<PatternId>();
         for (const myPattern of cell.possiblePatterns) {
-          const compatible = this.constraints[myPattern][dir];
+          const constraint = this.constraints[myPattern];
+          if (!constraint) continue;
+          const compatible = constraint[dir];
+          if (!compatible) continue;
           for (const compatId of compatible) {
             allowedPatterns.add(compatId);
           }
@@ -616,12 +676,18 @@ export class WFCPattern {
       .map(() => Array(this.outputWidth).fill(''));
 
     for (let py = 0; py < cells.length; py++) {
-      for (let px = 0; px < cells[py].length; px++) {
-        const cell = cells[py][px];
-        if (!cell.selectedPattern) continue;
+      const cellRow = cells[py];
+      if (!cellRow) continue;
 
-        const pattern = this.patterns.find(p => p.id === cell.selectedPattern)!
-          .pattern;
+      for (let px = 0; px < cellRow.length; px++) {
+        const cell = cellRow[px];
+        if (!cell || !cell.selectedPattern) continue;
+
+        const patternData = this.patterns.find(
+          p => p.id === cell.selectedPattern
+        );
+        if (!patternData) continue;
+        const pattern = patternData.pattern;
 
         // Place pattern tiles
         for (let dy = 0; dy < this.patternSize; dy++) {
@@ -629,9 +695,14 @@ export class WFCPattern {
             const tx = px + dx;
             const ty = py + dy;
             if (tx < this.outputWidth && ty < this.outputHeight) {
+              const tileRow = tileGrid[ty];
+              const patternRow = pattern[dy];
+              if (!tileRow || !patternRow) continue;
+              const tile = patternRow[dx];
+              if (tile === undefined) continue;
               // If tile already set, keep it (patterns overlap)
-              if (!tileGrid[ty][tx]) {
-                tileGrid[ty][tx] = pattern[dy][dx];
+              if (!tileRow[tx]) {
+                tileRow[tx] = tile;
               }
             }
           }
