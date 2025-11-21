@@ -456,23 +456,50 @@ function generateAbstractTileset() {
 function generateLearnedTileset() {
   console.log('Generating learned pattern tileset...');
 
-  // Create a simple example pattern
-  const example: string[][] = [
-    ['A', 'A', 'B', 'B', 'C'],
-    ['A', 'B', 'B', 'C', 'C'],
-    ['B', 'B', 'C', 'C', 'D'],
-    ['B', 'C', 'C', 'D', 'D'],
-    ['C', 'C', 'D', 'D', 'E'],
+  // Create multiple varied example patterns with balanced state usage
+  const examples: string[][][] = [
+    [
+      ['A', 'A', 'B', 'B', 'A'],
+      ['A', 'B', 'C', 'B', 'A'],
+      ['B', 'C', 'D', 'C', 'B'],
+      ['B', 'C', 'E', 'C', 'B'],
+      ['A', 'B', 'B', 'B', 'A'],
+    ],
+    [
+      ['C', 'C', 'D', 'E', 'E'],
+      ['C', 'D', 'E', 'D', 'E'],
+      ['D', 'E', 'A', 'E', 'D'],
+      ['D', 'E', 'B', 'E', 'D'],
+      ['E', 'D', 'D', 'D', 'E'],
+    ],
+    [
+      ['E', 'A', 'A', 'A', 'C'],
+      ['A', 'B', 'A', 'B', 'C'],
+      ['A', 'A', 'D', 'C', 'C'],
+      ['B', 'C', 'D', 'E', 'D'],
+      ['C', 'C', 'E', 'D', 'D'],
+    ],
+    [
+      ['B', 'B', 'C', 'C', 'B'],
+      ['B', 'A', 'C', 'D', 'C'],
+      ['A', 'A', 'E', 'D', 'D'],
+      ['A', 'E', 'E', 'E', 'D'],
+      ['E', 'E', 'B', 'D', 'D'],
+    ],
   ];
 
-  // Learn constraints from the example
-  const constraints = WFCConstraintLearner.learn2DConstraints([example]);
+  // Learn weighted constraints from multiple examples
+  const constraints = WFCConstraintLearner.learnWeightedConstraints(
+    examples,
+    888
+  );
 
   const wfc = new WFC({
     seed: 999,
     states: ['A', 'B', 'C', 'D', 'E'],
     constraints,
-    entropyMode: 'shannon',
+    entropyMode: 'weighted-shannon',
+    backtrack: {maxAttempts: 100},
   });
 
   const grid = new WFCGrid2D({wfc, width: 30, height: 20});
@@ -485,6 +512,8 @@ function generateLearnedTileset() {
       svg
     );
     console.log('✓ Generated: readme/images/wfc-learned.svg');
+  } else {
+    console.log('✗ Failed to generate learned tileset');
   }
 }
 
