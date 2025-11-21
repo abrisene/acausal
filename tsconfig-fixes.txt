@@ -1,0 +1,10 @@
+Need to add null checks at:
+- Line 189: pattern row access
+- Line 261: pattern access
+- Line 267: pattern access 
+- Lines 320-341: pattern edge access
+- Lines 367-376: pattern edge access  
+- Line 406: remove unused variable
+- Lines 524-526: Set type issues
+- Lines 572-602: neighbor null checks
+- Lines 619-634: cell/pattern null checks
