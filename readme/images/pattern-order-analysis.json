@@ -1,0 +1,66 @@
+{
+  "order1": {
+    "approach": "Single tile adjacency",
+    "constraints": {
+      "#": {
+        "north": [
+          "#",
+          "."
+        ],
+        "south": [
+          "#",
+          "."
+        ],
+        "east": [
+          "#",
+          "."
+        ],
+        "west": [
+          "#",
+          "."
+        ]
+      },
+      ".": {
+        "north": [
+          "#",
+          "."
+        ],
+        "south": [
+          ".",
+          "#"
+        ],
+        "east": [
+          ".",
+          "#"
+        ],
+        "west": [
+          "#",
+          "."
+        ]
+      }
+    },
+    "problem": "Loses all structure - generates noise"
+  },
+  "order2": {
+    "approach": "2x2 overlapping patterns",
+    "totalPatterns": 238,
+    "uniquePatterns": 13,
+    "patternSize": 2,
+    "benefit": "Captures corners and edges"
+  },
+  "order3": {
+    "approach": "3x3 overlapping patterns",
+    "totalPatterns": 208,
+    "uniquePatterns": 36,
+    "patternSize": 3,
+    "benefit": "Captures complete structural elements (pillars)"
+  },
+  "order5": {
+    "approach": "5x5 overlapping patterns",
+    "totalPatterns": 154,
+    "uniquePatterns": 42,
+    "patternSize": 5,
+    "benefit": "Captures structural elements with context"
+  },
+  "recommendation": "Use 3x3 or larger for recognizable patterns"
+}

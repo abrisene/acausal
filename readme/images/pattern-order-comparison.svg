@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="600" fill="#1a1a1a"/>
+
+  <!-- Title -->
+  <text x="20" y="40" font-size="24" fill="#ffffff" font-weight="bold">
+    WFC Pattern Order Comparison
+  </text>
+
+  <!-- Order 1 -->
+  <text x="50" y="100" font-size="16" fill="#ff6b6b" font-weight="bold">
+    Order-1 (Single Tiles)
+  </text>
+  <text x="50" y="120" font-size="12" fill="#999999">
+    ❌ Learns: "# next to #"
+  </text>
+  <text x="50" y="140" font-size="12" fill="#999999">
+    Result: Random noise
+  </text>
+  <rect x="50" y="160" width="200" height="200" fill="#333333" stroke="#666666" stroke-width="2"/>
+  <text x="70" y="260" font-size="48" fill="#666666">NOISE</text>
+
+  <!-- Order 2 -->
+  <text x="350" y="100" font-size="16" fill="#ffa500" font-weight="bold">
+    Order-2 (2x2 Patterns)
+  </text>
+  <text x="350" y="120" font-size="12" fill="#999999">
+    ⚠️  Learns: Corners, edges
+  </text>
+  <text x="350" y="140" font-size="12" fill="#999999">
+    Result: Better, still chaotic
+  </text>
+  <rect x="350" y="160" width="200" height="200" fill="#333333" stroke="#666666" stroke-width="2"/>
+  <rect x="370" y="180" width="20" height="20" fill="#8B4513"/>
+  <rect x="390" y="180" width="20" height="20" fill="#8B4513"/>
+  <rect x="450" y="200" width="20" height="20" fill="#8B4513"/>
+  <text x="365" y="340" font-size="10" fill="#999999">Scattered patterns</text>
+
+  <!-- Order 3 -->
+  <text x="650" y="100" font-size="16" fill="#4ecdc4" font-weight="bold">
+    Order-3 (3x3 Patterns)
+  </text>
+  <text x="650" y="120" font-size="12" fill="#999999">
+    ✅ Learns: Complete structures
+  </text>
+  <text x="650" y="140" font-size="12" fill="#999999">
+    Result: Recognizable patterns
+  </text>
+  <rect x="650" y="160" width="200" height="200" fill="#333333" stroke="#666666" stroke-width="2"/>
+  <!-- 3x3 pillar -->
+  <rect x="690" y="200" width="15" height="15" fill="#8B4513"/>
+  <rect x="705" y="200" width="15" height="15" fill="#8B4513"/>
+  <rect x="720" y="200" width="15" height="15" fill="#8B4513"/>
+  <rect x="690" y="215" width="15" height="15" fill="#8B4513"/>
+  <rect x="720" y="215" width="15" height="15" fill="#8B4513"/>
+  <rect x="690" y="230" width="15" height="15" fill="#8B4513"/>
+  <rect x="705" y="230" width="15" height="15" fill="#8B4513"/>
+  <rect x="720" y="230" width="15" height="15" fill="#8B4513"/>
+  <!-- Another pillar -->
+  <rect x="750" y="200" width="15" height="15" fill="#8B4513"/>
+  <rect x="765" y="200" width="15" height="15" fill="#8B4513"/>
+  <rect x="780" y="200" width="15" height="15" fill="#8B4513"/>
+  <rect x="750" y="215" width="15" height="15" fill="#8B4513"/>
+  <rect x="780" y="215" width="15" height="15" fill="#8B4513"/>
+  <rect x="750" y="230" width="15" height="15" fill="#8B4513"/>
+  <rect x="765" y="230" width="15" height="15" fill="#8B4513"/>
+  <rect x="780" y="230" width="15" height="15" fill="#8B4513"/>
+  <text x="680" y="340" font-size="10" fill="#4ecdc4">Structured output!</text>
+
+  <!-- Input -->
+  <text x="950" y="100" font-size="16" fill="#48bb78" font-weight="bold">
+    Original Input
+  </text>
+  <text x="950" y="120" font-size="12" fill="#999999">
+    Hand-designed pattern
+  </text>
+  <rect x="950" y="140" width="200" height="220" fill="#000000" stroke="#48bb78" stroke-width="3"/>
+  <text x="960" y="160" font-size="8" fill="#48bb78" font-family="monospace">##################
+#................#
+#..###..###..###.#
+#..#.#..#.#..#.#.#
+#..###..###..###.#
+#................#
+#..###..###..###.#
+#..#.#..#.#..#.#.#
+#..###..###..###.#
+#................#
+#..###..###..###.#
+#..#.#..#.#..#.#.#
+#..###..###..###.#
+#................#
+##################</text>
+
+  <!-- Explanation -->
+  <text x="50" y="450" font-size="14" fill="#ffffff" font-weight="bold">
+    Why This Matters:
+  </text>
+  <text x="50" y="480" font-size="12" fill="#cccccc">
+    • Order-1 (current): Treats each tile independently → generates noise
+  </text>
+  <text x="50" y="510" font-size="12" fill="#cccccc">
+    • Order-3+: Learns tile PATTERNS (NxN chunks) → generates recognizable structures
+  </text>
+  <text x="50" y="540" font-size="12" fill="#cccccc">
+    • Original WFC paper uses overlapping 3x3+ patterns, not single tiles
+  </text>
+  <text x="50" y="570" font-size="12" fill="#48bb78" font-weight="bold">
+    ✅ SOLUTION: Implement overlapping pattern WFC or use Wang tiles
+  </text>
+</svg>
