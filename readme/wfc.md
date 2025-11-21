@@ -15,12 +15,39 @@ Think of WFC as solving a sudoku puzzle where each cell can be multiple values u
 **Key Features:**
 - **Topology-Agnostic**: Works on 2D grids, 3D voxels, graphs, or any custom structure
 - **Constraint-Based**: Define adjacency rules for coherent generation
+- **Pattern-Based**: Use overlapping NxN patterns for structural coherence (Order-3+)
 - **Learnable**: Automatically extract constraints from example patterns
 - **Deterministic**: Same seed produces same results
 - **Composable**: Integrates with Distribution and MarkovChain
 - **Backtracking**: Intelligent contradiction recovery
 - **Boundaries**: Configurable edge behavior (wrap, open, fixed)
 - **Symmetry**: Auto-generate symmetric constraints
+
+## Two Approaches to WFC
+
+This library implements **two** WFC algorithms:
+
+### 1. Adjacency-Based WFC (Simple Constraints)
+- Learns single-tile adjacency rules: "tile A can be next to tile B"
+- Best for abstract generation with simple rules
+- Faster and simpler to configure
+- May produce noise when learning from structured examples
+
+### 2. Pattern-Based WFC (Overlapping Patterns)
+- Learns NxN tile chunks (e.g., 3×3 patterns)
+- Preserves structural patterns from examples
+- The **original WFC algorithm** from the paper
+- Essential for learning from architectural or structured examples
+
+![Adjacency vs Pattern Comparison](./images/adjacency-vs-pattern.svg)
+
+**When to use Pattern-Based WFC:**
+- Learning from hand-crafted examples with recognizable structures
+- Terrain generation with specific biome transitions
+- Architecture with structural elements (pillars, rooms, corridors)
+- Any case where adjacency-based WFC produces "noise"
+
+See [Pattern-Based WFC](#pattern-based-wfc) for detailed documentation.
 
 **WFC Quickstart Example - Terrain Generation:**
 
@@ -98,7 +125,8 @@ if (terrain) {
 - [Core Concepts](#core-concepts)
 
 ### API Reference
-- [WFC Class](#wfc-class)
+- [WFC Class (Adjacency)](#wfc-class)
+- [WFCPattern Class (Overlapping)](#wfcpattern-class)
 - [WFCGrid2D Adapter](#wfcgrid2d-adapter)
 - [WFCConstraintLearner](#wfcconstraintlearner)
 - [WFCSymmetry](#wfcsymmetry)
@@ -414,6 +442,403 @@ Returns a copy of the constraint rules.
 ```typescript
 const constraints = wfc.getConstraints();
 ```
+
+---
+
+## WFCPattern Class
+
+**Pattern-based WFC** using overlapping NxN tile patterns - the **original WFC algorithm** from the paper.
+
+### Why Pattern-Based WFC?
+
+Adjacency-based WFC (single-tile rules) can only learn "tile A next to tile B". This works for abstract generation but **produces noise** when learning from structured examples:
+
+![Pattern Order Comparison](./images/pattern-order-comparison.svg)
+
+**Problem with Order-1 (Adjacency):**
+```
+Input: Structured 3×3 pillars
+Learned: "# can be next to #" and "# can be next to ."
+Output: Random noise ❌
+```
+
+**Solution with Order-3 (3×3 Patterns):**
+```
+Input: Structured 3×3 pillars
+Learned: 36 complete structural patterns including pillars
+Output: Recognizable pillar structures ✅
+```
+
+### Quick Start - Pattern Learning
+
+```typescript
+import { WFCPattern } from 'acausal';
+
+// Hand-craft a small example with structure
+const example = [
+  ['#', '#', '#', '#', '#', '#', '#'],
+  ['#', '.', '.', '.', '.', '.', '#'],
+  ['#', '.', '#', '#', '#', '.', '#'],
+  ['#', '.', '#', '.', '#', '.', '#'],
+  ['#', '.', '.', '.', '.', '.', '#'],
+  ['#', '#', '#', '#', '#', '#', '#']
+];
+
+// Generate with 3×3 overlapping patterns
+const result = WFCPattern.fromExample(example, {
+  seed: 42,
+  patternSize: 3,           // Use 3×3 tile patterns
+  outputWidth: 40,
+  outputHeight: 30,
+  enableRotation: false,    // Optional: add rotated patterns
+  enableReflection: false,  // Optional: add reflected patterns
+  backtrack: false
+});
+
+if (result.success && result.grid) {
+  console.log('Generated!');
+  console.log('Patterns used:', result.metadata.totalPatterns);
+  console.log('Contradictions:', result.metadata.contradictions);
+
+  // result.grid is a 40×30 grid preserving structural patterns
+}
+```
+
+### Constructor
+
+```typescript
+new WFCPattern(options: WFCPatternOptions)
+```
+
+**WFCPatternOptions:**
+
+```typescript
+interface WFCPatternOptions {
+  // Required
+  seed: number;
+  patterns: PatternData[];      // Extracted patterns with frequencies
+  outputWidth: number;
+  outputHeight: number;
+  patternSize: number;          // Size of NxN patterns (2, 3, 5, etc.)
+
+  // Optional
+  constraints?: PatternConstraints;  // Auto-computed if not provided
+}
+
+interface PatternData {
+  id: PatternId;
+  pattern: Pattern;         // NxN grid of tiles
+  frequency: number;        // How often pattern appears
+  size: number;
+}
+
+interface PatternConstraints {
+  [patternId: PatternId]: {
+    north: Set<PatternId>;
+    south: Set<PatternId>;
+    east: Set<PatternId>;
+    west: Set<PatternId>;
+  };
+}
+```
+
+### Static Methods
+
+#### `WFCPattern.fromExample(grid, options): PatternGenerationResult`
+
+Convenience method to extract patterns and generate in one step.
+
+```typescript
+const result = WFCPattern.fromExample(exampleGrid, {
+  seed: 42,
+  patternSize: 3,
+  outputWidth: 50,
+  outputHeight: 30,
+  enableRotation: true,     // Add 90°/180°/270° rotations
+  enableReflection: true,   // Add horizontal/vertical reflections
+  backtrack: false
+});
+
+if (result.success) {
+  const grid = result.grid;  // Generated grid
+  console.log('Patterns:', result.metadata.totalPatterns);
+}
+```
+
+#### `WFCPatternUtils.extractPatterns(grid, options): PatternData[]`
+
+Extract all NxN patterns from an example grid.
+
+```typescript
+import { WFCPatternUtils } from 'acausal';
+
+const patterns = WFCPatternUtils.extractPatterns(exampleGrid, {
+  patternSize: 3,
+  enableRotation: true,
+  enableReflection: true,
+  minFrequency: 1  // Filter rare patterns
+});
+
+console.log(`Extracted ${patterns.length} unique patterns`);
+for (const p of patterns) {
+  console.log(`Pattern ${p.id}: frequency ${p.frequency}`);
+}
+```
+
+#### `WFCPatternUtils.computeConstraints(patterns): PatternConstraints`
+
+Compute which patterns can be adjacent based on edge matching.
+
+```typescript
+const patterns = WFCPatternUtils.extractPatterns(exampleGrid, {
+  patternSize: 3
+});
+
+const constraints = WFCPatternUtils.computeConstraints(patterns);
+
+// constraints[patternA].east contains all patterns that can be east of patternA
+```
+
+### Instance Methods
+
+#### `generate(): PatternGenerationResult`
+
+Run the WFC algorithm to generate output.
+
+```typescript
+const wfc = new WFCPattern({
+  seed: 42,
+  patterns: extractedPatterns,
+  outputWidth: 40,
+  outputHeight: 30,
+  patternSize: 3
+});
+
+const result = wfc.generate();
+
+if (result.success) {
+  console.log('Success!');
+  console.log('Grid:', result.grid);
+  console.log('Metadata:', result.metadata);
+} else {
+  console.log('Failed - contradiction');
+}
+```
+
+**Returns:**
+
+```typescript
+interface PatternGenerationResult {
+  success: boolean;
+  grid: string[][] | null;
+  patternGrid: (PatternId | null)[][] | null;
+  metadata: {
+    totalPatterns: number;
+    contradictions: number;
+    steps: number;
+    timeMs: number;
+  };
+}
+```
+
+### Pattern Size Guide
+
+Choose pattern size based on your needs:
+
+**Order-2 (2×2 patterns):**
+- Captures corners and edges
+- ~10-20 unique patterns from typical examples
+- Good for simple tilesets
+- Still somewhat chaotic
+
+**Order-3 (3×3 patterns):** ✅ **Recommended**
+- Captures complete structural elements
+- ~30-50 unique patterns from typical examples
+- Best balance of structure and variety
+- Good for terrain, dungeons, platformers
+
+**Order-5 (5×5 patterns):**
+- Captures structures with context
+- ~40-80 unique patterns from typical examples
+- Very faithful to examples
+- Requires larger training examples
+
+### Examples
+
+#### Terrain Generation with Biomes
+
+```typescript
+import { WFCPattern } from 'acausal';
+
+// Example with natural terrain transitions
+const terrainExample = [
+  ['~', '~', '~', '~', '~'],
+  ['~', '∴', '∴', '∴', '~'],
+  ['~', '∴', '▓', '∴', '~'],
+  ['~', '∴', '▓', '♣', '~'],
+  ['~', '~', '~', '~', '~']
+];
+
+const result = WFCPattern.fromExample(terrainExample, {
+  seed: 42,
+  patternSize: 3,
+  outputWidth: 60,
+  outputHeight: 40,
+  enableRotation: false,
+  enableReflection: true  // Symmetrical terrain
+});
+
+if (result.success && result.grid) {
+  // result.grid has smooth biome transitions!
+  console.log('Generated terrain with', result.metadata.totalPatterns, 'patterns');
+}
+```
+
+![Terrain Pattern Learning](./images/wfc-pattern-comparison-terrain.svg)
+
+#### Dungeon Generation
+
+```typescript
+// Dungeon with rooms and corridors
+const dungeonExample = [
+  ['#', '#', '#', '#', '#', '#'],
+  ['#', '.', '.', '.', '.', '#'],
+  ['#', '.', '#', '#', '.', '#'],
+  ['#', '.', '#', '.', '.', '#'],
+  ['#', '.', '.', '.', '.', '#'],
+  ['#', '#', '#', '#', '#', '#']
+];
+
+const result = WFCPattern.fromExample(dungeonExample, {
+  seed: 123,
+  patternSize: 3,
+  outputWidth: 40,
+  outputHeight: 25,
+  enableRotation: false,
+  enableReflection: false
+});
+
+if (result.success && result.grid) {
+  // Generates dungeons with similar architectural patterns
+  for (const row of result.grid) {
+    console.log(row.join(''));
+  }
+}
+```
+
+![Dungeon Pattern Learning](./images/wfc-pattern-comparison-dungeon.svg)
+
+#### Comparing Pattern Sizes
+
+```typescript
+// Generate with different pattern orders
+for (const order of [2, 3, 5]) {
+  const result = WFCPattern.fromExample(example, {
+    seed: 42,
+    patternSize: order,
+    outputWidth: 30,
+    outputHeight: 20
+  });
+
+  if (result.success) {
+    console.log(`Order-${order}: ${result.metadata.totalPatterns} patterns`);
+    // Higher orders = more faithful to example structure
+  }
+}
+```
+
+![Pattern Order Comparison](./images/wfc-pattern-order3.svg)
+
+#### With Symmetries
+
+```typescript
+// Extract more patterns via rotation and reflection
+const result = WFCPattern.fromExample(example, {
+  seed: 42,
+  patternSize: 3,
+  outputWidth: 40,
+  outputHeight: 30,
+  enableRotation: true,     // Adds 90°, 180°, 270° rotations
+  enableReflection: true    // Adds horizontal and vertical flips
+});
+
+// Symmetries create more pattern variations while preserving structure
+console.log('Patterns with symmetries:', result.metadata.totalPatterns);
+```
+
+![With Symmetries](./images/wfc-pattern-symmetry.svg)
+
+### Pattern Edge Matching
+
+Patterns are compatible if their overlapping edges match exactly:
+
+```typescript
+// Pattern A (3×3):          Pattern B (3×3):
+// ['#', '#', '#']           ['#', '#', '.']
+// ['#', '.', '#']           ['#', '.', '.']
+// ['#', '#', '#']           ['#', '#', '#']
+
+// Can B be EAST of A?
+// Check if A's right edge matches B's left edge:
+//   A.right = ['#', '#', '#']
+//   B.left  = ['#', '#', '#']
+//   Match! ✅ B can be east of A
+
+// Can B be SOUTH of A?
+// Check if A's bottom edge matches B's top edge:
+//   A.bottom = ['#', '#', '#']
+//   B.top    = ['#', '#', '.']
+//   No match ❌ B cannot be south of A
+```
+
+### Overlapping Placement
+
+Patterns overlap by (N-1)×(N-1) to create coherent output:
+
+```
+Pattern Grid (3×3 patterns):    Final Tile Grid (5×5 tiles):
+  P0  P1                          ###..
+  P2  P3                          ###..
+                                  ##...
+                                  .....
+                                  .....
+
+Each pattern contributes tiles, overlapping with neighbors.
+```
+
+### Performance Considerations
+
+Pattern-based WFC is more computationally expensive than adjacency-based:
+
+```
+Grid Size    | Order-2 | Order-3 | Order-5
+-------------|---------|---------|----------
+30×20        | ~50ms   | ~100ms  | ~200ms
+50×30        | ~150ms  | ~300ms  | ~600ms
+100×60       | ~1s     | ~2s     | ~5s
+```
+
+**Optimization tips:**
+- Use smallest pattern size that captures your structure (usually 3)
+- Generate smaller grids and tile them
+- Pre-extract and save patterns for reuse
+- Disable rotation/reflection if not needed
+
+### When to Use Which Approach
+
+**Use Adjacency-Based WFC (`WFC` class):**
+- Manual constraint definition
+- Abstract generation
+- Simple tile relationships
+- Maximum performance
+- Working with graph topologies
+
+**Use Pattern-Based WFC (`WFCPattern` class):**
+- Learning from examples
+- Structured generation (architecture, terrain)
+- Preserving spatial patterns
+- When adjacency produces "noise"
+- Faithful recreation of example style
 
 ---
 
@@ -1992,27 +2417,52 @@ See [examples/wfc-markov-hybrid.ts](../examples/wfc-markov-hybrid.ts) for comple
 ## What's New in v3.6
 
 ### Core Features
+- **Two WFC Algorithms**: Adjacency-based and Pattern-based (overlapping)
+- **Pattern-Based WFC**: The original algorithm using NxN tile patterns
 - Complete WFC implementation as first-class primitive
 - Topology-agnostic design (2D, 3D, graphs, custom)
 - 236 comprehensive tests (100% passing)
+
+### Pattern-Based Generation (NEW!)
+- `WFCPattern` class for overlapping NxN patterns
+- Pattern extraction with rotation and reflection symmetries
+- Edge-based pattern matching for coherence
+- Preserves structural patterns from examples
+- Order-2, Order-3, and Order-5+ support
 
 ### Configuration Options
 - Three entropy modes (count, shannon, weighted-shannon)
 - Boundary conditions (wrap, open, fixed)
 - Backtracking for contradiction recovery
 - Dimension-agnostic symmetry transforms
+- Pattern size selection (2×2, 3×3, 5×5, etc.)
 
 ### Learning & Integration
-- WFCConstraintLearner for automatic rule extraction
+- WFCConstraintLearner for adjacency-based learning
+- WFCPattern for pattern-based learning from examples
 - Integration with Distribution for weighted constraints
 - Integration with MarkovChain for hybrid generation
 - Full serialization support
 
 ### Performance
-- 100x100 grids: <1000ms
-- 200x200 grids: <5000ms
+- Adjacency-based: 100x100 grids <1000ms, 200x200 <5000ms
+- Pattern-based: 30×20 grids ~100ms (Order-3), 50×30 ~300ms
 - Efficient propagation with queue-based algorithm
 - Optimized backtracking with snapshot system
+
+### When to Use Each Approach
+
+**Adjacency-Based WFC** (`WFC` class):
+- Manual constraint definition with simple rules
+- Abstract generation and graph topologies
+- Maximum performance for large grids
+- Works with any topology (hex, 3D, custom)
+
+**Pattern-Based WFC** (`WFCPattern` class):
+- Learning from hand-crafted examples
+- Preserving architectural and structural patterns
+- Terrain with specific biome transitions
+- When adjacency produces "noise" instead of structure
 
 ---
 
