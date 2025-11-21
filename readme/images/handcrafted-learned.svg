@@ -1,0 +1,4620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="650" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="650" fill="#1a1a1a"/>
+  
+    <text x="10" y="30" font-size="18" fill="#ffffff" font-weight="bold">
+      WFC Learned from Hand-Designed Levels
+    </text>
+  
+  <g transform="translate(0, 40)">
+    
+        <rect x="0" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="0"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="0"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="25"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="25"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="50"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="50"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="75"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="75"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="100"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="100"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="125"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="125"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="150"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="150"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="175"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="175"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="200"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="200"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="225"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="225"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="250"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="250"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="275"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="275"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="300"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="300"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="325"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="325"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="350"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="350"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="375"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="375"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="400"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="400"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="425"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="425"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="450"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="450"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="475"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="475"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="500"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="500"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="525"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="525"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="550"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="550"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="0" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="25" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="50" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="75" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="100" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="125" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="150" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="175" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="200" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="225" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="250" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="275" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="300" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="325" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="350" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="375" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="400" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="425" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="450" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="475" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="500" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="525" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="550" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="575" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="600" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="625" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="650" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="675" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="700" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="725" y="575"
+              width="25" height="25"
+              fill="#C4B5A0"
+              stroke="#D4C5B0"
+              stroke-width="0.5"/>
+      
+        <rect x="750" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+        <rect x="775" y="575"
+              width="25" height="25"
+              fill="#3A3A3A"
+              stroke="#555555"
+              stroke-width="0.5"/>
+      
+  </g>
+</svg>
