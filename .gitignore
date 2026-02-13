@@ -3,6 +3,9 @@
 dist/
 lib/
 
+# Generated docs
+docs/
+
 # Work in Progress
 wip/
 bak/
