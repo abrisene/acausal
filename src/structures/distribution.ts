@@ -122,16 +122,6 @@ export class Distribution<T extends string = string> {
   }
 
   /**
-   * Applies a DTO's data to the source and normal distributions.
-   * @param model A Distribution data transfer object.
-   */
-  private update(model: DistributionDTO) {
-    this._source = model.source;
-    this._normal = model.normal;
-    return this;
-  }
-
-  /**
    * Picks one more values from a Distribution without exclusion.
    * If you just need to pick one value, you should use pickOne instead.
    * @param count       The number of picks to make (default 1).
@@ -158,9 +148,13 @@ export class Distribution<T extends string = string> {
    * @param key   Key to be added.
    * @param value Value of the key to add.
    */
-  public add(key: T, value: number) {
+  public add(key: T, value: number): Distribution<T> {
     const data = Distribution.addValues({ source: this._source, normal: this._normal }, { [key]: value });
-    return this.update(data);
+    return new Distribution<T>({
+      engine: this._engine.clone(),
+      source: data.source,
+      normal: data.normal,
+    });
   }
 
   /**
@@ -169,18 +163,26 @@ export class Distribution<T extends string = string> {
    * only has normalized values.
    * @param additions   An object containing additions.
    */
-  public addValues(additions: WeightedDistribution) {
+  public addValues(additions: WeightedDistribution): Distribution<T> {
     const data = Distribution.addValues({ source: this._source, normal: this._normal }, additions);
-    return this.update(data);
+    return new Distribution<T>({
+      engine: this._engine.clone(),
+      source: data.source,
+      normal: data.normal,
+    });
   }
 
   /**
    * Removes a key or array of keys from a Distribution and renormalizes.
    * @param keys  Key or Keys to be removed.
    */
-  public remove(keys: T | T[]) {
+  public remove(keys: T | T[]): Distribution<T> {
     const data = Distribution.remove({ source: this._source, normal: this._normal }, keys);
-    return this.update(data);
+    return new Distribution<T>({
+      engine: this._engine.clone(),
+      source: data.source,
+      normal: data.normal,
+    });
   }
 
   /**

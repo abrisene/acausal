@@ -676,12 +676,13 @@ describe('Markov Chain', () => {
       const mA = new MarkovChain({ sequences: sU });
       const mB = mA.clone();
       const mC = mB.clone();
-      mB.addSequences(sC2);
+      const mD = mB.addSequences(sC2);
       expect(mA.dto).toEqual(dtoU);
-      expect(mB.dto).not.toEqual(dtoU);
+      expect(mB.dto).toEqual(dtoU);
       expect(mC.dto).toEqual(dtoU);
-      expect(mB.dto).not.toEqual(mA.dto);
-      expect(mB.dto).not.toEqual(mC.dto);
+      expect(mD.dto).not.toEqual(dtoU);
+      expect(mD.dto).not.toEqual(mA.dto);
+      expect(mD.dto).not.toEqual(mC.dto);
     });
     it('can find grams within its model', () => {
       const mA = new MarkovChain(dtoB3);
@@ -689,12 +690,12 @@ describe('Markov Chain', () => {
       expect(mA.findGram(['a', 'n'])).toEqual(MarkovChain.findGram(dtoB3, ['a', 'n']));
     });
     it('can add an edge to an existing markov chain', () => {
-      const m1 = new MarkovChain({ maxOrder: 2 });
-      m1.addEdge('a', undefined, 'b', 1);
-      m1.addEdge('b', 'a', 'c', 1);
-      m1.addEdge('c', 'b', undefined, 1);
-      m1.addEdge(['a', 'b'], undefined, 'c', 2);
-      m1.addEdge(['b', 'c'], 'a', undefined, 2);
+      let m1 = new MarkovChain({ maxOrder: 2 });
+      m1 = m1.addEdge('a', undefined, 'b', 1);
+      m1 = m1.addEdge('b', 'a', 'c', 1);
+      m1 = m1.addEdge('c', 'b', undefined, 1);
+      m1 = m1.addEdge(['a', 'b'], undefined, 'c', 2);
+      m1 = m1.addEdge(['b', 'c'], 'a', undefined, 2);
 
       // DTO and edge degrees match expected results.
       expect(m1.serialize(true)).toEqual(dtoGU3IExpected);
@@ -705,9 +706,9 @@ describe('Markov Chain', () => {
       expect(m1.grams.c.degreeOut).toBe(0);
       expect(m1.grams.c.degreeIn).toBe(1);
 
-      m1.addEdge('b', 'x', undefined, 1);
-      m1.addEdge('b', undefined, 'a', 1);
-      m1.addEdge('b', undefined, 'a', 1);
+      m1 = m1.addEdge('b', 'x', undefined, 1);
+      m1 = m1.addEdge('b', undefined, 'a', 1);
+      m1 = m1.addEdge('b', undefined, 'a', 1);
       expect(m1.grams.b.degreeIn).toBe(2);
       expect(m1.grams.b.degreeOut).toBe(2);
     });
@@ -965,8 +966,7 @@ describe('Markov Chain', () => {
 
   describe('Generic Types and Utility Methods', () => {
     test('hasGram should correctly check for gram existence', () => {
-      const chain = new MarkovChain({ maxOrder: 2 });
-      chain.addSequence(['a', 'b', 'c']);
+      const chain = new MarkovChain({ maxOrder: 2 }).addSequence(['a', 'b', 'c']);
 
       expect(chain.hasGram(['a'])).toBe(true);
       expect(chain.hasGram(['a', 'b'])).toBe(true);
@@ -975,8 +975,7 @@ describe('Markov Chain', () => {
     });
 
     test('getGramsByOrder should return grams of specific order', () => {
-      const chain = new MarkovChain({ maxOrder: 2 });
-      chain.addSequence(['a', 'b', 'c', 'd']);
+      const chain = new MarkovChain({ maxOrder: 2 }).addSequence(['a', 'b', 'c', 'd']);
 
       const order1Grams = chain.getGramsByOrder(1);
       const order2Grams = chain.getGramsByOrder(2);
@@ -988,9 +987,9 @@ describe('Markov Chain', () => {
     });
 
     test('getStats should return chain statistics', () => {
-      const chain = new MarkovChain({ maxOrder: 2 });
-      chain.addSequence(['a', 'b', 'c']);
-      chain.addSequence(['a', 'b', 'd']);
+      const chain = new MarkovChain({ maxOrder: 2 })
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['a', 'b', 'd']);
 
       const stats = chain.getStats();
 
@@ -1030,13 +1029,13 @@ describe('Markov Chain', () => {
 
   describe('Chain Blending', () => {
     test('blend() should combine multiple chains with arithmetic mean', () => {
-      const chain1 = new MarkovChain({ maxOrder: 1 });
-      chain1.addSequence(['a', 'b', 'c']);
-      chain1.addSequence(['a', 'b', 'd']);
+      const chain1 = new MarkovChain({ maxOrder: 1 })
+        .addSequence(['a', 'b', 'c'])
+        .addSequence(['a', 'b', 'd']);
 
-      const chain2 = new MarkovChain({ maxOrder: 1 });
-      chain2.addSequence(['a', 'x', 'y']);
-      chain2.addSequence(['a', 'x', 'z']);
+      const chain2 = new MarkovChain({ maxOrder: 1 })
+        .addSequence(['a', 'x', 'y'])
+        .addSequence(['a', 'x', 'z']);
 
       const blended = MarkovChain.blend([
         { chain: chain1, weight: 0.5 },
@@ -1077,8 +1076,7 @@ describe('Markov Chain', () => {
     });
 
     test('blend() should handle single chain input', () => {
-      const chain = new MarkovChain({ maxOrder: 1 });
-      chain.addSequence(['a', 'b', 'c']);
+      const chain = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'b', 'c']);
 
       const blended = MarkovChain.blend([{ chain, weight: 1.0 }]);
 
@@ -1087,11 +1085,9 @@ describe('Markov Chain', () => {
     });
 
     test('blend() should normalize weights', () => {
-      const chain1 = new MarkovChain({ maxOrder: 1 });
-      chain1.addSequence(['a', 'b']);
+      const chain1 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'b']);
 
-      const chain2 = new MarkovChain({ maxOrder: 1 });
-      chain2.addSequence(['a', 'c']);
+      const chain2 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'c']);
 
       // Weights don't sum to 1
       const blended = MarkovChain.blend(
@@ -1109,11 +1105,9 @@ describe('Markov Chain', () => {
     });
 
     test('blend() should support different blending strategies', () => {
-      const chain1 = new MarkovChain({ maxOrder: 1 });
-      chain1.addSequence(['a', 'b']);
+      const chain1 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'b']);
 
-      const chain2 = new MarkovChain({ maxOrder: 1 });
-      chain2.addSequence(['a', 'c']);
+      const chain2 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'c']);
 
       const strategies: Array<'arithmetic' | 'geometric' | 'max' | 'min'> = ['arithmetic', 'geometric', 'max', 'min'];
 
@@ -1131,15 +1125,13 @@ describe('Markov Chain', () => {
     });
 
     test('blend() should filter low-weight states with minWeight option', () => {
-      const chain1 = new MarkovChain({ maxOrder: 1 });
+      let chain1 = new MarkovChain({ maxOrder: 1 });
       // Add 'b' with high frequency
       for (let i = 0; i < 10; i++) {
-        chain1.addSequence(['a', 'b']);
+        chain1 = chain1.addSequence(['a', 'b']);
       }
 
-      const chain2 = new MarkovChain({ maxOrder: 1 });
-      // Add 'c' with low frequency
-      chain2.addSequence(['a', 'c']);
+      const chain2 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'c']);
 
       const blended = MarkovChain.blend(
         [
@@ -1663,8 +1655,7 @@ describe('Markov Chain', () => {
     });
 
     test('instance score() delegates to static score()', () => {
-      const chain = new MarkovChain({ maxOrder: 2 });
-      chain.addSequences([['a', 'b', 'c']]);
+      const chain = new MarkovChain({ maxOrder: 2 }).addSequences([['a', 'b', 'c']]);
 
       const instanceScore = chain.score(['a', 'b', 'c']);
       const staticScore = MarkovChain.score(chain.model, ['a', 'b', 'c']);
@@ -1673,8 +1664,7 @@ describe('Markov Chain', () => {
     });
 
     test('instance getStats() delegates to static getStats()', () => {
-      const chain = new MarkovChain({ maxOrder: 2 });
-      chain.addSequences([['a', 'b', 'c']]);
+      const chain = new MarkovChain({ maxOrder: 2 }).addSequences([['a', 'b', 'c']]);
 
       const instanceStats = chain.getStats();
       const staticStats = MarkovChain.getStats(chain.model);
@@ -1861,10 +1851,8 @@ describe('Markov Chain', () => {
 
   describe('Branch Coverage', () => {
     test('blend with harmonic strategy', () => {
-      const chain1 = new MarkovChain({ maxOrder: 1 });
-      chain1.addSequence(['a', 'b']);
-      const chain2 = new MarkovChain({ maxOrder: 1 });
-      chain2.addSequence(['a', 'c']);
+      const chain1 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'b']);
+      const chain2 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'c']);
 
       const blended = MarkovChain.blend(
         [
@@ -1878,10 +1866,8 @@ describe('Markov Chain', () => {
     });
 
     test('blend with harmonic strategy and zero values', () => {
-      const chain1 = new MarkovChain({ maxOrder: 1 });
-      chain1.addSequence(['a', 'b']);
-      const chain2 = new MarkovChain({ maxOrder: 1 });
-      chain2.addSequence(['a', 'c']);
+      const chain1 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'b']);
+      const chain2 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'c']);
 
       // Harmonic with one zero value should fall back to arithmetic
       const blended = MarkovChain.blend(
@@ -2011,10 +1997,10 @@ describe('Markov Chain', () => {
 
   describe('Bug Fix Verification', () => {
     test('Gram.frequency increments correctly on addEdge', () => {
-      const chain = new MarkovChain({ maxOrder: 2 });
-      chain.addEdge('a', undefined, 'b', 1);
-      chain.addEdge('a', undefined, 'c', 1);
-      chain.addEdge('a', undefined, 'd', 1);
+      const chain = new MarkovChain({ maxOrder: 2 })
+        .addEdge('a', undefined, 'b', 1)
+        .addEdge('a', undefined, 'c', 1)
+        .addEdge('a', undefined, 'd', 1);
 
       // Each addEdge call should increment frequency
       expect(chain.grams.a.frequency).toBe(3);

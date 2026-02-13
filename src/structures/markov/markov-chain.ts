@@ -82,7 +82,7 @@ export class MarkovChain<T extends string = string> {
         // Then add the sequences.
         this._model.grams = {};
         this._model.sequences = [];
-        this.addSequences(sequences, insert);
+        this._model = MarkovChain.addSequences(this._model, sequences, insert);
       } else {
         // Otherwise, if we have sequences and grams, then add them.
         this._model.grams = grams;
@@ -133,14 +133,6 @@ export class MarkovChain<T extends string = string> {
   }
 
   /**
-   * Updates a Markov Chain's members from a DTO.
-   */
-  private update(dto: MarkovChainDTO) {
-    this._model = dto;
-    return this;
-  }
-
-  /**
    * Returns the id of a Gram from its sequence.
    */
   public getGramId(gramSequence: string[]) {
@@ -165,25 +157,25 @@ export class MarkovChain<T extends string = string> {
   /**
    * Adds or inserts a list of Sequences into a Markov Chain DTO.
    */
-  public addSequences(sequences: string[][], insert: MCInsertOption = false) {
+  public addSequences(sequences: string[][], insert: MCInsertOption = false): MarkovChain<T> {
     const data = MarkovChain.addSequences(this._model, sequences, insert);
-    return this.update(data);
+    return new MarkovChain<T>({ ...data, engine: this._engine.clone() });
   }
 
   /**
    * Adds or inserts a Sequence into a Markov Chain DTO.
    */
-  public addSequence(sequence: string[], insert: MCInsertOption = false) {
+  public addSequence(sequence: string[], insert: MCInsertOption = false): MarkovChain<T> {
     const data = MarkovChain.addSequence(this._model, sequence, insert);
-    return this.update(data);
+    return new MarkovChain<T>({ ...data, engine: this._engine.clone() });
   }
 
   /**
    * Adds an edge from a gram to the items before and after it in the sequence.
    */
-  public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined, order: number) {
+  public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined, order: number): MarkovChain<T> {
     const data = MarkovChain.addEdge(this._model, gram, lastId, nextId, order);
-    return this.update(data);
+    return new MarkovChain<T>({ ...data, engine: this._engine.clone() });
   }
 
   /**

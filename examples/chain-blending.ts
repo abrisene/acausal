@@ -30,11 +30,11 @@ const fatherHair = [
   ['blonde', 'blonde', 'light-brown']
 ];
 
-const motherChain = new MarkovChain<string>({ seed: 1, maxOrder: 2 });
-motherChain.addSequences(motherHair);
+const motherChain = new MarkovChain<string>({ seed: 1, maxOrder: 2 })
+  .addSequences(motherHair);
 
-const fatherChain = new MarkovChain<string>({ seed: 2, maxOrder: 2 });
-fatherChain.addSequences(fatherHair);
+const fatherChain = new MarkovChain<string>({ seed: 2, maxOrder: 2 })
+  .addSequences(fatherHair);
 
 // Create a child with 50/50 blend of parent traits
 const childChain = MarkovChain.blend([
@@ -80,14 +80,14 @@ const epicLoot = [
   ['relic', 'legendary', 'artifact', 'artifact']
 ];
 
-const commonTable = new MarkovChain<string>({ seed: 3, maxOrder: 2 });
-commonTable.addSequences(commonLoot);
+const commonTable = new MarkovChain<string>({ seed: 3, maxOrder: 2 })
+  .addSequences(commonLoot);
 
-const rareTable = new MarkovChain<string>({ seed: 4, maxOrder: 2 });
-rareTable.addSequences(rareLoot);
+const rareTable = new MarkovChain<string>({ seed: 4, maxOrder: 2 })
+  .addSequences(rareLoot);
 
-const epicTable = new MarkovChain<string>({ seed: 5, maxOrder: 2 });
-epicTable.addSequences(epicLoot);
+const epicTable = new MarkovChain<string>({ seed: 5, maxOrder: 2 })
+  .addSequences(epicLoot);
 
 // Standard chest: 70% common, 25% rare, 5% epic
 const standardChest = MarkovChain.blend([
@@ -138,11 +138,11 @@ const scifiNames = [
   ['c', 'y', 'b', 'e', 'r']
 ];
 
-const fantasyChain = new MarkovChain<string>({ seed: 6, maxOrder: 2 });
-fantasyChain.addSequences(fantasyNames);
+const fantasyChain = new MarkovChain<string>({ seed: 6, maxOrder: 2 })
+  .addSequences(fantasyNames);
 
-const scifiChain = new MarkovChain<string>({ seed: 7, maxOrder: 2 });
-scifiChain.addSequences(scifiNames);
+const scifiChain = new MarkovChain<string>({ seed: 7, maxOrder: 2 })
+  .addSequences(scifiNames);
 
 console.log('Name styles:');
 console.log('  Pure fantasy:', fantasyChain.generate({ order: 1, min: 3, max: 7 }).join(''));

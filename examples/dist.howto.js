@@ -51,43 +51,43 @@ const jarData = jar.serialize();
 */
 
 // Add 5 yellow marbles
-jar.add('yellow', 5);
+let j = jar.add('yellow', 5);
 
 // Add 1 black, 2 silver, 5 yellow and 10 purple marbles
-jar.addValues({ black: 1, silver: 2, yellow: 5, purple: 10 });
+j = j.addValues({ black: 1, silver: 2, yellow: 5, purple: 10 });
 
 // If we wanted to reverse everything, we could do the following:
 
 // Remove 5 yellow marbles
-jar.add('yellow', -5);
+j = j.add('yellow', -5);
 
 // Remove 1 black, 5 yellow and 10 purple marbles
-jar.addValues({ black: -1, yellow: -5, purple: -10 });
+j = j.addValues({ black: -1, yellow: -5, purple: -10 });
 
 // Remove all black, silver and yellow marbles.
 // This removes their keys from both the Normal and Source distributions.
-jar.remove(['black', 'silver', 'yellow']);
+j = j.remove(['black', 'silver', 'yellow']);
 
-// console.log(jar.serialize());
+// console.log(j.serialize());
 
 // Pick one
-const p1a = jar.pickOne();
+const p1a = j.pickOne();
 // => "green"
 
 // Pick one, but ignore white and green marbles.
-const p1b = jar.pickOne(['white', 'green']);
+const p1b = j.pickOne(['white', 'green']);
 // => "blue"
 
 // Pick 5
-const p5a = jar.pick(5);
+const p5a = j.pick(5);
 // => [ 'white', 'green', 'green', 'white', 'white' ]
 
 // Pick 5, but ignore white marbles.
-const p5b = jar.pick(5, ['white', 'green']);
+const p5b = j.pick(5, ['white', 'green']);
 // => [ 'blue', 'blue', 'blue', 'blue', 'blue' ]
 
 // Pick 5, but remove marble colors we've seen before.
-const p5c = jar.pick(5, undefined, true);
+const p5c = j.pick(5, undefined, true);
 // => [ 'green', 'white', 'blue', 'purple' ]
 
 console.log(p1a);

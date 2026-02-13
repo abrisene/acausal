@@ -412,26 +412,26 @@ describe('Distribution', () => {
       const distA1a = distA1.clone(false);
 
       // Multi-Value
-      distEmpty.addValues(addAB1);
-      expect(distEmpty.source).toEqual(dtoEmptyAddAB1Expected.source);
-      expect(distEmpty.normal).toEqual(dtoEmptyAddAB1Expected.normal);
+      const resEmpty = distEmpty.addValues(addAB1);
+      expect(resEmpty.source).toEqual(dtoEmptyAddAB1Expected.source);
+      expect(resEmpty.normal).toEqual(dtoEmptyAddAB1Expected.normal);
 
-      distA1.addValues(addA1);
-      expect(distA1.source).toEqual(dtoA1AddA1Expected.source);
-      expect(distA1.normal).toEqual(dtoA1AddA1Expected.normal);
+      const resA1 = distA1.addValues(addA1);
+      expect(resA1.source).toEqual(dtoA1AddA1Expected.source);
+      expect(resA1.normal).toEqual(dtoA1AddA1Expected.normal);
 
-      distA2.addValues(addAB1);
-      expect(distA2.source).toEqual(dtoA2AddAB1Expected.source);
-      expect(distA2.normal).toEqual(dtoA2AddAB1Expected.normal);
+      const resA2 = distA2.addValues(addAB1);
+      expect(resA2.source).toEqual(dtoA2AddAB1Expected.source);
+      expect(resA2.normal).toEqual(dtoA2AddAB1Expected.normal);
 
-      distA3.addValues(addABC1);
-      expect(distA3.source).toEqual(dtoA3AddABC1Expected.source);
-      expect(distA3.normal).toEqual(dtoA3AddABC1Expected.normal);
+      const resA3 = distA3.addValues(addABC1);
+      expect(resA3.source).toEqual(dtoA3AddABC1Expected.source);
+      expect(resA3.normal).toEqual(dtoA3AddABC1Expected.normal);
 
       // Single Value
-      distA1a.add('a', 1);
-      expect(distA1a.source).toEqual(dtoA1AddA1Expected.source);
-      expect(distA1a.normal).toEqual(dtoA1AddA1Expected.normal);
+      const resA1a = distA1a.add('a', 1);
+      expect(resA1a.source).toEqual(dtoA1AddA1Expected.source);
+      expect(resA1a.normal).toEqual(dtoA1AddA1Expected.normal);
     });
     it('can add one or more values to a normal distribution.', () => {
       // Setup
@@ -444,9 +444,9 @@ describe('Distribution', () => {
       // This is not currently supported.
 
       // // Multi-Value (No Source)
-      distB1.addValues(swapAB10p);
-      expect(distB1.source).toBeUndefined();
-      expect(distB1.normal).toEqual(dtoB1SwapAB10pExpected.normal);
+      const resB1 = distB1.addValues(swapAB10p);
+      expect(resB1.source).toBeUndefined();
+      expect(resB1.normal).toEqual(dtoB1SwapAB10pExpected.normal);
 
       // distB2.addValues(swapAB10p);
       // expect(distB2.source).toBeUndefined();
@@ -457,9 +457,9 @@ describe('Distribution', () => {
       // expect(distB3.normal).toEqual(dtoB3SwapAB10pExpected.normal);
 
       // // Single Value
-      distU1.add('b', 1);
-      expect(distU1.source).toBeUndefined();
-      expect(distU1.normal).toEqual(dtoU1AddB100pExpected.normal);
+      const resU1 = distU1.add('b', 1);
+      expect(resU1.source).toBeUndefined();
+      expect(resU1.normal).toEqual(dtoU1AddB100pExpected.normal);
     });
     it('can remove one or more values from a distribution.', () => {
       // Setup
@@ -478,48 +478,48 @@ describe('Distribution', () => {
 
       // Multi-Value
 
-      distU2a.remove(['a', 'b']);
-      expect(distU2a.source).toEqual(dtoEmpty.source);
-      expect(distU2a.normal).toEqual(dtoEmpty.normal);
+      const resU2a = distU2a.remove(['a', 'b']);
+      expect(resU2a.source).toEqual(dtoEmpty.source);
+      expect(resU2a.normal).toEqual(dtoEmpty.normal);
 
-      distU3a.remove(['b', 'c']);
-      expect(distU3a.source).toEqual(dtoU1.source);
-      expect(distU3a.normal).toEqual(dtoU1.normal);
+      const resU3a = distU3a.remove(['b', 'c']);
+      expect(resU3a.source).toEqual(dtoU1.source);
+      expect(resU3a.normal).toEqual(dtoU1.normal);
 
       // Single Value
-      distU1b.remove('a');
-      expect(distU1b.source).toEqual(dtoEmpty.source);
-      expect(distU1b.normal).toEqual(dtoEmpty.normal);
+      const resU1b = distU1b.remove('a');
+      expect(resU1b.source).toEqual(dtoEmpty.source);
+      expect(resU1b.normal).toEqual(dtoEmpty.normal);
 
-      distU2b.remove('b');
-      expect(distU2b.source).toEqual(dtoU1.source);
-      expect(distU2b.normal).toEqual(dtoU1.normal);
+      const resU2b = distU2b.remove('b');
+      expect(resU2b.source).toEqual(dtoU1.source);
+      expect(resU2b.normal).toEqual(dtoU1.normal);
 
-      distU3b.remove('c');
-      expect(distU3b.source).toEqual(dtoU2.source);
-      expect(distU3b.normal).toEqual(dtoU2.normal);
+      const resU3b = distU3b.remove('c');
+      expect(resU3b.source).toEqual(dtoU2.source);
+      expect(resU3b.normal).toEqual(dtoU2.normal);
 
       // Multi-Value (No Source)
-      distU2c.remove(['a', 'b']);
-      expect(distU2c.source).toBeUndefined();
-      expect(distU2c.normal).toEqual(dtoEmpty.normal);
+      const resU2c = distU2c.remove(['a', 'b']);
+      expect(resU2c.source).toBeUndefined();
+      expect(resU2c.normal).toEqual(dtoEmpty.normal);
 
-      distU3c.remove(['b', 'c']);
-      expect(distU3c.source).toBeUndefined();
-      expect(distU3c.normal).toEqual(dtoU1.normal);
+      const resU3c = distU3c.remove(['b', 'c']);
+      expect(resU3c.source).toBeUndefined();
+      expect(resU3c.normal).toEqual(dtoU1.normal);
 
       // Single Value (No Source)
-      distU1d.remove('a');
-      expect(distU1d.source).toBeUndefined();
-      expect(distU1d.normal).toEqual(dtoEmpty.normal);
+      const resU1d = distU1d.remove('a');
+      expect(resU1d.source).toBeUndefined();
+      expect(resU1d.normal).toEqual(dtoEmpty.normal);
 
-      distU2d.remove('b');
-      expect(distU2d.source).toBeUndefined();
-      expect(distU2d.normal).toEqual(dtoU1.normal);
+      const resU2d = distU2d.remove('b');
+      expect(resU2d.source).toBeUndefined();
+      expect(resU2d.normal).toEqual(dtoU1.normal);
 
-      distU3d.remove('c');
-      expect(distU3d.source).toBeUndefined();
-      expect(distU3d.normal).toEqual(dtoU2.normal);
+      const resU3d = distU3d.remove('c');
+      expect(resU3d.source).toBeUndefined();
+      expect(resU3d.normal).toEqual(dtoU2.normal);
     });
     it('can pick one or more values from a distribution.', () => {
       // Setup
