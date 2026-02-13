@@ -72,7 +72,9 @@ export class MultiDimMarkovChain<T> {
     if (typeof options.stateKey === 'string') {
       const fn = getStateKey<T>(options.stateKey);
       if (!fn) {
-        throw new Error(`State key function '${options.stateKey}' not found in registry. Register it with registerStateKey().`);
+        throw new Error(
+          `State key function '${options.stateKey}' not found in registry. Register it with registerStateKey().`
+        );
       }
       this.stateKeyFn = fn;
       this.stateKeyName = options.stateKey;
@@ -125,13 +127,7 @@ export class MultiDimMarkovChain<T> {
 
     const newInternalChain = this.internalChain.addSequence(keys);
 
-    return MultiDimMarkovChain.fromParts(
-      newInternalChain,
-      newStore,
-      this.stateKeyFn,
-      this.stateKeyName,
-      this._engine
-    );
+    return MultiDimMarkovChain.fromParts(newInternalChain, newStore, this.stateKeyFn, this.stateKeyName, this._engine);
   }
 
   /**
@@ -213,30 +209,21 @@ export class MultiDimMarkovChain<T> {
    * Looks up the state key function from the registry by name.
    * If not registered, you must pass it explicitly.
    */
-  static fromDTO<T>(
-    dto: MultiDimMarkovChainDTO<T>,
-    stateKey?: StateKeyFunction<T>
-  ): MultiDimMarkovChain<T> {
+  static fromDTO<T>(dto: MultiDimMarkovChainDTO<T>, stateKey?: StateKeyFunction<T>): MultiDimMarkovChain<T> {
     let fn = stateKey;
     if (!fn) {
       fn = getStateKey<T>(dto.stateKeyName);
       if (!fn) {
         throw new Error(
           `State key function '${dto.stateKeyName}' not found in registry. ` +
-            `Either register it with registerStateKey() or pass it to fromDTO().`
+            'Either register it with registerStateKey() or pass it to fromDTO().'
         );
       }
     }
 
     const internalChain = new MarkovChain<string>(dto.internalChain);
 
-    return MultiDimMarkovChain.fromParts(
-      internalChain,
-      { ...dto.stateStore },
-      fn,
-      dto.stateKeyName,
-      new Random({})
-    );
+    return MultiDimMarkovChain.fromParts(internalChain, { ...dto.stateStore }, fn, dto.stateKeyName, new Random({}));
   }
 
   /**

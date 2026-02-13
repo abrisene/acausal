@@ -7,13 +7,7 @@
  # Module Dependencies
  */
 
-import {
-  MersenneTwister19937,
-  createEntropy,
-  integer,
-  real,
-  pick,
-} from './mersenne-twister';
+import { MersenneTwister19937, createEntropy, integer, real, pick } from './mersenne-twister';
 import { WeightedDistribution } from '../types';
 import { CONSTANTS } from '../constants';
 

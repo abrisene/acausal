@@ -39,8 +39,7 @@ export class MersenneTwister19937 {
     for (this.mti = 1; this.mti < N; this.mti++) {
       const prev = this.mt[this.mti - 1]!;
       // Knuth TAOCP Vol2 3rd Ed. P.106 for multiplier
-      this.mt[this.mti] =
-        (Math.imul(1812433253, (prev ^ (prev >>> 30))) + this.mti) >>> 0;
+      this.mt[this.mti] = (Math.imul(1812433253, prev ^ (prev >>> 30)) + this.mti) >>> 0;
     }
   }
 
@@ -52,11 +51,7 @@ export class MersenneTwister19937 {
 
     for (; k > 0; k--) {
       const prev = this.mt[i - 1]!;
-      this.mt[i] =
-        ((this.mt[i]! ^ Math.imul(prev ^ (prev >>> 30), 1664525)) +
-          initKey[j]! +
-          j) >>>
-        0;
+      this.mt[i] = ((this.mt[i]! ^ Math.imul(prev ^ (prev >>> 30), 1664525)) + initKey[j]! + j) >>> 0;
       i++;
       j++;
       if (i >= N) {
@@ -68,9 +63,7 @@ export class MersenneTwister19937 {
 
     for (k = N - 1; k > 0; k--) {
       const prev = this.mt[i - 1]!;
-      this.mt[i] =
-        ((this.mt[i]! ^ Math.imul(prev ^ (prev >>> 30), 1566083941)) - i) >>>
-        0;
+      this.mt[i] = ((this.mt[i]! ^ Math.imul(prev ^ (prev >>> 30), 1566083941)) - i) >>> 0;
       i++;
       if (i >= N) {
         this.mt[0] = this.mt[N - 1]!;
@@ -145,7 +138,7 @@ export function integer(min: number, max: number): (engine: MersenneTwister19937
 
     const rangeU = (range >>> 0) + 1;
     // Rejection sampling to avoid modulo bias
-    const limit = ((-rangeU >>> 0) % rangeU) >>> 0;
+    const limit = (-rangeU >>> 0) % rangeU >>> 0;
 
     let value: number;
     do {
@@ -162,8 +155,8 @@ export function integer(min: number, max: number): (engine: MersenneTwister19937
  */
 export function real(min: number, max: number, inclusive = false): (engine: MersenneTwister19937) => number {
   return (engine: MersenneTwister19937): number => {
-    const a = (engine.next() >>> 5); // 27 bits
-    const b = (engine.next() >>> 6); // 26 bits
+    const a = engine.next() >>> 5; // 27 bits
+    const b = engine.next() >>> 6; // 26 bits
     const denom = inclusive ? 0x1fffffffffffff : 0x20000000000000; // 2^53 - 1 or 2^53
     const value = (a * 0x4000000 + b) / denom;
     return value * (max - min) + min;

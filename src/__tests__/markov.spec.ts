@@ -3,6 +3,8 @@
  # Markov Chain Class Spec
  */
 
+import { describe, it, test, expect } from 'vitest';
+
 /**
  # Module Dependencies
  */
@@ -987,9 +989,7 @@ describe('Markov Chain', () => {
     });
 
     test('getStats should return chain statistics', () => {
-      const chain = new MarkovChain({ maxOrder: 2 })
-        .addSequence(['a', 'b', 'c'])
-        .addSequence(['a', 'b', 'd']);
+      const chain = new MarkovChain({ maxOrder: 2 }).addSequence(['a', 'b', 'c']).addSequence(['a', 'b', 'd']);
 
       const stats = chain.getStats();
 
@@ -1029,13 +1029,9 @@ describe('Markov Chain', () => {
 
   describe('Chain Blending', () => {
     test('blend() should combine multiple chains with arithmetic mean', () => {
-      const chain1 = new MarkovChain({ maxOrder: 1 })
-        .addSequence(['a', 'b', 'c'])
-        .addSequence(['a', 'b', 'd']);
+      const chain1 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'b', 'c']).addSequence(['a', 'b', 'd']);
 
-      const chain2 = new MarkovChain({ maxOrder: 1 })
-        .addSequence(['a', 'x', 'y'])
-        .addSequence(['a', 'x', 'z']);
+      const chain2 = new MarkovChain({ maxOrder: 1 }).addSequence(['a', 'x', 'y']).addSequence(['a', 'x', 'z']);
 
       const blended = MarkovChain.blend([
         { chain: chain1, weight: 0.5 },
@@ -1233,7 +1229,7 @@ describe('Markov Chain', () => {
           maxOrder: 2,
           stateKey: 'nonexistent',
         });
-      }).toThrow("not found in registry");
+      }).toThrow('not found in registry');
     });
 
     test('registerStateKey and getStateKey work correctly', () => {
@@ -1546,7 +1542,7 @@ describe('Markov Chain', () => {
 
       expect(() => {
         MultiDimMarkovChain.fromDTO(dto);
-      }).toThrow("not found in registry");
+      }).toThrow('not found in registry');
     });
   });
 
@@ -1591,7 +1587,13 @@ describe('Markov Chain', () => {
 
   describe('Static Dual-API Methods', () => {
     test('static score() should score a sequence against a DTO', () => {
-      const model = MarkovChain.new([['a', 'b', 'c'], ['a', 'b', 'd']], 2);
+      const model = MarkovChain.new(
+        [
+          ['a', 'b', 'c'],
+          ['a', 'b', 'd'],
+        ],
+        2
+      );
 
       const score = MarkovChain.score(model, ['a', 'b', 'c']);
       expect(score.sequence).toEqual(['a', 'b', 'c']);
@@ -1606,7 +1608,13 @@ describe('Markov Chain', () => {
     });
 
     test('static getStats() should return stats from a DTO', () => {
-      const model = MarkovChain.new([['a', 'b', 'c'], ['d', 'e', 'f']], 2);
+      const model = MarkovChain.new(
+        [
+          ['a', 'b', 'c'],
+          ['d', 'e', 'f'],
+        ],
+        2
+      );
 
       const stats = MarkovChain.getStats(model);
       expect(stats.gramCount).toBeGreaterThan(0);

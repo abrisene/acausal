@@ -3,6 +3,8 @@
  # Random Class Test
  */
 
+import { describe, it, expect } from 'vitest';
+
 /**
  # Module Dependencies
  */

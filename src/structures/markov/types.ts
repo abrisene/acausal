@@ -108,4 +108,3 @@ export interface MCSequenceScore {
   isValid: boolean;
   normalized: number;
 }
-

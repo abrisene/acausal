@@ -173,7 +173,12 @@ export class MarkovChain<T extends string = string> {
   /**
    * Adds an edge from a gram to the items before and after it in the sequence.
    */
-  public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined, order: number): MarkovChain<T> {
+  public addEdge(
+    gram: string | string[],
+    lastId: string | undefined,
+    nextId: string | undefined,
+    order: number
+  ): MarkovChain<T> {
     const data = MarkovChain.addEdge(this._model, gram, lastId, nextId, order);
     return new MarkovChain<T>({ ...data, engine: this._engine.clone() });
   }
@@ -280,11 +285,7 @@ export class MarkovChain<T extends string = string> {
    * Blend this chain with another chain using interpolation.
    * Alpha controls the blend: 0 = all this chain, 1 = all other chain.
    */
-  public interpolate(
-    otherChain: MarkovChain<T>,
-    alpha: number,
-    options?: BlendOptions
-  ): MarkovChain<T> {
+  public interpolate(otherChain: MarkovChain<T>, alpha: number, options?: BlendOptions): MarkovChain<T> {
     return MarkovChain.blend(
       [
         { chain: this, weight: 1 - alpha },
@@ -691,10 +692,7 @@ export class MarkovChain<T extends string = string> {
    * Blend multiple Markov chain DTOs together with weighted combination.
    * Static dual-API: operates on DTOs directly without requiring instances.
    */
-  static blendDTOs(
-    models: { model: MarkovChainDTO; weight: number }[],
-    options?: BlendOptions
-  ): MarkovChainDTO {
+  static blendDTOs(models: { model: MarkovChainDTO; weight: number }[], options?: BlendOptions): MarkovChainDTO {
     if (models.length === 0) {
       throw new Error('Cannot blend zero models');
     }
