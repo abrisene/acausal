@@ -59,17 +59,19 @@ Uses a named-function registry (`registerStateKey` / `getStateKey`) so that stat
 ## Build & Test
 
 ```bash
-npm run build          # tsup → dist/ (ESM + CJS + .d.ts)
-npm run typecheck      # tsc --noEmit
-npm test               # jest (ESM mode, requires --experimental-vm-modules)
-npm run test:coverage  # jest --coverage (thresholds: 85% branch, 95% lines/funcs/stmts)
-npm run lint           # gts lint
-npm run docs           # typedoc
+pnpm run build          # tsup → dist/ (ESM + CJS + .d.ts)
+pnpm run typecheck      # tsc --noEmit
+pnpm test               # vitest
+pnpm run test:coverage  # vitest --coverage (thresholds: 85% branch, 95% lines/funcs/stmts)
+pnpm run lint           # gts lint
+pnpm run docs           # typedoc (deployed via CI to GitHub Pages)
 ```
 
-**Test command** requires the Node flag: `node --experimental-vm-modules node_modules/jest/bin/jest.js`
-
 **Build** uses tsup (see `tsup.config.ts`). Output is ESM + CJS dual format targeting ES2022. The `onSuccess` hook runs `tsc --noEmit` after build.
+
+**Test** uses Vitest with native ESM support. No special Node flags needed.
+
+**CI** runs on GitHub Actions: lint, typecheck, test (Node 18/20/22 matrix), and build. Docs deploy to GitHub Pages on version tags. Releases publish to npm with provenance.
 
 **TypeScript** extends `gts/tsconfig-google.json` with strict mode, `noUncheckedIndexedAccess`, and bundler module resolution.
 
