@@ -68,6 +68,538 @@ for (let i = 0; i < 3; i += 1) {
 */
 ```
 
+### What's New in v3.0
+
+Version 3.0 brings significant improvements to Markov Chains:
+
+#### 1. Generic Types
+
+`MarkovChain<T>` is now generic for better type safety:
+
+```typescript
+type States = 'sunny' | 'cloudy' | 'rainy';
+const chain = new MarkovChain<States>({ maxOrder: 2 });
+```
+
+#### 2. Batch Operations (40% Faster)
+
+Add multiple sequences efficiently with batch operations:
+
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+
+// ❌ Slow: clones on every add
+for (const name of names) {
+  chain = chain.addSequence(name.split(''));
+}
+
+// ✅ Fast: single clone at the end
+const updated = chain.batch()
+  .addSequence(['a', 'l', 'i', 'c', 'e'])
+  .addSequence(['b', 'o', 'b'])
+  .addSequence(['c', 'h', 'a', 'r', 'l', 'i', 'e'])
+  .commit();
+```
+
+#### 3. New Utility Methods
+
+```typescript
+// Check if a gram exists
+if (chain.hasGram(['a', 'b'])) {
+  console.log('Gram exists!');
+}
+
+// Get grams by order
+const bigrams = chain.getGramsByOrder(2);
+
+// Get chain statistics
+const stats = chain.getStats();
+console.log(`Chain has ${stats.gramCount} grams`);
+console.log(`Average out-degree: ${stats.avgDegreeOut}`);
+```
+
+### Chain Blending
+
+**Chain Blending** allows you to combine multiple Markov chains with weighted probabilities, useful for genetics simulation, loot table mixing, and style interpolation.
+
+#### Basic Usage
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+// Create two chains with different patterns
+const chain1 = new MarkovChain({ maxOrder: 2 });
+chain1.addSequences([
+  ['a', 'b', 'c'],
+  ['a', 'b', 'd']
+]);
+
+const chain2 = new MarkovChain({ maxOrder: 2 });
+chain2.addSequences([
+  ['x', 'y', 'z'],
+  ['x', 'y', 'w']
+]);
+
+// Blend with equal weights
+const blended = MarkovChain.blend([
+  { chain: chain1, weight: 0.5 },
+  { chain: chain2, weight: 0.5 }
+]);
+
+// Generate from blended probabilities
+const result = blended.generate({ order: 1, length: 5 });
+```
+
+#### Interpolation
+
+For blending exactly two chains, use the `interpolate()` method:
+
+```typescript
+// Alpha controls the blend: 0 = all chain1, 1 = all chain2
+const hybrid = chain1.interpolate(chain2, 0.3); // 70% chain1, 30% chain2
+```
+
+#### Blend Strategies
+
+Choose different blending strategies to control how probabilities combine:
+
+```typescript
+// Arithmetic mean (default): weighted average
+const arithmetic = MarkovChain.blend(chains, { strategy: 'arithmetic' });
+
+// Geometric mean: multiplicative combination
+const geometric = MarkovChain.blend(chains, { strategy: 'geometric' });
+
+// Harmonic mean: reciprocal weighting
+const harmonic = MarkovChain.blend(chains, { strategy: 'harmonic' });
+
+// Max: takes maximum probability for each transition
+const maxBlend = MarkovChain.blend(chains, { strategy: 'max' });
+
+// Min: takes minimum non-zero probability
+const minBlend = MarkovChain.blend(chains, { strategy: 'min' });
+```
+
+#### Filtering Low-Weight States
+
+Remove states with insignificant probabilities:
+
+```typescript
+const filtered = MarkovChain.blend(chains, {
+  minWeight: 0.1  // Only include states with ≥10% combined weight
+});
+```
+
+#### Practical Examples
+
+**Character Genetics:**
+```typescript
+const motherTraits = new MarkovChain({ maxOrder: 2 });
+motherTraits.addSequences([
+  ['black', 'brown', 'black'],
+  ['brown', 'black', 'brown']
+]);
+
+const fatherTraits = new MarkovChain({ maxOrder: 2 });
+fatherTraits.addSequences([
+  ['blonde', 'blonde', 'light-brown'],
+  ['light-brown', 'blonde', 'blonde']
+]);
+
+// Child inherits 50% from each parent
+const childTraits = MarkovChain.blend([
+  { chain: motherTraits, weight: 0.5 },
+  { chain: fatherTraits, weight: 0.5 }
+]);
+
+const hairColor = childTraits.generate({ order: 1, length: 3 });
+```
+
+**Loot Table Mixing:**
+```typescript
+const commonLoot = new MarkovChain({ maxOrder: 1 });
+commonLoot.addSequences([
+  ['copper', 'copper', 'wood'],
+  ['wood', 'copper', 'stone']
+]);
+
+const rareLoot = new MarkovChain({ maxOrder: 1 });
+rareLoot.addSequences([
+  ['gold', 'diamond', 'emerald'],
+  ['diamond', 'gold', 'ruby']
+]);
+
+// Boss chest: 30% common, 70% rare
+const bossChest = MarkovChain.blend([
+  { chain: commonLoot, weight: 0.3 },
+  { chain: rareLoot, weight: 0.7 }
+]);
+
+const drops = bossChest.generate({ order: 1, length: 5 });
+```
+
+For more examples, see [examples/chain-blending.ts](../examples/chain-blending.ts).
+
+### Multi-Dimensional Chains
+
+**MultiDimMarkovChain** preserves the structure of multi-attribute states instead of forcing you to flatten them into strings. Perfect for tile-based procedural generation, game state management, spatial systems, or any scenario with complex structured states.
+
+#### The Problem
+
+Previously, you had to flatten structured states into strings:
+
+```typescript
+// ❌ Old way: lose structure
+interface TileState {
+  terrain: string;
+  x: number;
+  y: number;
+  biome: string;
+}
+
+const state = { terrain: 'forest', x: 2, y: 3, biome: 'woodland' };
+const flattened = `${state.terrain}_${state.x}_${state.y}_${state.biome}`;
+// Now you have a string, not the original structure
+```
+
+#### The Solution
+
+MultiDimMarkovChain preserves your original structured states:
+
+```typescript
+import { MultiDimMarkovChain, registerStateKey } from 'acausal';
+
+interface TileState {
+  terrain: string;
+  x: number;
+  y: number;
+  biome: string;
+}
+
+// Register a named state key for serialization support
+registerStateKey<TileState>('tileKey', (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`);
+
+const tileChain = new MultiDimMarkovChain<TileState>({
+  maxOrder: 2,
+  stateKey: 'tileKey', // Use registered name (or pass a function directly)
+});
+
+// Add training data with full structured states
+const updated = tileChain.addSequence([
+  { terrain: 'grass', x: 0, y: 0, biome: 'plains' },
+  { terrain: 'forest', x: 1, y: 0, biome: 'woodland' },
+  { terrain: 'water', x: 2, y: 0, biome: 'lake' }
+]);
+
+// Generate returns structured states, not strings!
+const tiles = updated.generate({ order: 2, min: 3, max: 5 });
+console.log(tiles[0].terrain); // 'grass'
+console.log(tiles[0].x);       // 0
+```
+
+#### Named-Function Registry
+
+The `stateKey` function converts structured states to unique string keys internally. By registering state key functions with a name, the chain becomes fully serializable:
+
+```typescript
+// Register once at startup
+registerStateKey<TileState>('tileKey', (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`);
+
+// Use by name — enables serialize() / fromDTO() round-trips
+const chain = new MultiDimMarkovChain<TileState>({
+  maxOrder: 2,
+  stateKey: 'tileKey',
+});
+
+// You can also pass a function directly (with optional stateKeyName)
+const chain2 = new MultiDimMarkovChain<TileState>({
+  maxOrder: 2,
+  stateKey: (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`,
+  stateKeyName: 'tileKey', // For serialization
+});
+```
+
+#### Serialization
+
+```typescript
+// Serialize to portable DTO
+const dto = chain.serialize();
+// { internalChain: MarkovChainDTO, stateStore: {...}, stateKeyName: 'tileKey' }
+
+// Reconstruct (looks up 'tileKey' from registry)
+const restored = MultiDimMarkovChain.fromDTO<TileState>(dto);
+
+// Or pass the function explicitly
+const restored2 = MultiDimMarkovChain.fromDTO<TileState>(dto, myKeyFn);
+```
+
+#### Querying State Information
+
+```typescript
+// Get all unique states
+const allStates = chain.getStates();
+
+// Check if a specific state exists
+const exists = chain.hasState({
+  terrain: 'forest',
+  x: 1,
+  y: 0,
+  biome: 'woodland'
+});
+
+// Get statistics from internal chain
+const stats = chain.getStats();
+console.log(`Total grams: ${stats.gramCount}`);
+```
+
+#### All Methods
+
+```typescript
+// Add sequences
+chain.addSequence(sequence: T[]): MultiDimMarkovChain<T>
+chain.addSequences(sequences: T[][]): MultiDimMarkovChain<T>
+
+// Generate
+chain.generate(options): T[]  // Returns structured states
+chain.pick(current?: T[], next?: boolean, mask?: T[]): T | undefined
+
+// Query
+chain.getStates(): T[]  // All unique structured states
+chain.hasState(state: T): boolean
+chain.getStats(): MarkovChainStats
+chain.getInternalChain(): MarkovChain<string>
+
+// Serialization
+chain.serialize(): MultiDimMarkovChainDTO<T>
+chain.clone(): MultiDimMarkovChain<T>
+MultiDimMarkovChain.fromDTO(dto, stateKey?): MultiDimMarkovChain<T>
+
+// Registry
+registerStateKey(name, fn): void
+getStateKey(name): StateKeyFunction | undefined
+```
+
+For complete examples, see [examples/multi-dimensional-chains.ts](../examples/multi-dimensional-chains.ts).
+
+### Sequence Scoring
+
+**Sequence Scoring** allows you to calculate the likelihood of sequences, enabling quality filtering, autocomplete ranking, and more. Available as both instance and static methods (dual-API).
+
+#### Basic Scoring
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const chain = new MarkovChain({ maxOrder: 2 });
+chain.addSequences([
+  ['j', 'o', 'h', 'n'],
+  ['j', 'a', 'n', 'e'],
+  ['a', 'l', 'i', 'c', 'e']
+]);
+
+// Score a sequence
+const score = chain.score(['j', 'o', 'h', 'n']);
+console.log(score);
+// {
+//   sequence: ['j', 'o', 'h', 'n'],
+//   logProb: -8.3,        // Log probability
+//   perplexity: 12.4,     // Lower is better
+//   isValid: true,        // Can the chain generate this?
+//   normalized: -2.1      // Normalized by sequence length
+// }
+```
+
+#### Static Dual-API
+
+```typescript
+// Score a DTO directly (no instance needed)
+const model = MarkovChain.new([['j', 'o', 'h', 'n'], ['j', 'a', 'n', 'e']], 2);
+const score = MarkovChain.score(model, ['j', 'o', 'h', 'n']);
+
+// Get stats from a DTO
+const stats = MarkovChain.getStats(model);
+```
+
+### Constraint-Based Generation
+
+**Constraint-Based Generation** allows you to generate sequences that satisfy specific requirements, perfect for quality control, domain rules, and content filtering.
+
+#### Length Constraints
+
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+// ... add training data ...
+
+const result = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 8
+  }
+});
+// Guaranteed to be 5-8 elements long
+```
+
+#### Element Requirements
+
+```typescript
+// Must contain specific elements
+const name = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustContain: ['a', 'e'],  // Must have both 'a' and 'e'
+    maxRetries: 100
+  }
+});
+
+// Must NOT contain specific elements
+const filtered = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustNotContain: ['x', 'z', 'q'],  // No uncommon letters
+    maxRetries: 100
+  }
+});
+```
+
+#### Pattern Matching
+
+```typescript
+// Generate sequences matching a regex pattern
+const vowelStart = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    pattern: /^[aeiou]/,  // Must start with vowel
+    maxRetries: 100
+  }
+});
+
+// More complex patterns
+const formatted = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    pattern: /^[A-Z][a-z]+$/,  // Capital first letter
+    maxRetries: 100
+  }
+});
+```
+
+#### Custom Validators
+
+```typescript
+// Content filtering
+const forbiddenWords = ['bad', 'ugly', 'hate'];
+
+const clean = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    validator: (seq) => {
+      const text = seq.join('');
+      return !forbiddenWords.some(word => text.includes(word));
+    },
+    maxRetries: 100
+  }
+});
+
+// Business rules
+const username = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    validator: (seq) => {
+      const str = seq.join('');
+      // No repeating characters
+      if (/(.)\1/.test(str)) return false;
+      // Must have vowel
+      if (!/[aeiou]/.test(str)) return false;
+      return true;
+    },
+    maxRetries: 200
+  }
+});
+```
+
+#### Combined Constraints
+
+```typescript
+// All constraints work together
+const highQuality = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 10,
+    mustContain: ['a'],
+    mustNotContain: ['x', 'z'],
+    pattern: /^[a-z]+$/,
+    validator: (seq) => {
+      // Custom quality checks
+      const str = seq.join('');
+      return !/(.)\\1{2,}/.test(str);  // No triple repeats
+    },
+    maxRetries: 200
+  }
+});
+```
+
+#### Retry Control
+
+```typescript
+// Control how many times generation is attempted
+const result = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    mustContain: ['rare'],
+    maxRetries: 50  // Try up to 50 times
+  }
+});
+
+// If constraints can't be satisfied, returns best effort
+```
+
+#### Practical Examples
+
+**Username Generation:**
+```typescript
+const username = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 12,
+    pattern: /^[a-z]/,  // Start with letter
+    mustNotContain: ['_', '-', '.'],
+    validator: (seq) => /[aeiou]/.test(seq.join('')),
+    maxRetries: 150
+  }
+});
+```
+
+**Safe Content Generation:**
+```typescript
+const profanityList = ['bad', 'ugly'];
+
+const safeContent = chain.generate({
+  order: 2,
+  max: 50,
+  constraints: {
+    minLength: 10,
+    validator: (seq) => {
+      const text = seq.join(' ');
+      return !profanityList.some(word => text.includes(word));
+    },
+    maxRetries: 100
+  }
+});
+```
+
 ### Core Concepts
 
 #### States and Dependent Probability

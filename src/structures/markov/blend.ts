@@ -1,0 +1,111 @@
+/**
+ * Chain Blending Utilities
+ *
+ * Functions and types for blending/interpolating multiple Markov chains.
+ */
+
+import { normalizeObject } from 'scalr';
+import { DistributionSourceDTO } from '../distribution';
+import type { MarkovChain } from './markov-chain';
+
+/**
+ * Blending strategy for combining probability distributions
+ */
+export type BlendStrategy = 'arithmetic' | 'geometric' | 'harmonic' | 'max' | 'min';
+
+/**
+ * Configuration for blending a single chain
+ */
+export interface ChainBlendConfig<T extends string = string> {
+  chain: MarkovChain<T>;
+  weight: number;
+}
+
+/**
+ * Options for chain blending.
+ *
+ * @property strategy - The blending strategy (default: 'arithmetic').
+ * @property normalize - Whether to normalize input weights to sum to 1 (default: true).
+ * @property minWeight - Minimum blended source weight to keep a state.
+ *   Filters on the blended source weights (not probabilities).
+ *   States with a blended source weight below this threshold are removed.
+ */
+export interface BlendOptions {
+  strategy?: BlendStrategy;
+  normalize?: boolean;
+  minWeight?: number;
+}
+
+/**
+ * Blend multiple distributions using the specified strategy.
+ *
+ * Note: geometric and harmonic strategies fall back to arithmetic mean
+ * when any value is zero. This is mathematically correct — geometric
+ * mean of zero is zero, and harmonic mean is undefined for zero values.
+ */
+export function blendMultipleDistributions(
+  distributions: DistributionSourceDTO[],
+  weights: number[],
+  strategy: BlendStrategy = 'arithmetic'
+): DistributionSourceDTO {
+  if (distributions.length === 0) {
+    return { source: {}, normal: {} };
+  }
+
+  if (distributions.length === 1) {
+    return distributions[0]!;
+  }
+
+  // Collect all unique keys
+  const allKeys = new Set<string>();
+  for (const dist of distributions) {
+    Object.keys(dist.source).forEach(key => allKeys.add(key));
+  }
+
+  const blended: { [key: string]: number } = {};
+
+  for (const key of allKeys) {
+    const values = distributions.map((d, i) => ({
+      value: d.source[key] || 0,
+      weight: weights[i] || 0,
+    }));
+
+    switch (strategy) {
+      case 'arithmetic':
+        blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        break;
+      case 'geometric': {
+        const nonZeroValues = values.filter(v => v.value > 0);
+        if (nonZeroValues.length === values.length) {
+          blended[key] = nonZeroValues.reduce((prod, { value, weight }) => prod * Math.pow(value, weight), 1);
+        } else {
+          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        }
+        break;
+      }
+      case 'harmonic': {
+        const nonZeroValues = values.filter(v => v.value > 0);
+        if (nonZeroValues.length === values.length) {
+          const sum = nonZeroValues.reduce((s, { value, weight }) => s + weight / value, 0);
+          blended[key] = 1 / sum;
+        } else {
+          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        }
+        break;
+      }
+      case 'max':
+        blended[key] = Math.max(...values.map(v => v.value));
+        break;
+      case 'min': {
+        const nonZeroValues = values.filter(v => v.value > 0).map(v => v.value);
+        blended[key] = nonZeroValues.length > 0 ? Math.min(...nonZeroValues) : 0;
+        break;
+      }
+    }
+  }
+
+  return {
+    source: blended,
+    normal: normalizeObject(blended),
+  };
+}

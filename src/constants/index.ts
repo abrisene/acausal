@@ -13,4 +13,4 @@ export const CONSTANTS = {
   MC_START_DELIMITER: '○',
   MC_GRAM_DELIMITER: '⏐',
   MC_END_DELIMITER: '◍',
-};
+} as const;

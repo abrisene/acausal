@@ -1,16 +1,30 @@
 # acausal
 
-[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![Build Status](https://app.travis-ci.com/abrisene/acausal.svg?branch=master)](https://app.travis-ci.com/abrisene/acausal) [![stability-stable](https://img.shields.io/badge/stability-stable-green.svg)](https://github.com/emersion/stability-badges#stable) [![Coverage Status](https://coveralls.io/repos/github/abrisene/acausal/badge.svg?branch=master)](https://coveralls.io/github/abrisene/acausal?branch=master)
+[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![stability-stable](https://img.shields.io/badge/stability-stable-green.svg)](https://github.com/emersion/stability-badges#stable)
 
 *acausal* is a Typescript module that makes it easy to create, edit and generate pseudo random data from **Weighted Random Distributions** and **Markov Chains**.
 
 
 **Design Philosophy**
-- **Immutable:** all classes are built on top of pure functions which do not mutate state, ensuring that models retain their integrity, and making them easy to use with Redux.
+- **Clone-on-write:** all classes use a clone-then-mutate pattern that preserves the integrity of existing models while supporting fluent chaining.
 - **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store, transfer, and rebuild regardless of whether it's on the client or the server.
 - **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models.
-- **Minimal Dependencies**: _acausal_ only depends on [random-js](https://www.npmjs.com/package/random-js) and [scalr](https://www.npmjs.com/package/scalr), (which formerly was part of _acausal_, but separated out for the 2.0.0 release).
+- **Minimal Dependencies**: _acausal_ only depends on [random-js](https://www.npmjs.com/package/random-js) and [scalr](https://www.npmjs.com/package/scalr).
 
+## What's New in v3.0
+
+Version 3.0 is a major restructuring release:
+
+- **Modular architecture**: The monolithic `markov.ts` is now split into focused modules (`markov-chain.ts`, `batch.ts`, `blend.ts`, `multi-dim-chain.ts`)
+- **Efficient batch operations**: `MarkovChainBatch` for bulk sequence/edge additions
+- **Chain blending**: Merge multiple chains with arithmetic, geometric, harmonic, max, or min strategies
+- **MultiDimMarkovChain**: Structured state spaces with named-function registry for serializable state keys
+- **Sequence scoring**: Log probability and perplexity via `score()` (instance + static dual-API)
+- **Constraint-based generation**: Length, content, pattern, and custom validator constraints
+- **Static dual-API**: `MarkovChain.blendDTOs()`, `MarkovChain.score()`, `MarkovChain.getStats()` operate on DTOs directly
+- **Generic types** for `MarkovChain<T>` and `Distribution<T>` with full type safety
+- **Proper ESM/CJS dual output** with package exports
+- **95%+ test coverage** enforced
 
 **Basic Examples:**
 ```typescript

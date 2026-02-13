@@ -551,9 +551,20 @@ describe('Distribution', () => {
       expect(distU3.pick(5, ['a'], true).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
-      /* Object.keys(sampleB3Summary).forEach(k => {
-        expect(sampleB3Summary[k] / sampleCount).toBeCloseTo(dtoB3.normal[k]);
-      }); */
+      const eng = new Random({ seed: 42 });
+      const dist = new Distribution({ source: { a: 1, b: 2, c: 3 } });
+      const counts: Record<string, number> = { a: 0, b: 0, c: 0 };
+      const sampleCount = 6000;
+
+      for (let i = 0; i < sampleCount; i++) {
+        const picked = dist.pick(1, undefined, false)[0];
+        if (picked) counts[picked]++;
+      }
+
+      // Verify distribution is roughly proportional to weights
+      expect(counts.a! / sampleCount).toBeCloseTo(1 / 6, 1);
+      expect(counts.b! / sampleCount).toBeCloseTo(2 / 6, 1);
+      expect(counts.c! / sampleCount).toBeCloseTo(3 / 6, 1);
     });
   });
 });
