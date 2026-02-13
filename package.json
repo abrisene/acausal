@@ -23,6 +23,7 @@
     "name generator",
     "procedural generation"
   ],
+  "packageManager": "pnpm@10.11.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
