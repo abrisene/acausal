@@ -49,6 +49,9 @@ export class MarkovChain<T extends string = string> {
     sequences,
     grams,
   }: MarkovChainConstructor) {
+    if (maxOrder <= 0) {
+      throw new RangeError(`MarkovChain: maxOrder must be > 0 (got ${maxOrder})`);
+    }
     this._engine = engine || new Random({ seed, uses });
     this._model = {
       ...defaultOptions,
@@ -204,6 +207,11 @@ export class MarkovChain<T extends string = string> {
 
   /**
    * Generates a sequence from a Markov Chain.
+   *
+   * When `constraints` are provided, the generator retries up to
+   * `constraints.maxRetries` times (default 100) to find a sequence that
+   * satisfies all constraints. If no valid sequence is found within the retry
+   * limit, the last attempted sequence is returned as a best-effort fallback.
    */
   public generate({
     start,
@@ -232,7 +240,12 @@ export class MarkovChain<T extends string = string> {
   }
 
   /**
-   * Analyze's a sequences sources and sinks.
+   * Analyzes a sequence's sources and sinks by generating sample sequences.
+   *
+   * **Side effect:** This method generates `samples` forward and backward
+   * sequences, which advances the PRNG engine state. If you need deterministic
+   * generation after calling `analyze()`, clone the engine or use a separate
+   * `MarkovChain` instance for analysis.
    */
   public analyze({
     start,
@@ -469,6 +482,14 @@ export class MarkovChain<T extends string = string> {
     return MarkovChain.pick(model, gramSequence, false, mask, engine);
   }
 
+  /**
+   * Generates a sequence from a Markov Chain DTO.
+   *
+   * When `constraints` are provided, the generator retries up to
+   * `constraints.maxRetries` times (default 100) to find a sequence that
+   * satisfies all constraints. If no valid sequence is found within the retry
+   * limit, the last attempted sequence is returned as a best-effort fallback.
+   */
   static generate({
     model,
     start,
@@ -543,6 +564,14 @@ export class MarkovChain<T extends string = string> {
     return lastAttempt ?? [];
   }
 
+  /**
+   * Analyzes a sequence's sources and sinks by generating sample sequences.
+   *
+   * **Side effect:** This method generates `samples` forward and backward
+   * sequences, which advances the PRNG engine state. If you need deterministic
+   * generation after calling `analyze()`, clone the engine before passing it,
+   * or use a dedicated engine instance for analysis.
+   */
   static analyze({
     model,
     start,
@@ -614,6 +643,9 @@ export class MarkovChain<T extends string = string> {
     insert: MCInsertOption = false,
     stripSequences = false
   ): MarkovChainDTO {
+    if (maxOrder <= 0) {
+      throw new RangeError(`MarkovChain.new: maxOrder must be > 0 (got ${maxOrder})`);
+    }
     const dto = stripSequences ? { ...defaultOptions, maxOrder, grams: {} } : { ...defaultDTO, maxOrder };
     return sequences ? MarkovChain.addSequences(dto, sequences, insert) : { ...defaultDTO, maxOrder };
   }

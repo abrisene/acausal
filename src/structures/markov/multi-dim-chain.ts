@@ -129,6 +129,13 @@ export class MultiDimMarkovChain<T> {
   /**
    * Add a sequence of structured states.
    * Mutates internal state and returns `this` for chaining.
+   *
+   * Note: This mutable variant directly mutates `this.stateStore` in place
+   * (writing key-value pairs into the existing object) rather than creating a
+   * cloned copy. This is intentional for performance — the mutable API contract
+   * permits in-place modification. The immutable override
+   * ({@link ImmutableMultiDimMarkovChain.addSequence}) handles cloning of the
+   * state store to preserve the original instance.
    */
   public addSequence(sequence: T[]): this {
     if (sequence.length === 0) return this;

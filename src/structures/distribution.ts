@@ -419,6 +419,12 @@ export class Distribution<T extends string = string> {
  * Immutable variant of Distribution.
  * Mutating methods return new instances instead of modifying internal state.
  *
+ * Note: Forked instances (returned by mutating methods) share initial PRNG
+ * state with the original via `engine.clone()`. They will produce identical
+ * random sequences until their usage patterns (number of draws) diverge.
+ * If independent randomness is needed immediately after forking, re-seed or
+ * advance one of the engines before use.
+ *
  * Note: Not designed for further subclassing. The `this` return type is a
  * convenience for method chaining, not a polymorphism guarantee.
  */

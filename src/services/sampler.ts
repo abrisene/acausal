@@ -273,18 +273,32 @@ export class RandomSampler {
   }
 
   /**
-   * Sample from a truncated normal distribution.
-   * Uses clamping (not rejection) for deterministic draw count.
+   * Sample from a clamped normal distribution.
+   * Draws from a normal distribution and clamps the result to [min, max].
+   * Uses clamping (not rejection sampling) for a deterministic draw count
+   * (always exactly 2 PRNG draws, same as `normal()`).
+   *
+   * Note: This is not a true truncated normal distribution (which would use
+   * rejection sampling to only return values within bounds, preserving the
+   * conditional PDF shape). Clamping produces point masses at the boundaries.
    *
    * @param mu - Mean
    * @param sigma - Standard deviation
    * @param min - Lower bound (clamp)
    * @param max - Upper bound (clamp)
    */
-  truncatedNormal(mu: number, sigma: number, min: number, max: number): number {
-    if (sigma < 0) throw new RangeError('truncatedNormal: sigma must be >= 0');
-    if (min > max) throw new RangeError('truncatedNormal: min must be <= max');
+  clampedNormal(mu: number, sigma: number, min: number, max: number): number {
+    if (sigma < 0) throw new RangeError('clampedNormal: sigma must be >= 0');
+    if (min > max) throw new RangeError('clampedNormal: min must be <= max');
     return Math.max(min, Math.min(max, this.normal(mu, sigma)));
+  }
+
+  /**
+   * @deprecated Use {@link clampedNormal} instead. This method clamps rather
+   * than truly truncating (rejection sampling). Renamed for clarity.
+   */
+  truncatedNormal(mu: number, sigma: number, min: number, max: number): number {
+    return this.clampedNormal(mu, sigma, min, max);
   }
 
   /**
@@ -380,6 +394,13 @@ export class RandomSampler {
   /**
    * Sample from a Poisson distribution.
    * Uses Knuth's algorithm for small lambda, normal approximation for large.
+   *
+   * **PRNG draw count:** For lambda < 30 (Knuth's algorithm), the number of
+   * PRNG draws is proportional to the returned value (roughly lambda + 1 draws
+   * on average). For lambda >= 30 (normal approximation), exactly 2 draws are
+   * consumed. This means PRNG state advancement is data-dependent for small
+   * lambda — two calls with different lambda values will leave the engine in
+   * different states even if the returned values happen to match.
    *
    * @param lambda - Expected number of occurrences
    */
