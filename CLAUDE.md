@@ -6,7 +6,7 @@ TypeScript library for weighted random distributions, Markov chains, and seeded 
 
 These are non-negotiable architectural constraints:
 
-- **Clone-on-write**: Methods never mutate state. Static methods clone the DTO, mutate the clone, and return the new DTO. Instance methods (e.g. `addSequence`, `add`, `remove`) delegate to statics and return a **new instance** — the original is never modified. This preserves the integrity of existing models and enables safe concurrency. The tradeoff is that each mutation clones the entire model — for bulk operations, use `MarkovChainBatch` which clones once upfront, mutates the clone in place across N operations, then produces a new chain on `commit()`.
+- **Static clone-on-write / Mutable instances**: Static methods clone the DTO, mutate the clone, and return the new DTO. Instance methods (e.g. `addSequence`, `add`, `remove`) delegate to statics, reassign internal state, and return `this` for chaining — the instance is mutated in place. Use `.clone()` before mutating if you need to preserve the original. `Immutable*` variants (`ImmutableMarkovChain`, `ImmutableDistribution`, `ImmutableMultiDimMarkovChain`) return new instances from mutating methods for functional patterns and safe sharing. `MarkovChainBatch` remains valuable for avoiding N static-level clones in bulk operations.
 - **Dual API**: Every feature has both an instance method and a static method that operates on raw DTOs. Instance methods delegate to statics. Example: `chain.generate(opts)` wraps `MarkovChain.generate({ model: chain.dto, ...opts })`.
 - **Portable DTOs**: All classes serialize to/from plain JSON objects (`serialize()` / constructor from DTO). Models can be stored, transferred over the network, and rebuilt without the original training data.
 - **Minimal dependencies**: Only `scalr` (weight normalization). The PRNG is an internal MT19937 implementation.
@@ -21,13 +21,16 @@ src/
   services/
     mersenne-twister.ts             # Internal MT19937 PRNG engine
     random.ts                       # Random class (wraps MT engine)
+    sampler.ts                      # RandomSampler (statistical distributions)
   structures/
-    distribution.ts                 # Distribution<T> class (weighted random picks)
+    distribution.ts                 # Distribution<T> + ImmutableDistribution<T>
     markov/
-      markov-chain.ts               # MarkovChain<T> core class (~800 lines)
+      markov-chain.ts               # MarkovChain<T> core class (mutable instances)
+      immutable-markov-chain.ts     # ImmutableMarkovChain<T> (returns new instances)
       batch.ts                      # MarkovChainBatch<T> (bulk add sequences/edges)
       blend.ts                      # blendMultipleDistributions() (5 strategies)
-      multi-dim-chain.ts            # MultiDimMarkovChain<T> (structured state spaces)
+      multi-dim-chain.ts            # MultiDimMarkovChain<T> (mutable instances)
+      immutable-multi-dim-chain.ts  # ImmutableMultiDimMarkovChain<T>
       utils.ts                      # Module-level gram dictionary mutation functions
       types.ts                      # All Markov type definitions
       defaults.ts                   # Default options and empty DTOs
@@ -36,6 +39,7 @@ src/
     distribution.spec.ts
     markov.spec.ts
     random.spec.ts
+    sampler.spec.ts
 ```
 
 ## Key Patterns
@@ -82,6 +86,7 @@ pnpm run docs           # typedoc (deployed via CI to GitHub Pages)
 - **Distribution** maintains dual representation: raw `source` weights (human-readable) and `normal` weights (probabilities summing to 1.0). Normalization uses `scalr`.
 - **MarkovChain generation** uses dynamic order adjustment when `strict: false` — if no gram exists at the target order, it decrements until a match is found.
 - **MarkovChainBatch** accumulates sequences/edges, then `commit()` applies them all at once to produce a new `MarkovChain<T>`.
+- **RandomSampler** (`sampler.ts`): Statistical distribution sampling built on `Random`. Provides `normal()` (Box-Muller), `truncatedNormal()` (clamped), `exponential()`, `poisson()`, `binomial()`, `geometric()`, `beta()`, `gamma()` (Marsaglia-Tsang), `weibull()`, `cauchy()`, `logistic()`, `logNormal()`. Also provides `sampleDistribution(params)` for data-driven sampling from typed distribution parameter objects (`DistributionParams`). All methods are deterministic given the same seed.
 
 ## Common Gotchas
 
