@@ -11,6 +11,21 @@ import { CONSTANTS } from '../../constants';
 import { MCInsertOption, MCDelimitersShort, MCDirectionOption, GramDictionary, Gram, MarkovChainDTO } from './types';
 
 /**
+ * Normalizes an MCInsertOption value, converting deprecated `true` to `'middle'`.
+ * @internal
+ */
+export function normalizeInsertOption(insert: MCInsertOption | boolean): MCInsertOption {
+  if (insert === true) {
+    console.warn(
+      'MCInsertOption: passing `true` is deprecated. Use \'middle\' instead. ' +
+        '`true` will be removed in a future version.'
+    );
+    return 'middle';
+  }
+  return insert as MCInsertOption;
+}
+
+/**
  * The set of reserved delimiter characters used internally for gram ID
  * construction and sequence boundary markers. Sequence elements that contain
  * any of these characters will produce corrupted gram IDs or false boundary
@@ -44,7 +59,6 @@ export function formatGramSequence(
       result = [...gramSequence, delimiters[2]];
       break;
     case 'middle':
-    case true:
       result = [...gramSequence];
       break;
     case false:
@@ -101,7 +115,7 @@ export function getDelimiters(data: MarkovChainDTO): MCDelimitersShort {
 export function addSequence(
   grams: GramDictionary,
   sequence: string[],
-  insert: MCInsertOption,
+  insert: MCInsertOption | boolean,
   weight: number,
   maxOrder: number,
   delimiters: MCDelimitersShort
@@ -116,8 +130,11 @@ export function addSequence(
     }
   }
 
+  // Normalize the insert option (handles deprecated `true` → 'middle').
+  const normalizedInsert = normalizeInsertOption(insert);
+
   // Format the sequence for addition or insertion.
-  const seq = formatGramSequence(sequence, insert, delimiters);
+  const seq = formatGramSequence(sequence, normalizedInsert, delimiters);
 
   // Iterate through each order.
   for (let order = 1; order <= maxOrder; order += 1) {

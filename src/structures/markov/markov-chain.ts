@@ -666,11 +666,19 @@ export class MarkovChain<T extends string = string> {
   }
 
   static new(
-    sequences?: string[][],
-    maxOrder = defaultOptions.maxOrder,
-    insert: MCInsertOption = false,
-    stripSequences = false
+    options: {
+      sequences?: string[][];
+      maxOrder?: number;
+      insert?: MCInsertOption;
+      stripSequences?: boolean;
+    } = {}
   ): MarkovChainDTO {
+    const {
+      sequences,
+      maxOrder = defaultOptions.maxOrder,
+      insert = false,
+      stripSequences = false,
+    } = options;
     if (maxOrder <= 0) {
       throw new RangeError(`MarkovChain.new: maxOrder must be > 0 (got ${maxOrder})`);
     }

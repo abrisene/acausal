@@ -7,10 +7,12 @@ import { DistributionSourceDTO } from '../distribution';
 import { Random } from '../../services';
 
 export type MCDirectionOption = 'next' | 'last';
-export type MCInsertOption = boolean | 'start' | 'end' | 'middle';
+export type MCInsertOption = false | 'start' | 'end' | 'middle';
 
+/** @internal */
 export type MCDelimitersShort = [string, string, string];
 
+/** @internal */
 export type GramDictionary = { [key: string]: Gram };
 
 export interface MarkovChainOptions extends RandomDTO {
@@ -20,11 +22,13 @@ export interface MarkovChainOptions extends RandomDTO {
   endDelimiter: string;
 }
 
+/** @internal */
 export interface MarkovChainSequenceDTO extends MarkovChainOptions {
   sequences: string[][];
   grams: GramDictionary;
 }
 
+/** @internal */
 export interface MarkovChainGramDTO extends MarkovChainOptions {
   sequences?: string[][];
   grams: GramDictionary;
@@ -75,6 +79,7 @@ export interface MCGeneratorOptions {
   constraints?: MCConstraints;
 }
 
+/** @internal */
 export interface MCGeneratorStaticOptions extends MCGeneratorOptions {
   model: MarkovChainDTO;
   engine?: Random;
@@ -85,6 +90,7 @@ export interface MCAnalyzeOptions extends Omit<MCGeneratorOptions, 'constraints'
   normalize?: boolean;
 }
 
+/** @internal */
 export interface MCAnalyzeStaticOptions extends MCAnalyzeOptions, MCGeneratorStaticOptions {}
 
 export interface MCAnalysis {

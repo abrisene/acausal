@@ -141,7 +141,7 @@ const pickOneU3 = Distribution.pickOne(dtoU3, undefined, engine);
 
 Distribution.pickOne(dtoU1, undefined, engineB);
 Distribution.pickOne(dtoU2, undefined, engineB);
-const pickOneU3b = Distribution.pick(dtoU3, undefined, undefined, undefined, engineB);
+const pickOneU3b = Distribution.pick(dtoU3, { engine: engineB });
 
 const pickOneEnginelessU1 = Distribution.pickOne(dtoU1, undefined, undefined);
 const pickOneEnginelessU2 = Distribution.pickOne(dtoU2, undefined, undefined);
@@ -153,14 +153,14 @@ const pickOneMaskU3 = Distribution.pickOne(dtoU3, ['a', 'b'], engine);
 
 const pickDefaultU3 = Distribution.pick(dtoU3);
 
-const pickFiveMaskU3 = Distribution.pick(dtoU3, 5, ['a', 'b'], false, engine);
+const pickFiveMaskU3 = Distribution.pick(dtoU3, { count: 5, mask: ['a', 'b'], engine });
 
-const pickTwoU3 = Distribution.pick(dtoU3, 2);
-const pickFiveU3 = Distribution.pick(dtoU3, 5);
-const pickTwentyU3 = Distribution.pick(dtoU3, 20);
+const pickTwoU3 = Distribution.pick(dtoU3, { count: 2 });
+const pickFiveU3 = Distribution.pick(dtoU3, { count: 5 });
+const pickTwentyU3 = Distribution.pick(dtoU3, { count: 20 });
 
 const sampleCount = 50000;
-const sampleB3 = Distribution.pick(dtoB3, sampleCount, undefined, false, engine);
+const sampleB3 = Distribution.pick(dtoB3, { count: sampleCount, engine });
 const sampleB3Summary = sampleB3.reduce((l, k) => {
   const result = { ...l };
   if (result[k] === undefined) result[k] = 0;
@@ -313,8 +313,8 @@ describe('Distribution', () => {
       expect(pickFiveMaskU3).toEqual(['c', 'c', 'c', 'c', 'c']);
 
       // Multi Pick Exclusive + Masked
-      expect(Distribution.pick(dtoU3, 5, undefined, true).sort()).toEqual(['a', 'b', 'c']);
-      expect(Distribution.pick(dtoU3, 5, ['a'], true).sort()).toEqual(['b', 'c']);
+      expect(Distribution.pick(dtoU3, { count: 5, exclusive: true }).sort()).toEqual(['a', 'b', 'c']);
+      expect(Distribution.pick(dtoU3, { count: 5, mask: ['a'], exclusive: true }).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
       Object.keys(sampleB3Summary).forEach(k => {
@@ -541,16 +541,16 @@ describe('Distribution', () => {
 
       // Multi Pick
       expect(distU3.pick().length).toBe(1);
-      expect(distU3.pick(2).length).toBe(2);
-      expect(distU3.pick(5).length).toBe(5);
-      expect(distU3.pick(20).length).toBe(20);
+      expect(distU3.pick({ count: 2 }).length).toBe(2);
+      expect(distU3.pick({ count: 5 }).length).toBe(5);
+      expect(distU3.pick({ count: 20 }).length).toBe(20);
 
       // Multi Pick Masked
-      expect(distU3.pick(5, ['a', 'b'])).toEqual(['c', 'c', 'c', 'c', 'c']);
+      expect(distU3.pick({ count: 5, mask: ['a', 'b'] })).toEqual(['c', 'c', 'c', 'c', 'c']);
 
       // Multi Pick Exclusive + Masked
-      expect(distU3.pick(5, undefined, true).sort()).toEqual(['a', 'b', 'c']);
-      expect(distU3.pick(5, ['a'], true).sort()).toEqual(['b', 'c']);
+      expect(distU3.pick({ count: 5, exclusive: true }).sort()).toEqual(['a', 'b', 'c']);
+      expect(distU3.pick({ count: 5, mask: ['a'], exclusive: true }).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
       const dist = new Distribution({ source: { a: 1, b: 2, c: 3 } });
@@ -558,7 +558,7 @@ describe('Distribution', () => {
       const sampleCount = 6000;
 
       for (let i = 0; i < sampleCount; i++) {
-        const picked = dist.pick(1, undefined, false)[0];
+        const picked = dist.pick({ count: 1 })[0];
         if (picked) counts[picked]++;
       }
 
@@ -614,7 +614,7 @@ describe('Distribution', () => {
       const dist = new ImmutableDistribution({ seed: 42, source: { a: 1, b: 2, c: 3 } });
       const pick = dist.pickOne();
       expect(['a', 'b', 'c']).toContain(pick);
-      const picks = dist.pick(5);
+      const picks = dist.pick({ count: 5 });
       expect(picks.length).toBe(5);
     });
   });

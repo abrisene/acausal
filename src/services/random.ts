@@ -44,12 +44,28 @@ export class Random {
     return this._engine.getUseCount();
   }
 
+  /** @internal */
   public integer(min: number, max: number) {
     return integer(min, max)(this._engine);
   }
 
+  /** @internal */
   public real(min: number, max: number, inclusive?: boolean) {
     return real(min, max, inclusive)(this._engine);
+  }
+
+  /**
+   * Generate a random integer in [min, max] (inclusive).
+   */
+  public int(min: number, max: number) {
+    return this.integer(min, max);
+  }
+
+  /**
+   * Generate a random float in [min, max).
+   */
+  public float(min: number, max: number, inclusive?: boolean) {
+    return this.real(min, max, inclusive);
   }
 
   public bool(percentage = 0.5) {

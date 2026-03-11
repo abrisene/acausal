@@ -35,11 +35,13 @@ import { WeightedDistribution } from '../types';
  # Types
  */
 
+/** @internal */
 export interface DistributionSourceDTO {
   source: WeightedDistribution;
   normal: WeightedDistribution;
 }
 
+/** @internal */
 export interface DistributionNormalDTO {
   source?: WeightedDistribution;
   normal: WeightedDistribution;
@@ -51,6 +53,13 @@ export interface DistributionConstructor extends RandomDTO {
   engine?: Random;
   source?: WeightedDistribution;
   normal?: WeightedDistribution;
+}
+
+export interface DistributionPickOptions<T extends string = string> {
+  count?: number;
+  mask?: T[];
+  exclusive?: boolean;
+  engine?: Random;
 }
 
 /**
@@ -124,12 +133,14 @@ export class Distribution<T extends string = string> {
   /**
    * Picks one more values from a Distribution without exclusion.
    * If you just need to pick one value, you should use pickOne instead.
-   * @param count       The number of picks to make (default 1).
-   * @param mask        A mask containing keys in the distribution that should be ignored.
-   * @param exclusive   If true picks are considered exclusive and are removed.
+   * @param options Options for picking values.
+   * @param options.count The number of picks to make (default 1).
+   * @param options.mask A mask containing keys in the distribution that should be ignored.
+   * @param options.exclusive If true picks are considered exclusive and are removed.
    */
-  public pick(count = 1, mask?: T[], exclusive = false) {
-    return Distribution.pick({ source: this._source, normal: this._normal }, count, mask, exclusive, this._engine);
+  public pick(options: DistributionPickOptions<T> = {}) {
+    const { count = 1, mask, exclusive = false } = options;
+    return Distribution.pick({ source: this._source, normal: this._normal }, { count, mask, exclusive, engine: this._engine });
   }
 
   /**
@@ -225,18 +236,17 @@ export class Distribution<T extends string = string> {
    * Picks one more values from a Distribution without exclusion.
    * If you just need to pick one value, you should use pickOne instead.
    * @param model        A Distribution data transfer object.
-   * @param count       The number of picks to make (default 1).
-   * @param mask        A mask containing keys in the distribution that should be ignored.
-   * @param exclusive   If true picks are considered exclusive and are removed.
-   * @param engine      A Random engine. This is created if not provided.
+   * @param options      Options for picking values.
+   * @param options.count       The number of picks to make (default 1).
+   * @param options.mask        A mask containing keys in the distribution that should be ignored.
+   * @param options.exclusive   If true picks are considered exclusive and are removed.
+   * @param options.engine      A Random engine. This is created if not provided.
    */
   public static pick<T extends string = string>(
     model: DistributionNormalDTO,
-    count = 1,
-    mask?: T[],
-    exclusive = false,
-    engine?: Random
+    options: DistributionPickOptions<T> = {}
   ) {
+    const { count = 1, mask, exclusive = false, engine } = options;
     const eng = engine || new Random({});
     const picks: T[] = [];
     const iMask = mask ? [...mask] : exclusive ? [] : undefined;
@@ -268,6 +278,7 @@ export class Distribution<T extends string = string> {
 
   /**
    * Adds an object of values to a Distribution's source and renormalizes it.
+   * @internal
    * @param model        A Distribution data transfer object.
    * @param additions   An object containing additions.
    */
@@ -285,6 +296,7 @@ export class Distribution<T extends string = string> {
    * Adds a key / value pair to a distribution's source and renormalizes it.
    * If a source distribution exists, it will be recalculated based off of the
    * new normal distribution.
+   * @internal
    * @param model  A Distribution data transfer object.
    * @param key   Key to be added.
    * @param value Value of the key to add.
@@ -301,6 +313,7 @@ export class Distribution<T extends string = string> {
    * Adds an object of values to a normal Distribution and renormalizes it.
    * If a source distribution exists, it will be recalculated by scaling the
    * new normal distribution to fit its sum.
+   * @internal
    * @param model        A Distribution data transfer object.
    * @param additions   An object containing additions.
    */
@@ -334,6 +347,7 @@ export class Distribution<T extends string = string> {
    * Adds a key / value pair to a normal distribution and renormalizes it.
    * If a source distribution exists, it will be recalculated based off of the
    * new normal distribution.
+   * @internal
    * @param model  A Distribution data transfer object.
    * @param key   Key to be added.
    * @param value Value of the key to add.
