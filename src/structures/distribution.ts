@@ -209,6 +209,19 @@ export class Distribution<T extends string = string> {
   }
 
   /**
+   * Returns a new {@link ImmutableDistribution} from the current state.
+   */
+  public freeze(): ImmutableDistribution<T> {
+    const { source, normal } = this.serialize();
+    return new ImmutableDistribution<T>({
+      seed: this.seed,
+      uses: this.uses,
+      source,
+      normal,
+    });
+  }
+
+  /**
    * Picks one more values from a Distribution without exclusion.
    * If you just need to pick one value, you should use pickOne instead.
    * @param model        A Distribution data transfer object.
@@ -459,6 +472,19 @@ export class ImmutableDistribution<T extends string = string> extends Distributi
   public override clone(stripSource = false) {
     const { source, normal } = this.serialize(stripSource);
     return new ImmutableDistribution<T>({
+      seed: this.seed,
+      uses: this.uses,
+      source,
+      normal,
+    });
+  }
+
+  /**
+   * Returns a new mutable {@link Distribution} from the current state.
+   */
+  public toMutable(): Distribution<T> {
+    const { source, normal } = this.serialize();
+    return new Distribution<T>({
       seed: this.seed,
       uses: this.uses,
       source,

@@ -199,10 +199,18 @@ export class MarkovChain<T extends string = string> {
   }
 
   /**
-   * Picks the last random value from a Markov Chain given a sequence.
+   * Picks the previous (backward) random value from a Markov Chain given a sequence.
+   */
+  public backward(gramSequence?: string[], mask?: string[]) {
+    return MarkovChain.pick(this._model, gramSequence, false, mask, this._engine);
+  }
+
+  /**
+   * Picks the previous (backward) random value from a Markov Chain given a sequence.
+   * @deprecated Use {@link backward} instead. Will be removed in a future major version.
    */
   public last(gramSequence?: string[], mask?: string[]) {
-    return MarkovChain.pick(this._model, gramSequence, false, mask, this._engine);
+    return this.backward(gramSequence, mask);
   }
 
   /**
@@ -283,6 +291,15 @@ export class MarkovChain<T extends string = string> {
    */
   public clone(stripSequences = false) {
     return new MarkovChain(this.serialize(stripSequences));
+  }
+
+  /**
+   * Returns a new {@link ImmutableMarkovChain} from the current state.
+   * Uses a dynamic import to avoid circular module dependencies.
+   */
+  public async freeze(): Promise<MarkovChain<T>> {
+    const { ImmutableMarkovChain } = await import('./immutable-markov-chain');
+    return new ImmutableMarkovChain<T>(this.serialize());
   }
 
   /**
@@ -478,8 +495,19 @@ export class MarkovChain<T extends string = string> {
     return MarkovChain.pick(model, gramSequence, true, mask, engine);
   }
 
-  static last(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
+  /**
+   * Picks the previous (backward) random value from a Markov Chain DTO.
+   */
+  static backward(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
     return MarkovChain.pick(model, gramSequence, false, mask, engine);
+  }
+
+  /**
+   * Picks the previous (backward) random value from a Markov Chain DTO.
+   * @deprecated Use {@link MarkovChain.backward} instead. Will be removed in a future major version.
+   */
+  static last(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
+    return MarkovChain.backward(model, gramSequence, mask, engine);
   }
 
   /**

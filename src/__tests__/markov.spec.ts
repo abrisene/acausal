@@ -2269,4 +2269,75 @@ describe('Markov Chain', () => {
       expect(cloned.getStates().length).toBe(updated.getStates().length);
     });
   });
+
+  describe('freeze / toMutable bridge', () => {
+    it('MarkovChain.freeze() returns an ImmutableMarkovChain with the same state', async () => {
+      const chain = new MarkovChain({ seed: 1, sequences: sA3 });
+      const frozen = await chain.freeze();
+      expect(frozen).toBeInstanceOf(ImmutableMarkovChain);
+      expect(frozen).not.toBe(chain);
+      expect(frozen.serialize()).toEqual(chain.serialize());
+    });
+
+    it('ImmutableMarkovChain.toMutable() returns a MarkovChain with the same state', () => {
+      const chain = new ImmutableMarkovChain({ seed: 1, sequences: sA3 });
+      const mutable = chain.toMutable();
+      expect(mutable).toBeInstanceOf(MarkovChain);
+      expect(mutable).not.toBeInstanceOf(ImmutableMarkovChain);
+      expect(mutable).not.toBe(chain);
+      expect(mutable.serialize()).toEqual(chain.serialize());
+    });
+
+    it('MultiDimMarkovChain.freeze() returns an ImmutableMultiDimMarkovChain', async () => {
+      const chain = new MultiDimMarkovChain<{ value: string; index: number }>({
+        seed: 1,
+        maxOrder: 1,
+        stateKey: (s: { value: string; index: number }) => `${s.value}_${s.index}`,
+      });
+      chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+      ]);
+      const frozen = await chain.freeze();
+      expect(frozen).toBeInstanceOf(ImmutableMultiDimMarkovChain);
+      expect(frozen).not.toBe(chain);
+      expect(frozen.getStates().length).toBe(chain.getStates().length);
+    });
+
+    it('ImmutableMultiDimMarkovChain.toMutable() returns a MultiDimMarkovChain', () => {
+      const chain = new ImmutableMultiDimMarkovChain<{ value: string; index: number }>({
+        seed: 1,
+        maxOrder: 1,
+        stateKey: (s: { value: string; index: number }) => `${s.value}_${s.index}`,
+      });
+      const updated = chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+      ]);
+      const mutable = updated.toMutable();
+      expect(mutable).toBeInstanceOf(MultiDimMarkovChain);
+      expect(mutable).not.toBeInstanceOf(ImmutableMultiDimMarkovChain);
+      expect(mutable).not.toBe(updated);
+      expect(mutable.getStates().length).toBe(updated.getStates().length);
+    });
+  });
+
+  describe('backward() alias', () => {
+    it('backward() produces the same results as last() for both static and instance methods', () => {
+      const eng1 = new Random({ seed: 99 });
+      const eng2 = eng1.clone();
+
+      // Static: backward() vs last()
+      const resultBackward = MarkovChain.backward(dtoC2, ['+'], undefined, eng1);
+      const resultLast = MarkovChain.last(dtoC2, ['+'], undefined, eng2);
+      expect(resultBackward).toEqual(resultLast);
+
+      // Instance: backward() vs last()
+      const mc1 = new MarkovChain({ ...dtoC2, seed: 42 });
+      const mc2 = new MarkovChain({ ...dtoC2, seed: 42 });
+      const instBackward = mc1.backward(['+']);
+      const instLast = mc2.last(['+']);
+      expect(instBackward).toEqual(instLast);
+    });
+  });
 });

@@ -39,7 +39,7 @@
 
 * Replaced `tsc` with `tsup` for ESM/CJS dual output
 * Modern TypeScript 5.6.3 with strict mode
-* Jest v29 with full ESM support
+* Vitest with native ESM support
 * 95% test coverage threshold enforced
 
 <a name="2.0.1"></a>
@@ -57,7 +57,7 @@
 * Full conversion to Typescript.
 * Rewrote Markov Chain class.
 * Rewrote "Transition Matrix" class, now named "Distribution".
-* Wrote "Random" class, which wraps `random-js`.
+* Wrote "Random" class, backed by an internal MT19937 PRNG implementation.
 * Rewrote Unit Tests.
 * Test Coverage at > 99%
 * Removed file loading utilities - these should be a separate module, or written ad hoc as needed with implementations.

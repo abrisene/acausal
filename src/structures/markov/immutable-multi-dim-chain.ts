@@ -63,4 +63,17 @@ export class ImmutableMultiDimMarkovChain<T> extends MultiDimMarkovChain<T> {
       this._engine.clone()
     );
   }
+
+  /**
+   * Returns a new mutable {@link MultiDimMarkovChain} from the current state.
+   */
+  public toMutable(): MultiDimMarkovChain<T> {
+    return MultiDimMarkovChain.fromParts(
+      this.internalChain.clone(),
+      { ...this.stateStore },
+      this.stateKeyFn,
+      this.stateKeyName,
+      this._engine.clone()
+    );
+  }
 }

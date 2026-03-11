@@ -57,4 +57,11 @@ export class ImmutableMarkovChain<T extends string = string> extends MarkovChain
   public override clone(stripSequences = false) {
     return new ImmutableMarkovChain<T>(this.serialize(stripSequences));
   }
+
+  /**
+   * Returns a new mutable {@link MarkovChain} from the current state.
+   */
+  public toMutable(): MarkovChain<T> {
+    return new MarkovChain<T>(this.serialize());
+  }
 }

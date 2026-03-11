@@ -618,4 +618,25 @@ describe('Distribution', () => {
       expect(picks.length).toBe(5);
     });
   });
+
+  describe('freeze / toMutable bridge', () => {
+    it('Distribution.freeze() returns an ImmutableDistribution with the same state', () => {
+      const dist = new Distribution({ seed: 10, source: { a: 1, b: 2 } });
+      const frozen = dist.freeze();
+      expect(frozen).toBeInstanceOf(ImmutableDistribution);
+      expect(frozen).not.toBe(dist);
+      expect(frozen.source).toEqual(dist.source);
+      expect(frozen.normal).toEqual(dist.normal);
+    });
+
+    it('ImmutableDistribution.toMutable() returns a Distribution with the same state', () => {
+      const immDist = new ImmutableDistribution({ seed: 10, source: { a: 1, b: 2 } });
+      const mutable = immDist.toMutable();
+      expect(mutable).toBeInstanceOf(Distribution);
+      expect(mutable).not.toBeInstanceOf(ImmutableDistribution);
+      expect(mutable).not.toBe(immDist);
+      expect(mutable.source).toEqual(immDist.source);
+      expect(mutable.normal).toEqual(immDist.normal);
+    });
+  });
 });

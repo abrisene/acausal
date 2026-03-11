@@ -258,4 +258,19 @@ export class MultiDimMarkovChain<T> {
       this._engine.clone()
     );
   }
+
+  /**
+   * Returns a new {@link ImmutableMultiDimMarkovChain} from the current state.
+   * Uses a dynamic import to avoid circular module dependencies.
+   */
+  public async freeze(): Promise<MultiDimMarkovChain<T>> {
+    const { ImmutableMultiDimMarkovChain } = await import('./immutable-multi-dim-chain');
+    return ImmutableMultiDimMarkovChain.fromParts(
+      this.internalChain.clone(),
+      { ...this.stateStore },
+      this.stateKeyFn,
+      this.stateKeyName,
+      this._engine.clone()
+    );
+  }
 }

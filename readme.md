@@ -9,7 +9,7 @@
 - **Clone-on-write:** all classes use a clone-then-mutate pattern that preserves the integrity of existing models while supporting fluent chaining.
 - **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store, transfer, and rebuild regardless of whether it's on the client or the server.
 - **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models.
-- **Minimal Dependencies**: _acausal_ only depends on [random-js](https://www.npmjs.com/package/random-js) and [scalr](https://www.npmjs.com/package/scalr).
+- **Minimal Dependencies**: _acausal_ only depends on [scalr](https://www.npmjs.com/package/scalr). The PRNG is an internal MT19937 implementation.
 
 ## What's New in v3.0
 
