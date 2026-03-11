@@ -2322,6 +2322,107 @@ describe('Markov Chain', () => {
     });
   });
 
+  describe('blend statistical validation', () => {
+    it('arithmetic 50/50 blend produces roughly equal output from two models', () => {
+      // Model A: heavily favors 'x' -> 'a'
+      const chainA = new MarkovChain({ seed: 1, maxOrder: 1 });
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+
+      // Model B: heavily favors 'x' -> 'b'
+      const chainB = new MarkovChain({ seed: 2, maxOrder: 1 });
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+
+      const blended = MarkovChain.blend([
+        { chain: chainA, weight: 1 },
+        { chain: chainB, weight: 1 },
+      ], { strategy: 'arithmetic' });
+
+      const eng = new Random({ seed: 99 });
+      const counts: Record<string, number> = { a: 0, b: 0 };
+      const sampleCount = 2000;
+
+      for (let i = 0; i < sampleCount; i++) {
+        const result = MarkovChain.generate({
+          model: blended.model,
+          start: ['x'],
+          max: 2,
+          strict: false,
+          trim: true,
+          engine: eng,
+        });
+        const last = result[result.length - 1];
+        if (last === 'a' || last === 'b') counts[last]++;
+      }
+
+      // With 50/50 blend, each should appear roughly 50% of the time
+      const ratioA = counts.a! / sampleCount;
+      const ratioB = counts.b! / sampleCount;
+      expect(ratioA).toBeGreaterThan(0.35);
+      expect(ratioA).toBeLessThan(0.65);
+      expect(ratioB).toBeGreaterThan(0.35);
+      expect(ratioB).toBeLessThan(0.65);
+    });
+
+    it('geometric and harmonic strategies produce valid (non-NaN, non-zero) results', () => {
+      const chainA = new MarkovChain({ seed: 1, maxOrder: 1 });
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'b']);
+
+      const chainB = new MarkovChain({ seed: 2, maxOrder: 1 });
+      chainB.addSequence(['x', 'a']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+
+      for (const strategy of ['geometric', 'harmonic'] as const) {
+        const blended = MarkovChain.blend([
+          { chain: chainA, weight: 1 },
+          { chain: chainB, weight: 1 },
+        ], { strategy });
+
+        // Verify the blended model has valid gram distributions
+        const grams = blended.model.grams;
+        for (const gramId of Object.keys(grams)) {
+          const gram = grams[gramId]!;
+          for (const val of Object.values(gram.next.normal)) {
+            expect(Number.isNaN(val)).toBe(false);
+            expect(Number.isFinite(val)).toBe(true);
+          }
+          for (const val of Object.values(gram.last.normal)) {
+            expect(Number.isNaN(val)).toBe(false);
+            expect(Number.isFinite(val)).toBe(true);
+          }
+        }
+
+        // Verify generation works and produces output
+        const eng = new Random({ seed: 55 });
+        const results: string[][] = [];
+        for (let i = 0; i < 100; i++) {
+          results.push(
+            MarkovChain.generate({
+              model: blended.model,
+              start: ['x'],
+              max: 2,
+              strict: false,
+              trim: true,
+              engine: eng,
+            })
+          );
+        }
+        expect(results.length).toBe(100);
+        expect(results.every(r => r.length > 0)).toBe(true);
+      }
+    });
+  });
+
   describe('backward() alias', () => {
     it('backward() produces the same results as last() for both static and instance methods', () => {
       const eng1 = new Random({ seed: 99 });

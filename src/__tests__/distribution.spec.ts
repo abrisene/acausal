@@ -619,6 +619,33 @@ describe('Distribution', () => {
     });
   });
 
+  describe('masking distribution proportional redistribution', () => {
+    it('picking with mask excludes masked key and redistributes proportionally', () => {
+      const dist = Distribution.new({ a: 30, b: 50, c: 20 });
+      const eng = new Random({ seed: 42 });
+      const sampleCount = 10_000;
+      const counts: Record<string, number> = { a: 0, b: 0, c: 0 };
+
+      for (let i = 0; i < sampleCount; i++) {
+        const pick = Distribution.pickOne(dist, ['b'], eng);
+        if (pick) counts[pick]++;
+      }
+
+      // 'b' should never appear
+      expect(counts.b).toBe(0);
+
+      // With 'b' masked out, remaining weights are a:30, c:20 (total 50).
+      // Expected: a ~ 60% (30/50), c ~ 40% (20/50)
+      const ratioA = counts.a! / sampleCount;
+      const ratioC = counts.c! / sampleCount;
+
+      expect(ratioA).toBeGreaterThan(0.55);
+      expect(ratioA).toBeLessThan(0.65);
+      expect(ratioC).toBeGreaterThan(0.35);
+      expect(ratioC).toBeLessThan(0.45);
+    });
+  });
+
   describe('freeze / toMutable bridge', () => {
     it('Distribution.freeze() returns an ImmutableDistribution with the same state', () => {
       const dist = new Distribution({ seed: 10, source: { a: 1, b: 2 } });
