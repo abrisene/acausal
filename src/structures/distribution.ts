@@ -84,9 +84,9 @@ function addObjects(...objects: WeightedDistribution[]): WeightedDistribution {
  */
 
 export class Distribution<T extends string = string> {
-  private _engine: Random;
-  private _source?: WeightedDistribution;
-  private _normal: WeightedDistribution;
+  protected _engine: Random;
+  protected _source?: WeightedDistribution;
+  protected _normal: WeightedDistribution;
 
   constructor({ engine, seed, uses, source, normal }: DistributionConstructor) {
     // const { engine, source, normal, ...randomConfig } = config;
@@ -145,44 +145,41 @@ export class Distribution<T extends string = string> {
    * Adds a key / value pair to a Distribution.
    * Will add to the source distribution by default, unless the distribution
    * only has normalized values.
+   * Mutates internal state and returns `this` for chaining.
    * @param key   Key to be added.
    * @param value Value of the key to add.
    */
-  public add(key: T, value: number): Distribution<T> {
+  public add(key: T, value: number): this {
     const data = Distribution.addValues({ source: this._source, normal: this._normal }, { [key]: value });
-    return new Distribution<T>({
-      engine: this._engine.clone(),
-      source: data.source,
-      normal: data.normal,
-    });
+    this._source = data.source;
+    this._normal = data.normal;
+    return this;
   }
 
   /**
    * Adds an object of values to a Distribution.
    * Will add to the source distribution by default, unless the distribution
    * only has normalized values.
+   * Mutates internal state and returns `this` for chaining.
    * @param additions   An object containing additions.
    */
-  public addValues(additions: WeightedDistribution): Distribution<T> {
+  public addValues(additions: WeightedDistribution): this {
     const data = Distribution.addValues({ source: this._source, normal: this._normal }, additions);
-    return new Distribution<T>({
-      engine: this._engine.clone(),
-      source: data.source,
-      normal: data.normal,
-    });
+    this._source = data.source;
+    this._normal = data.normal;
+    return this;
   }
 
   /**
    * Removes a key or array of keys from a Distribution and renormalizes.
+   * Mutates internal state and returns `this` for chaining.
    * @param keys  Key or Keys to be removed.
    */
-  public remove(keys: T | T[]): Distribution<T> {
+  public remove(keys: T | T[]): this {
     const data = Distribution.remove({ source: this._source, normal: this._normal }, keys);
-    return new Distribution<T>({
-      engine: this._engine.clone(),
-      source: data.source,
-      normal: data.normal,
-    });
+    this._source = data.source;
+    this._normal = data.normal;
+    return this;
   }
 
   /**
@@ -408,5 +405,48 @@ export class Distribution<T extends string = string> {
           source: { ...source },
           normal: { ...normal },
         };
+  }
+}
+
+/**
+ * Immutable variant of Distribution.
+ * Mutating methods return new instances instead of modifying internal state.
+ */
+export class ImmutableDistribution<T extends string = string> extends Distribution<T> {
+  public override add(key: T, value: number): this {
+    const data = Distribution.addValues({ source: this._source, normal: this._normal }, { [key]: value });
+    return new ImmutableDistribution<T>({
+      engine: this._engine.clone(),
+      source: data.source,
+      normal: data.normal,
+    }) as this;
+  }
+
+  public override addValues(additions: WeightedDistribution): this {
+    const data = Distribution.addValues({ source: this._source, normal: this._normal }, additions);
+    return new ImmutableDistribution<T>({
+      engine: this._engine.clone(),
+      source: data.source,
+      normal: data.normal,
+    }) as this;
+  }
+
+  public override remove(keys: T | T[]): this {
+    const data = Distribution.remove({ source: this._source, normal: this._normal }, keys);
+    return new ImmutableDistribution<T>({
+      engine: this._engine.clone(),
+      source: data.source,
+      normal: data.normal,
+    }) as this;
+  }
+
+  public override clone(stripSource = false) {
+    const { source, normal } = this.serialize(stripSource);
+    return new ImmutableDistribution<T>({
+      seed: this.seed,
+      uses: this.uses,
+      source,
+      normal,
+    });
   }
 }

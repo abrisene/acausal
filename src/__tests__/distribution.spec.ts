@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
  # Module Dependencies
  */
 
-import { Distribution, DistributionDTO, CONSTANTS, Random, WeightedDistribution } from '..';
+import { Distribution, ImmutableDistribution, DistributionDTO, CONSTANTS, Random, WeightedDistribution } from '..';
 
 /**
  # Utility Functions
@@ -553,7 +553,6 @@ describe('Distribution', () => {
       expect(distU3.pick(5, ['a'], true).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
-      const eng = new Random({ seed: 42 });
       const dist = new Distribution({ source: { a: 1, b: 2, c: 3 } });
       const counts: Record<string, number> = { a: 0, b: 0, c: 0 };
       const sampleCount = 6000;
@@ -567,6 +566,56 @@ describe('Distribution', () => {
       expect(counts.a! / sampleCount).toBeCloseTo(1 / 6, 1);
       expect(counts.b! / sampleCount).toBeCloseTo(2 / 6, 1);
       expect(counts.c! / sampleCount).toBeCloseTo(3 / 6, 1);
+    });
+  });
+
+  describe('ImmutableDistribution', () => {
+    it('add returns a new instance without mutating the original', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1, b: 2 } });
+      const original = dist.serialize();
+      const updated = dist.add('c', 3);
+      expect(updated).not.toBe(dist);
+      expect(updated).toBeInstanceOf(ImmutableDistribution);
+      expect(dist.serialize()).toEqual(original);
+      expect(updated.source).toHaveProperty('c');
+    });
+
+    it('addValues returns a new instance without mutating the original', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1 } });
+      const original = dist.serialize();
+      const updated = dist.addValues({ b: 2, c: 3 });
+      expect(updated).not.toBe(dist);
+      expect(updated).toBeInstanceOf(ImmutableDistribution);
+      expect(dist.serialize()).toEqual(original);
+      expect(updated.source).toHaveProperty('b');
+      expect(updated.source).toHaveProperty('c');
+    });
+
+    it('remove returns a new instance without mutating the original', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1, b: 2, c: 3 } });
+      const original = dist.serialize();
+      const updated = dist.remove('a');
+      expect(updated).not.toBe(dist);
+      expect(updated).toBeInstanceOf(ImmutableDistribution);
+      expect(dist.serialize()).toEqual(original);
+      expect(updated.source).not.toHaveProperty('a');
+    });
+
+    it('clone returns an ImmutableDistribution', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1, b: 2 } });
+      const cloned = dist.clone();
+      expect(cloned).not.toBe(dist);
+      expect(cloned).toBeInstanceOf(ImmutableDistribution);
+      expect(cloned.source).toEqual(dist.source);
+      expect(cloned.normal).toEqual(dist.normal);
+    });
+
+    it('can pick values like a regular Distribution', () => {
+      const dist = new ImmutableDistribution({ seed: 42, source: { a: 1, b: 2, c: 3 } });
+      const pick = dist.pickOne();
+      expect(['a', 'b', 'c']).toContain(pick);
+      const picks = dist.pick(5);
+      expect(picks.length).toBe(5);
     });
   });
 });

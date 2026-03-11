@@ -8,8 +8,10 @@
 
 // Classes
 export { MarkovChain } from './markov-chain';
+export { ImmutableMarkovChain } from './immutable-markov-chain';
 export { MarkovChainBatch } from './batch';
 export { MultiDimMarkovChain } from './multi-dim-chain';
+export { ImmutableMultiDimMarkovChain } from './immutable-multi-dim-chain';
 
 // Functions
 export { registerStateKey, getStateKey } from './multi-dim-chain';

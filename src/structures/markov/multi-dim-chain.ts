@@ -58,11 +58,11 @@ export interface MultiDimMarkovChainOptions<T> extends RandomDTO {
 }
 
 export class MultiDimMarkovChain<T> {
-  private internalChain: MarkovChain<string>;
-  private stateStore: { [key: string]: T };
-  private stateKeyFn: StateKeyFunction<T>;
-  private stateKeyName: string;
-  private _engine: Random;
+  protected internalChain: MarkovChain<string>;
+  protected stateStore: { [key: string]: T };
+  protected stateKeyFn: StateKeyFunction<T>;
+  protected stateKeyName: string;
+  protected _engine: Random;
 
   constructor(options: MultiDimMarkovChainOptions<T>) {
     this._engine = options.engine || new Random({ seed: options.seed, uses: options.uses });
@@ -96,14 +96,14 @@ export class MultiDimMarkovChain<T> {
   /**
    * Reconstruct from internal parts (used by addSequence, clone, fromDTO).
    */
-  private static fromParts<T>(
+  protected static fromParts<T>(
     internalChain: MarkovChain<string>,
     stateStore: { [key: string]: T },
     stateKeyFn: StateKeyFunction<T>,
     stateKeyName: string,
     engine: Random
   ): MultiDimMarkovChain<T> {
-    const instance = Object.create(MultiDimMarkovChain.prototype) as MultiDimMarkovChain<T>;
+    const instance = Object.create(this.prototype) as MultiDimMarkovChain<T>;
     instance.internalChain = internalChain;
     instance.stateStore = stateStore;
     instance.stateKeyFn = stateKeyFn;
@@ -114,32 +114,31 @@ export class MultiDimMarkovChain<T> {
 
   /**
    * Add a sequence of structured states.
+   * Mutates internal state and returns `this` for chaining.
    */
-  public addSequence(sequence: T[]): MultiDimMarkovChain<T> {
+  public addSequence(sequence: T[]): this {
     if (sequence.length === 0) return this;
 
-    const newStore = { ...this.stateStore };
     const keys = sequence.map(state => {
       const key = this.stateKeyFn(state);
-      newStore[key] = state;
+      this.stateStore[key] = state;
       return key;
     });
 
-    const newInternalChain = this.internalChain.addSequence(keys);
+    this.internalChain.addSequence(keys);
 
-    return MultiDimMarkovChain.fromParts(newInternalChain, newStore, this.stateKeyFn, this.stateKeyName, this._engine);
+    return this;
   }
 
   /**
    * Add multiple sequences of structured states.
+   * Mutates internal state and returns `this` for chaining.
    */
-  public addSequences(sequences: T[][]): MultiDimMarkovChain<T> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let result: MultiDimMarkovChain<T> = this;
+  public addSequences(sequences: T[][]): this {
     for (const seq of sequences) {
-      result = result.addSequence(seq);
+      this.addSequence(seq);
     }
-    return result;
+    return this;
   }
 
   /**

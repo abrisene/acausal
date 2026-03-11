@@ -32,8 +32,8 @@ import { blendMultipleDistributions } from './blend';
 import type { BlendOptions, ChainBlendConfig } from './blend';
 
 export class MarkovChain<T extends string = string> {
-  private _engine: Random;
-  private _model: MarkovChainDTO;
+  protected _engine: Random;
+  protected _model: MarkovChainDTO;
 
   constructor({
     engine,
@@ -156,31 +156,29 @@ export class MarkovChain<T extends string = string> {
 
   /**
    * Adds or inserts a list of Sequences into a Markov Chain DTO.
+   * Mutates internal state and returns `this` for chaining.
    */
-  public addSequences(sequences: string[][], insert: MCInsertOption = false): MarkovChain<T> {
-    const data = MarkovChain.addSequences(this._model, sequences, insert);
-    return new MarkovChain<T>({ ...data, engine: this._engine.clone() });
+  public addSequences(sequences: string[][], insert: MCInsertOption = false): this {
+    this._model = MarkovChain.addSequences(this._model, sequences, insert);
+    return this;
   }
 
   /**
    * Adds or inserts a Sequence into a Markov Chain DTO.
+   * Mutates internal state and returns `this` for chaining.
    */
-  public addSequence(sequence: string[], insert: MCInsertOption = false): MarkovChain<T> {
-    const data = MarkovChain.addSequence(this._model, sequence, insert);
-    return new MarkovChain<T>({ ...data, engine: this._engine.clone() });
+  public addSequence(sequence: string[], insert: MCInsertOption = false): this {
+    this._model = MarkovChain.addSequence(this._model, sequence, insert);
+    return this;
   }
 
   /**
    * Adds an edge from a gram to the items before and after it in the sequence.
+   * Mutates internal state and returns `this` for chaining.
    */
-  public addEdge(
-    gram: string | string[],
-    lastId: string | undefined,
-    nextId: string | undefined,
-    order: number
-  ): MarkovChain<T> {
-    const data = MarkovChain.addEdge(this._model, gram, lastId, nextId, order);
-    return new MarkovChain<T>({ ...data, engine: this._engine.clone() });
+  public addEdge(gram: string | string[], lastId: string | undefined, nextId: string | undefined, order: number): this {
+    this._model = MarkovChain.addEdge(this._model, gram, lastId, nextId, order);
+    return this;
   }
 
   /**
@@ -284,15 +282,17 @@ export class MarkovChain<T extends string = string> {
   /**
    * Blend this chain with another chain using interpolation.
    * Alpha controls the blend: 0 = all this chain, 1 = all other chain.
+   * Mutates internal state and returns `this` for chaining.
    */
-  public interpolate(otherChain: MarkovChain<T>, alpha: number, options?: BlendOptions): MarkovChain<T> {
-    return MarkovChain.blend(
+  public interpolate(otherChain: MarkovChain<T>, alpha: number, options?: BlendOptions): this {
+    this._model = MarkovChain.blendDTOs(
       [
-        { chain: this, weight: 1 - alpha },
-        { chain: otherChain, weight: alpha },
+        { model: this._model, weight: 1 - alpha },
+        { model: otherChain.model, weight: alpha },
       ],
       options
     );
+    return this;
   }
 
   /**

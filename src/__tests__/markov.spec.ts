@@ -11,12 +11,14 @@ import { describe, it, test, expect } from 'vitest';
 
 import {
   MarkovChain,
+  ImmutableMarkovChain,
   MarkovChainDTO,
   MarkovChainGramDTO,
   Random,
   CONSTANTS,
   Distribution,
   MultiDimMarkovChain,
+  ImmutableMultiDimMarkovChain,
   registerStateKey,
   getStateKey,
 } from '..';
@@ -674,15 +676,16 @@ describe('Markov Chain', () => {
       expect(mB5.dto).toEqual(stripSequences(dtoGU));
       expect(mB6.dto).toEqual(stripSequences(dto6GU));
     });
-    it('create immutable clones', () => {
+    it('mutations do not affect clones', () => {
       const mA = new MarkovChain({ sequences: sU });
       const mB = mA.clone();
       const mC = mB.clone();
+      // Mutable: addSequences mutates mB in place and returns this
       const mD = mB.addSequences(sC2);
-      expect(mA.dto).toEqual(dtoU);
-      expect(mB.dto).toEqual(dtoU);
-      expect(mC.dto).toEqual(dtoU);
-      expect(mD.dto).not.toEqual(dtoU);
+      expect(mD).toBe(mB); // mutable returns this
+      expect(mA.dto).toEqual(dtoU); // clone is independent
+      expect(mC.dto).toEqual(dtoU); // clone is independent
+      expect(mB.dto).not.toEqual(dtoU); // mB was mutated
       expect(mD.dto).not.toEqual(mA.dto);
       expect(mD.dto).not.toEqual(mC.dto);
     });
@@ -2142,6 +2145,128 @@ describe('Markov Chain', () => {
 
       // Original chain should be unchanged
       expect(chain.model.grams).toEqual(originalGrams);
+    });
+  });
+
+  describe('ImmutableMarkovChain', () => {
+    it('addSequence returns a new instance', () => {
+      const chain = new ImmutableMarkovChain({ sequences: sU });
+      const updated = chain.addSequence(gA1);
+      expect(updated).not.toBe(chain);
+      expect(updated).toBeInstanceOf(ImmutableMarkovChain);
+      expect(chain.dto).toEqual(dtoU); // original unchanged
+      expect(updated.dto).not.toEqual(dtoU);
+    });
+
+    it('addSequences returns a new instance', () => {
+      const chain = new ImmutableMarkovChain({ sequences: sU });
+      const updated = chain.addSequences(sC2);
+      expect(updated).not.toBe(chain);
+      expect(updated).toBeInstanceOf(ImmutableMarkovChain);
+      expect(chain.dto).toEqual(dtoU); // original unchanged
+    });
+
+    it('addEdge returns a new instance', () => {
+      const chain = new ImmutableMarkovChain({ maxOrder: 2 }).addSequence(gU3);
+      const before = chain.serialize();
+      const updated = chain.addEdge('x', undefined, 'y', 1);
+      expect(updated).not.toBe(chain);
+      expect(updated).toBeInstanceOf(ImmutableMarkovChain);
+      expect(chain.serialize()).toEqual(before);
+    });
+
+    it('interpolate returns a new instance', () => {
+      const chain1 = new ImmutableMarkovChain({ maxOrder: 1, sequences: [['a', 'b']] });
+      const chain2 = new ImmutableMarkovChain({ maxOrder: 1, sequences: [['a', 'c']] });
+      const before = chain1.serialize();
+      const blended = chain1.interpolate(chain2, 0.5);
+      expect(blended).not.toBe(chain1);
+      expect(blended).toBeInstanceOf(ImmutableMarkovChain);
+      expect(chain1.serialize()).toEqual(before);
+    });
+
+    it('clone returns an ImmutableMarkovChain', () => {
+      const chain = new ImmutableMarkovChain({ sequences: sU });
+      const cloned = chain.clone();
+      expect(cloned).not.toBe(chain);
+      expect(cloned).toBeInstanceOf(ImmutableMarkovChain);
+      expect(cloned.dto).toEqual(chain.dto);
+    });
+
+    it('can generate and pick like a regular chain', () => {
+      const chain = new ImmutableMarkovChain({ seed: 1, maxOrder: 2, sequences: sA3 });
+      const result = chain.generate({ order: 1, min: 1, max: 10 });
+      expect(result.length).toBeGreaterThanOrEqual(1);
+
+      const pick = chain.pick();
+      expect(pick).toBeDefined();
+    });
+  });
+
+  describe('ImmutableMultiDimMarkovChain', () => {
+    interface SimpleState {
+      value: string;
+      index: number;
+    }
+
+    it('addSequence returns a new instance', () => {
+      const chain = new ImmutableMultiDimMarkovChain<SimpleState>({
+        seed: 1,
+        maxOrder: 1,
+        stateKey: s => `${s.value}_${s.index}`,
+      });
+
+      const updated = chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+      ]);
+
+      expect(updated).not.toBe(chain);
+      expect(updated).toBeInstanceOf(ImmutableMultiDimMarkovChain);
+      expect(chain.getStates().length).toBe(0); // original unchanged
+      expect(updated.getStates().length).toBe(2);
+    });
+
+    it('addSequences returns a new instance', () => {
+      const chain = new ImmutableMultiDimMarkovChain<SimpleState>({
+        seed: 1,
+        maxOrder: 1,
+        stateKey: s => `${s.value}_${s.index}`,
+      });
+
+      const updated = chain.addSequences([
+        [
+          { value: 'a', index: 0 },
+          { value: 'b', index: 1 },
+        ],
+        [
+          { value: 'c', index: 2 },
+          { value: 'd', index: 3 },
+        ],
+      ]);
+
+      expect(updated).not.toBe(chain);
+      expect(updated).toBeInstanceOf(ImmutableMultiDimMarkovChain);
+      expect(chain.getStates().length).toBe(0); // original unchanged
+      expect(updated.getStates().length).toBe(4);
+    });
+
+    it('clone returns an ImmutableMultiDimMarkovChain', () => {
+      const chain = new ImmutableMultiDimMarkovChain<SimpleState>({
+        seed: 1,
+        maxOrder: 1,
+        stateKey: s => `${s.value}_${s.index}`,
+      });
+
+      const updated = chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+      ]);
+      const cloned = updated.clone();
+
+      expect(cloned).not.toBe(updated);
+      expect(cloned).toBeInstanceOf(ImmutableMultiDimMarkovChain);
+      expect(cloned.getStates().length).toBe(updated.getStates().length);
     });
   });
 });
