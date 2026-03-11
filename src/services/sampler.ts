@@ -18,7 +18,7 @@ import { WeightedDistribution } from '../types';
  # Types
  */
 
-export interface RandomSamplerDTO extends RandomDTO {}
+export type RandomSamplerDTO = RandomDTO;
 
 /**
  * Distribution parameter types for data-driven sampling.

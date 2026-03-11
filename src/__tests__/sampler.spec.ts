@@ -56,8 +56,7 @@ describe('RandomSampler', () => {
 
     it('should generate boolean values with correct probability', () => {
       const sampler = new RandomSampler({ seed: 42 });
-      const trueCount = Array.from({ length: 1000 }, () => sampler.bool(0.7))
-        .filter(Boolean).length;
+      const trueCount = Array.from({ length: 1000 }, () => sampler.bool(0.7)).filter(Boolean).length;
       expect(trueCount).toBeGreaterThan(640);
       expect(trueCount).toBeLessThan(760);
     });
@@ -156,9 +155,7 @@ describe('RandomSampler', () => {
 
     it('should produce values centered on mu when bounds are wide', () => {
       const sampler = new RandomSampler({ seed: 42 });
-      const values = Array.from({ length: 2000 }, () =>
-        sampler.truncatedNormal(5, 1, 0, 10)
-      );
+      const values = Array.from({ length: 2000 }, () => sampler.truncatedNormal(5, 1, 0, 10));
       const mean = values.reduce((a, b) => a + b, 0) / values.length;
       expect(mean).toBeGreaterThan(4.7);
       expect(mean).toBeLessThan(5.3);
