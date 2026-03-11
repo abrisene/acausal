@@ -14,7 +14,7 @@ export { MultiDimMarkovChain } from './multi-dim-chain';
 export { ImmutableMultiDimMarkovChain } from './immutable-multi-dim-chain';
 
 // Functions
-export { registerStateKey, getStateKey } from './multi-dim-chain';
+export { registerStateKey, getStateKey, unregisterStateKey } from './multi-dim-chain';
 
 // Public types
 export type {

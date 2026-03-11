@@ -402,6 +402,9 @@ export class MarkovChain<T extends string = string> {
     for (let i = 0; i < sequences.length; i += 1) {
       const sequence = sequences[i];
       if (!sequence) continue;
+      for (const element of sequence) {
+        if (element === '') throw new RangeError('addSequence: sequence elements must be non-empty strings');
+      }
       if (m.sequences !== undefined) m.sequences.push(sequence);
       addSequence(m.grams, sequence, insert, 1, m.maxOrder, delimiters);
     }
@@ -410,6 +413,9 @@ export class MarkovChain<T extends string = string> {
   }
 
   static addSequence(model: MarkovChainDTO, sequence: string[], insert: MCInsertOption = false): MarkovChainDTO {
+    for (const element of sequence) {
+      if (element === '') throw new RangeError('addSequence: sequence elements must be non-empty strings');
+    }
     const m = MarkovChain.clone(model);
     const delimiters = getDelimiters(m);
 
@@ -476,6 +482,9 @@ export class MarkovChain<T extends string = string> {
     constraints,
     engine,
   }: MCGeneratorStaticOptions) {
+    if (min < 0) throw new RangeError('generate: min must be >= 0');
+    if (max < 0) throw new RangeError('generate: max must be >= 0');
+    if (min > max) throw new RangeError('generate: min must be <= max');
     const eng = engine || new Random({});
     const maxRetries = constraints?.maxRetries ?? (constraints ? 100 : 1);
 
@@ -621,8 +630,8 @@ export class MarkovChain<T extends string = string> {
 
       gramsClone[key] = {
         ...gram,
-        last: { ...gram.last },
-        next: { ...gram.next },
+        last: { source: { ...gram.last.source }, normal: { ...gram.last.normal } },
+        next: { source: { ...gram.next.source }, normal: { ...gram.next.normal } },
       };
     }
 

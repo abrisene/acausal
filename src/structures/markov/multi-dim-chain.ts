@@ -23,7 +23,21 @@ const stateKeyRegistry = new Map<string, StateKeyFunction<any>>();
  * Register a named state key function for use with MultiDimMarkovChain serialization.
  */
 export function registerStateKey<T>(name: string, fn: StateKeyFunction<T>): void {
+  const existing = stateKeyRegistry.get(name);
+  if (existing && existing !== fn) {
+    throw new Error(
+      `State key '${name}' is already registered with a different function. ` +
+        'Use a unique name or pass { overwrite: true }.'
+    );
+  }
   stateKeyRegistry.set(name, fn);
+}
+
+/**
+ * Remove a registered state key function by name.
+ */
+export function unregisterStateKey(name: string): boolean {
+  return stateKeyRegistry.delete(name);
 }
 
 /**

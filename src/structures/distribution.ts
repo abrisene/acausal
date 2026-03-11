@@ -100,8 +100,8 @@ export class Distribution<T extends string = string> {
       const dto = Distribution.addNormalValues(defaultDTO, normal);
       this._normal = dto.normal;
     } else {
-      this._source = defaultDTO.source;
-      this._normal = defaultDTO.normal;
+      this._source = {};
+      this._normal = {};
     }
   }
 
@@ -259,6 +259,9 @@ export class Distribution<T extends string = string> {
    * @param additions   An object containing additions.
    */
   public static addSourceValues(model: DistributionSourceDTO, additions: WeightedDistribution): DistributionSourceDTO {
+    for (const v of Object.values(additions)) {
+      if (v !== undefined && !Number.isFinite(v)) throw new RangeError('Distribution: weight must be a finite number');
+    }
     // Create the new distribution and normalize.
     const src = addObjects(model.source, additions);
     const nrm = Object.keys(src).length > 0 ? normalizeObject(src) : {};
@@ -289,6 +292,9 @@ export class Distribution<T extends string = string> {
    * @param additions   An object containing additions.
    */
   public static addNormalValues(model: DistributionDTO, additions: WeightedDistribution): DistributionDTO {
+    for (const v of Object.values(additions)) {
+      if (v !== undefined && !Number.isFinite(v)) throw new RangeError('Distribution: weight must be a finite number');
+    }
     //  Add the values and then renormalize. We have to strip out the distribution because it'll no longer be valid.
     const { normal, source, ...dto } = model;
 
@@ -385,7 +391,8 @@ export class Distribution<T extends string = string> {
    * @param source An optional source of values to generate the distribution from.
    */
   public static new(source?: WeightedDistribution): DistributionSourceDTO {
-    return source ? Distribution.addSourceValues(defaultDTO, source) : defaultDTO;
+    const empty: DistributionSourceDTO = { source: {}, normal: {} };
+    return source ? Distribution.addSourceValues(empty, source) : empty;
   }
 
   /**
@@ -411,6 +418,9 @@ export class Distribution<T extends string = string> {
 /**
  * Immutable variant of Distribution.
  * Mutating methods return new instances instead of modifying internal state.
+ *
+ * Note: Not designed for further subclassing. The `this` return type is a
+ * convenience for method chaining, not a polymorphism guarantee.
  */
 export class ImmutableDistribution<T extends string = string> extends Distribution<T> {
   public override add(key: T, value: number): this {

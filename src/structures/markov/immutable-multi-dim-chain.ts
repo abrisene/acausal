@@ -9,6 +9,13 @@ import { MarkovChain } from './markov-chain';
 import { ImmutableMarkovChain } from './immutable-markov-chain';
 import { MultiDimMarkovChain } from './multi-dim-chain';
 
+/**
+ * Immutable variant of MultiDimMarkovChain.
+ * Mutating methods return new instances instead of modifying internal state.
+ *
+ * Note: Not designed for further subclassing. The `this` return type is a
+ * convenience for method chaining, not a polymorphism guarantee.
+ */
 export class ImmutableMultiDimMarkovChain<T> extends MultiDimMarkovChain<T> {
   public override addSequence(sequence: T[]): this {
     if (sequence.length === 0) return this;
@@ -30,7 +37,7 @@ export class ImmutableMultiDimMarkovChain<T> extends MultiDimMarkovChain<T> {
       newStore,
       this.stateKeyFn,
       this.stateKeyName,
-      this._engine
+      this._engine.clone()
     ) as this;
   }
 

@@ -9,6 +9,13 @@ import { MarkovChain } from './markov-chain';
 import { MCInsertOption } from './types';
 import type { BlendOptions } from './blend';
 
+/**
+ * Immutable variant of MarkovChain.
+ * Mutating methods return new instances instead of modifying internal state.
+ *
+ * Note: Not designed for further subclassing. The `this` return type is a
+ * convenience for method chaining, not a polymorphism guarantee.
+ */
 export class ImmutableMarkovChain<T extends string = string> extends MarkovChain<T> {
   public override addSequences(sequences: string[][], insert: MCInsertOption = false): this {
     const data = MarkovChain.addSequences(this._model, sequences, insert);
