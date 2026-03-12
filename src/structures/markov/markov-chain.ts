@@ -673,12 +673,7 @@ export class MarkovChain<T extends string = string> {
       stripSequences?: boolean;
     } = {}
   ): MarkovChainDTO {
-    const {
-      sequences,
-      maxOrder = defaultOptions.maxOrder,
-      insert = false,
-      stripSequences = false,
-    } = options;
+    const { sequences, maxOrder = defaultOptions.maxOrder, insert = false, stripSequences = false } = options;
     if (maxOrder <= 0) {
       throw new RangeError(`MarkovChain.new: maxOrder must be > 0 (got ${maxOrder})`);
     }

@@ -17,7 +17,7 @@ import { MCInsertOption, MCDelimitersShort, MCDirectionOption, GramDictionary, G
 export function normalizeInsertOption(insert: MCInsertOption | boolean): MCInsertOption {
   if (insert === true) {
     console.warn(
-      'MCInsertOption: passing `true` is deprecated. Use \'middle\' instead. ' +
+      "MCInsertOption: passing `true` is deprecated. Use 'middle' instead. " +
         '`true` will be removed in a future version.'
     );
     return 'middle';

@@ -136,7 +136,10 @@ export class Distribution<T extends string = string> {
    */
   public pick(options: DistributionPickOptions<T> = {}) {
     const { count = 1, mask, exclusive = false } = options;
-    return Distribution.pick({ source: this._source, normal: this._normal }, { count, mask, exclusive, engine: this._engine });
+    return Distribution.pick(
+      { source: this._source, normal: this._normal },
+      { count, mask, exclusive, engine: this._engine }
+    );
   }
 
   /**

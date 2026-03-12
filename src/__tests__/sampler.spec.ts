@@ -417,8 +417,8 @@ describe('RandomSampler', () => {
       const { mean, variance } = sampleStats(values);
       expect(mean).toBeGreaterThan(0.45);
       expect(mean).toBeLessThan(0.55);
-      expect(variance).toBeGreaterThan(0.20);
-      expect(variance).toBeLessThan(0.30);
+      expect(variance).toBeGreaterThan(0.2);
+      expect(variance).toBeLessThan(0.3);
     });
 
     it('uniform(10, 20): mean ~ 15, variance ~ 8.33', () => {
@@ -479,7 +479,7 @@ describe('RandomSampler', () => {
       expect(mean).toBeGreaterThan(0.26);
       expect(mean).toBeLessThan(0.31);
       expect(variance).toBeGreaterThan(0.022);
-      expect(variance).toBeLessThan(0.030);
+      expect(variance).toBeLessThan(0.03);
     });
 
     it('gamma(3, 2): mean ~ 6, variance ~ 12', () => {

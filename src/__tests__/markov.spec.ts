@@ -1538,7 +1538,10 @@ describe('Markov Chain', () => {
 
     test('fromDTO throws when stateKey not registered and not provided', () => {
       const dto = {
-        internalChain: MarkovChain.new({ sequences: [], maxOrder: 1 }) as import('../structures/markov/types').MarkovChainDTO,
+        internalChain: MarkovChain.new({
+          sequences: [],
+          maxOrder: 1,
+        }) as import('../structures/markov/types').MarkovChainDTO,
         stateStore: {},
         stateKeyName: 'nonexistent',
       };
@@ -2340,10 +2343,13 @@ describe('Markov Chain', () => {
       chainB.addSequence(['x', 'b']);
       chainB.addSequence(['x', 'b']);
 
-      const blended = MarkovChain.blend([
-        { chain: chainA, weight: 1 },
-        { chain: chainB, weight: 1 },
-      ], { strategy: 'arithmetic' });
+      const blended = MarkovChain.blend(
+        [
+          { chain: chainA, weight: 1 },
+          { chain: chainB, weight: 1 },
+        ],
+        { strategy: 'arithmetic' }
+      );
 
       const eng = new Random({ seed: 99 });
       const counts: Record<string, number> = { a: 0, b: 0 };
@@ -2383,10 +2389,13 @@ describe('Markov Chain', () => {
       chainB.addSequence(['x', 'b']);
 
       for (const strategy of ['geometric', 'harmonic'] as const) {
-        const blended = MarkovChain.blend([
-          { chain: chainA, weight: 1 },
-          { chain: chainB, weight: 1 },
-        ], { strategy });
+        const blended = MarkovChain.blend(
+          [
+            { chain: chainA, weight: 1 },
+            { chain: chainB, weight: 1 },
+          ],
+          { strategy }
+        );
 
         // Verify the blended model has valid gram distributions
         const grams = blended.model.grams;
