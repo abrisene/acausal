@@ -95,23 +95,14 @@ export function blendMultipleDistributions(
       case 'arithmetic':
         blended[key] = arithmeticMean(values);
         break;
-      case 'geometric': {
-        const nonZeroValues = values.filter(v => v.value > 0);
-        if (nonZeroValues.length === values.length) {
-          blended[key] = nonZeroValues.reduce((prod, { value, weight }) => prod * Math.pow(value, weight), 1);
-        } else {
-          blended[key] = arithmeticMean(values);
-        }
+      case 'geometric':
+        // After pre-filter (L83-91), values only contains entries with value > 0
+        blended[key] = values.reduce((prod, { value, weight }) => prod * Math.pow(value, weight), 1);
         break;
-      }
       case 'harmonic': {
-        const nonZeroValues = values.filter(v => v.value > 0);
-        if (nonZeroValues.length === values.length) {
-          const sum = nonZeroValues.reduce((s, { value, weight }) => s + weight / value, 0);
-          blended[key] = 1 / sum;
-        } else {
-          blended[key] = arithmeticMean(values);
-        }
+        // After pre-filter (L83-91), values only contains entries with value > 0
+        const sum = values.reduce((s, { value, weight }) => s + weight / value, 0);
+        blended[key] = 1 / sum;
         break;
       }
       case 'max':
