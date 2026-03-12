@@ -1,0 +1,26 @@
+---
+title: Name Generator
+description: Interactive Markov chain name generator
+---
+
+import NameGenerator from '../../../components/NameGenerator';
+
+Generate novel names by training a Markov chain on example data. The chain learns character-level transition probabilities from the training names, then produces new names that share the same statistical patterns without simply copying the originals.
+
+<NameGenerator client:load />
+
+## How it works
+
+**Training Data** -- Enter names separated by commas or newlines. Each name is split into individual characters and fed into the chain as a sequence.
+
+**Max Order** -- Controls how many preceding characters the chain considers when picking the next one. Higher orders produce names closer to the training data; lower orders produce more novel (and sometimes nonsensical) output.
+
+**Min / Max Length** -- Constrain the length of generated names. The generator will discard the start/end delimiters from the output.
+
+**Seed** -- The PRNG seed for deterministic output. The same seed, training data, and parameters will always produce the same names.
+
+**Count** -- How many unique names to generate per run. Duplicates are automatically filtered out.
+
+**Strict Mode** -- When enabled, the generator only uses grams at exactly the specified order. When disabled (default), it falls back to lower-order grams when no match exists at the target order, producing more varied results.
+
+Press **Generate** to re-roll with a new seed variation, or change any parameter to regenerate automatically.

@@ -1,0 +1,18 @@
+---
+title: Blend Comparison
+description: Compare Markov chain blending strategies side by side
+---
+
+import BlendComparison from '../../../components/BlendComparison';
+
+Compare how different blending strategies combine two Markov chains trained on distinct name sets. Adjust the weight slider to shift the blend toward Chain A or Chain B, and try each strategy to see how it affects the generated output.
+
+<BlendComparison client:load />
+
+## Blending Strategies
+
+- **arithmetic** -- Weighted average of transition probabilities. The most intuitive blend: a 50/50 weight produces names that mix both styles evenly.
+- **geometric** -- Weighted geometric mean. Tends to favor transitions that appear in both chains, producing more conservative blends.
+- **harmonic** -- Weighted harmonic mean. Similar to geometric but more strongly penalizes low-probability transitions.
+- **max** -- Takes the maximum probability for each transition across chains. Produces names that could plausibly come from either source.
+- **min** -- Takes the minimum non-zero probability. Produces names constrained to transitions common to both chains.

@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
 import mermaid from 'astro-mermaid';
 import starlight from '@astrojs/starlight';
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
@@ -7,6 +8,7 @@ export default defineConfig({
   site: 'https://abrisene.github.io/acausal',
   base: '/acausal',
   integrations: [
+    react(),
     mermaid({ theme: 'dark', autoTheme: true }),
     starlight({
       title: 'acausal',
@@ -23,7 +25,7 @@ export default defineConfig({
         baseUrl:
           'https://github.com/abrisene/acausal/edit/master/website/',
       },
-      customCss: ['./src/styles/custom.css'],
+      customCss: ['./src/styles/custom.css', './src/styles/playground.css'],
       head: [
         {
           tag: 'script',
@@ -71,6 +73,16 @@ export default defineConfig({
             { slug: 'guides/markov-chains' },
             { slug: 'guides/chain-analysis' },
             { slug: 'guides/immutable-patterns' },
+          ],
+        },
+        {
+          label: 'Playground',
+          items: [
+            { slug: 'playground/name-generator' },
+            { slug: 'playground/distribution-explorer' },
+            { slug: 'playground/weight-editor' },
+            { slug: 'playground/chain-visualizer' },
+            { slug: 'playground/blend-comparison' },
           ],
         },
         typeDocSidebarGroup,
