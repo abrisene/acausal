@@ -173,7 +173,7 @@ export default function NameGenerator() {
       </div>
 
       <button className="playground-button primary" onClick={handleReroll}>
-        Generate
+        Re-roll ↻
       </button>
 
       <hr className="playground-separator" />

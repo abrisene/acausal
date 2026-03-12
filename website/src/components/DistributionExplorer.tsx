@@ -233,7 +233,7 @@ export default function DistributionExplorer() {
       <h3>Configuration</h3>
 
       <div className="playground-controls">
-        <div className="playground-control" style={{ minWidth: 180 }}>
+        <div className="playground-control">
           <label htmlFor="dist-type">Distribution</label>
           <select
             id="dist-type"
@@ -261,7 +261,7 @@ export default function DistributionExplorer() {
           />
         </div>
 
-        <div className="playground-control" style={{ minWidth: 100 }}>
+        <div className="playground-control">
           <label htmlFor="seed">Seed</label>
           <input
             id="seed"
@@ -274,7 +274,7 @@ export default function DistributionExplorer() {
 
       <div className="playground-controls">
         {paramDefs.map((def) => (
-          <div className="playground-control" key={def.name} style={{ minWidth: 180 }}>
+          <div className="playground-control" key={def.name}>
             <label htmlFor={`param-${def.name}`}>
               {def.label}: {currentParams[def.name]?.toFixed(
                 def.step < 0.1 ? 2 : def.step < 1 ? 1 : 0
@@ -311,16 +311,7 @@ export default function DistributionExplorer() {
         })}
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontSize: '0.75rem',
-          color: 'var(--sl-color-gray-3, #8b949e)',
-          fontFamily: 'var(--sl-font-mono, monospace)',
-          padding: '0.25rem 0',
-        }}
-      >
+      <div className="playground-axis-labels">
         <span>{formatNum(histogram.min)}</span>
         <span>{formatNum((histogram.min + histogram.max) / 2)}</span>
         <span>{formatNum(histogram.max)}</span>

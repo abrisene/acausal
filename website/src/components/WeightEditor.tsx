@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { Distribution } from 'acausal';
 
 interface WeightItem {
@@ -15,10 +15,8 @@ const RARITY_COLORS: Record<string, string> = {
   legendary: '#f59e0b',
 };
 
-const ACCENT_COLOR = 'var(--sl-color-accent, #6c8aec)';
-
 function getItemColor(name: string): string {
-  return RARITY_COLORS[name.toLowerCase()] ?? ACCENT_COLOR;
+  return RARITY_COLORS[name.toLowerCase()] ?? 'var(--sl-color-accent)';
 }
 
 const DEFAULT_ITEMS: WeightItem[] = [
@@ -29,9 +27,8 @@ const DEFAULT_ITEMS: WeightItem[] = [
   { id: 5, name: 'legendary', weight: 1 },
 ];
 
-let nextId = 6;
-
 export default function WeightEditor() {
+  const nextId = useRef(6);
   const [items, setItems] = useState<WeightItem[]>(DEFAULT_ITEMS);
   const [seed, setSeed] = useState(42);
   const [count, setCount] = useState(20);
@@ -74,19 +71,17 @@ export default function WeightEditor() {
   }, []);
 
   const handleAdd = useCallback(() => {
-    setItems((prev) => [...prev, { id: nextId++, name: '', weight: 1 }]);
+    setItems((prev) => [...prev, { id: nextId.current++, name: '', weight: 1 }]);
     setResults(null);
   }, []);
 
   const handleSample = useCallback(() => {
     if (!dist) return;
-    // Create a fresh distribution each sample to reset engine state
     const sampleDist = new Distribution({ seed, source: sourceWeights });
     const picks = sampleDist.pick({ count });
     setResults(picks);
   }, [dist, seed, sourceWeights, count]);
 
-  // Group results by name with counts
   const resultCounts = useMemo(() => {
     if (!results) return null;
     const counts: Record<string, number> = {};
@@ -96,7 +91,6 @@ export default function WeightEditor() {
     return counts;
   }, [results]);
 
-  // Sorted entries for the bar chart
   const barEntries = useMemo(() => {
     return Object.entries(normalWeights).sort(([, a], [, b]) => b - a);
   }, [normalWeights]);
@@ -104,19 +98,14 @@ export default function WeightEditor() {
   return (
     <div className="playground">
       <h3>Distribution Items</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+      <div className="playground-items">
         {items.map((item) => (
-          <div key={item.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <div key={item.id} className="playground-item-row">
             <div
-              style={{
-                width: '4px',
-                height: '32px',
-                borderRadius: '2px',
-                background: getItemColor(item.name),
-                flexShrink: 0,
-              }}
+              className="playground-color-pip"
+              style={{ background: getItemColor(item.name) }}
             />
-            <div className="playground-control" style={{ flex: 1, minWidth: '100px' }}>
+            <div className="playground-control">
               <input
                 type="text"
                 value={item.name}
@@ -124,7 +113,7 @@ export default function WeightEditor() {
                 placeholder="Item name"
               />
             </div>
-            <div className="playground-control" style={{ minWidth: '80px', maxWidth: '100px' }}>
+            <div className="playground-control">
               <input
                 type="number"
                 value={item.weight}
@@ -133,9 +122,8 @@ export default function WeightEditor() {
               />
             </div>
             <button
-              className="playground-button"
+              className="playground-button sm"
               onClick={() => handleRemove(item.id)}
-              style={{ padding: '0.375rem 0.625rem', fontSize: '0.75rem' }}
               title="Remove item"
             >
               Remove
@@ -161,18 +149,13 @@ export default function WeightEditor() {
                 <div className="playground-bar-track">
                   <div
                     className="playground-bar-fill"
-                    style={{
-                      width: `${Math.max(prob * 100, 2)}%`,
-                      background: color,
-                    }}
+                    style={{ width: `${Math.max(prob * 100, 2)}%`, background: color }}
                   >
                     {prob >= 0.03 ? `${pct}%` : ''}
                   </div>
                 </div>
                 {prob < 0.03 && (
-                  <span style={{ fontSize: '0.6875rem', color: 'var(--sl-color-gray-2, #8b949e)', flexShrink: 0 }}>
-                    {pct}%
-                  </span>
+                  <span className="playground-small-value">{pct}%</span>
                 )}
               </div>
             );
@@ -197,7 +180,7 @@ export default function WeightEditor() {
             }}
           />
         </div>
-        <div className="playground-control" style={{ minWidth: '200px' }}>
+        <div className="playground-control">
           <label>Count: {count}</label>
           <input
             type="range"
@@ -210,15 +193,14 @@ export default function WeightEditor() {
             }}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-          <button
-            className="playground-button primary"
-            onClick={handleSample}
-            disabled={!dist}
-          >
-            Sample
-          </button>
-        </div>
+        <button
+          className="playground-button primary"
+          onClick={handleSample}
+          disabled={!dist}
+          style={{ alignSelf: 'end' }}
+        >
+          Sample
+        </button>
       </div>
 
       {results && resultCounts && (
@@ -229,40 +211,31 @@ export default function WeightEditor() {
               <span
                 key={i}
                 className="playground-tag"
-                style={{
-                  borderLeft: `3px solid ${getItemColor(name)}`,
-                }}
+                style={{ borderLeft: `3px solid ${getItemColor(name)}` }}
               >
                 {name}
               </span>
             ))}
           </div>
 
-          <div style={{ marginTop: '1rem' }}>
-            <h3>Frequency Comparison</h3>
-            <div className="playground-stats">
-              {barEntries.map(([name]) => {
-                const actual = resultCounts[name] ?? 0;
-                const expected = (normalWeights[name] ?? 0) * count;
-                const color = getItemColor(name);
-                return (
-                  <div className="playground-stat" key={name}>
-                    <div className="playground-stat-value" style={{ color }}>
-                      {actual}/{count}
-                    </div>
-                    <div className="playground-stat-label">
-                      {name}
-                    </div>
-                    <div
-                      className="playground-stat-label"
-                      style={{ marginTop: '0.25rem' }}
-                    >
-                      expected ~{expected.toFixed(1)}
-                    </div>
+          <h3 style={{ marginTop: '0.75rem' }}>Frequency Comparison</h3>
+          <div className="playground-stats">
+            {barEntries.map(([name]) => {
+              const actual = resultCounts[name] ?? 0;
+              const expected = (normalWeights[name] ?? 0) * count;
+              const color = getItemColor(name);
+              return (
+                <div className="playground-stat" key={name}>
+                  <div className="playground-stat-value" style={{ color }}>
+                    {actual}/{count}
                   </div>
-                );
-              })}
-            </div>
+                  <div className="playground-stat-label">{name}</div>
+                  <div className="playground-stat-label" style={{ marginTop: '0.25rem' }}>
+                    expected ~{expected.toFixed(1)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </>
       )}

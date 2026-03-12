@@ -29,17 +29,27 @@ function generateNames(
 ): string[] {
   const engine = new Random({ seed });
   const results: string[] = [];
-  for (let i = 0; i < count; i++) {
-    const seq = MarkovChain.generate({
-      model: chain.dto,
-      order: maxOrder,
-      min: 3,
-      max: 8,
-      strict: false,
-      trim: true,
-      engine,
-    });
-    results.push(seq.join(''));
+  const seen = new Set<string>();
+  const maxAttempts = count * 3;
+  for (let i = 0; i < maxAttempts && results.length < count; i++) {
+    try {
+      const seq = MarkovChain.generate({
+        model: chain.dto,
+        order: maxOrder,
+        min: 3,
+        max: 8,
+        strict: false,
+        trim: true,
+        engine,
+      });
+      const name = seq.join('');
+      if (name.length > 0 && !seen.has(name)) {
+        seen.add(name);
+        results.push(name);
+      }
+    } catch {
+      // skip failed generation attempts
+    }
   }
   return results;
 }
@@ -112,7 +122,7 @@ export default function BlendComparison() {
       <h3>Blend Controls</h3>
 
       <div className="playground-controls">
-        <div className="playground-control" style={{ minWidth: 160 }}>
+        <div className="playground-control">
           <label htmlFor="blend-strategy">Strategy</label>
           <select
             id="blend-strategy"
@@ -127,9 +137,9 @@ export default function BlendComparison() {
           </select>
         </div>
 
-        <div className="playground-control" style={{ minWidth: 200 }}>
+        <div className="playground-control">
           <label htmlFor="blend-weight">
-            Chain B weight: {weight.toFixed(2)}
+            A: {(1 - weight).toFixed(2)} / B: {weight.toFixed(2)}
           </label>
           <input
             id="blend-weight"
@@ -142,7 +152,7 @@ export default function BlendComparison() {
           />
         </div>
 
-        <div className="playground-control" style={{ minWidth: 120 }}>
+        <div className="playground-control">
           <label htmlFor="blend-maxorder">Max order: {maxOrder}</label>
           <input
             id="blend-maxorder"
@@ -155,7 +165,7 @@ export default function BlendComparison() {
           />
         </div>
 
-        <div className="playground-control" style={{ minWidth: 80 }}>
+        <div className="playground-control">
           <label htmlFor="blend-seed">Seed</label>
           <input
             id="blend-seed"
@@ -165,7 +175,7 @@ export default function BlendComparison() {
           />
         </div>
 
-        <div className="playground-control" style={{ minWidth: 80 }}>
+        <div className="playground-control">
           <label htmlFor="blend-count">Count</label>
           <input
             id="blend-count"
@@ -185,18 +195,7 @@ export default function BlendComparison() {
 
       <div className="playground-row">
         <div>
-          <div
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              color: 'var(--sl-color-gray-2, #8b949e)',
-              marginBottom: '0.5rem',
-            }}
-          >
-            Chain A only
-          </div>
+          <div className="playground-column-header">Chain A only</div>
           <div className="playground-tags">
             {namesA.map((name, i) => (
               <span key={i} className="playground-tag">
@@ -207,21 +206,14 @@ export default function BlendComparison() {
         </div>
 
         <div>
-          <div
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              color: 'var(--sl-color-gray-2, #8b949e)',
-              marginBottom: '0.5rem',
-            }}
-          >
-            Chain B only
-          </div>
+          <div className="playground-column-header accent">Blended ({strategy})</div>
           <div className="playground-tags">
-            {namesB.map((name, i) => (
-              <span key={i} className="playground-tag">
+            {namesBlended.map((name, i) => (
+              <span
+                key={i}
+                className="playground-tag"
+                style={{ borderLeft: '2px solid var(--sl-color-accent)' }}
+              >
                 {name}
               </span>
             ))}
@@ -229,27 +221,10 @@ export default function BlendComparison() {
         </div>
 
         <div>
-          <div
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              color: 'var(--sl-color-accent, #6c8aec)',
-              marginBottom: '0.5rem',
-            }}
-          >
-            Blended ({strategy})
-          </div>
+          <div className="playground-column-header">Chain B only</div>
           <div className="playground-tags">
-            {namesBlended.map((name, i) => (
-              <span
-                key={i}
-                className="playground-tag"
-                style={{
-                  borderLeft: '2px solid var(--sl-color-accent, #6c8aec)',
-                }}
-              >
+            {namesB.map((name, i) => (
+              <span key={i} className="playground-tag">
                 {name}
               </span>
             ))}
