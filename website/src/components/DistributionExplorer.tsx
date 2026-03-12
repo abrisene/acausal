@@ -33,19 +33,13 @@ const DISTRIBUTION_PARAMS: Record<DistributionType, ParamDef[]> = {
     { name: 'mu', label: '\u03BC', min: -2, max: 4, step: 0.1, default: 0 },
     { name: 'sigma', label: '\u03C3', min: 0.1, max: 2, step: 0.1, default: 1 },
   ],
-  exponential: [
-    { name: 'lambda', label: '\u03BB (rate)', min: 0.1, max: 5, step: 0.1, default: 1 },
-  ],
-  poisson: [
-    { name: 'lambda', label: '\u03BB (expected)', min: 0.1, max: 20, step: 0.1, default: 5 },
-  ],
+  exponential: [{ name: 'lambda', label: '\u03BB (rate)', min: 0.1, max: 5, step: 0.1, default: 1 }],
+  poisson: [{ name: 'lambda', label: '\u03BB (expected)', min: 0.1, max: 20, step: 0.1, default: 5 }],
   binomial: [
     { name: 'n', label: 'n (trials)', min: 1, max: 50, step: 1, default: 10 },
     { name: 'p', label: 'p (probability)', min: 0, max: 1, step: 0.01, default: 0.5 },
   ],
-  geometric: [
-    { name: 'p', label: 'p (probability)', min: 0.01, max: 1, step: 0.01, default: 0.3 },
-  ],
+  geometric: [{ name: 'p', label: 'p (probability)', min: 0.01, max: 1, step: 0.01, default: 0.3 }],
   beta: [
     { name: 'alpha', label: '\u03B1', min: 0.1, max: 10, step: 0.1, default: 2 },
     { name: 'beta', label: '\u03B2', min: 0.1, max: 10, step: 0.1, default: 5 },
@@ -153,7 +147,7 @@ function clampCauchyOutliers(samples: number[]): number[] {
   const upper = q3 + 3 * iqr;
   const clampLower = Math.max(lower, -100);
   const clampUpper = Math.min(upper, 100);
-  return samples.map((v) => Math.max(clampLower, Math.min(clampUpper, v)));
+  return samples.map(v => Math.max(clampLower, Math.min(clampUpper, v)));
 }
 
 function computeHistogram(samples: number[]) {
@@ -222,7 +216,7 @@ export default function DistributionExplorer() {
   }, [distType, currentParams, sampleCount, seed]);
 
   const setParam = (name: string, value: number) => {
-    setParams((prev) => ({
+    setParams(prev => ({
       ...prev,
       [distType]: { ...prev[distType], [name]: value },
     }));
@@ -235,11 +229,7 @@ export default function DistributionExplorer() {
       <div className="playground-controls">
         <div className="playground-control">
           <label htmlFor="dist-type">Distribution</label>
-          <select
-            id="dist-type"
-            value={distType}
-            onChange={(e) => setDistType(e.target.value as DistributionType)}
-          >
+          <select id="dist-type" value={distType} onChange={e => setDistType(e.target.value as DistributionType)}>
             {Object.entries(DISTRIBUTION_LABELS).map(([key, label]) => (
               <option key={key} value={key}>
                 {label}
@@ -257,28 +247,21 @@ export default function DistributionExplorer() {
             max={5000}
             step={100}
             value={sampleCount}
-            onChange={(e) => setSampleCount(Number(e.target.value))}
+            onChange={e => setSampleCount(Number(e.target.value))}
           />
         </div>
 
         <div className="playground-control">
           <label htmlFor="seed">Seed</label>
-          <input
-            id="seed"
-            type="number"
-            value={seed}
-            onChange={(e) => setSeed(Number(e.target.value))}
-          />
+          <input id="seed" type="number" value={seed} onChange={e => setSeed(Number(e.target.value))} />
         </div>
       </div>
 
       <div className="playground-controls">
-        {paramDefs.map((def) => (
+        {paramDefs.map(def => (
           <div className="playground-control" key={def.name}>
             <label htmlFor={`param-${def.name}`}>
-              {def.label}: {currentParams[def.name]?.toFixed(
-                def.step < 0.1 ? 2 : def.step < 1 ? 1 : 0
-              )}
+              {def.label}: {currentParams[def.name]?.toFixed(def.step < 0.1 ? 2 : def.step < 1 ? 1 : 0)}
             </label>
             <input
               id={`param-${def.name}`}
@@ -287,7 +270,7 @@ export default function DistributionExplorer() {
               max={def.max}
               step={def.step}
               value={currentParams[def.name] ?? def.default}
-              onChange={(e) => setParam(def.name, Number(e.target.value))}
+              onChange={e => setParam(def.name, Number(e.target.value))}
             />
           </div>
         ))}

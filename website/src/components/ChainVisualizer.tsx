@@ -71,10 +71,7 @@ function formatState(state: string): string {
 }
 
 function formatGramId(id: string): string {
-  return id
-    .split('\u23F0')
-    .map(formatState)
-    .join(' \u2192 ');
+  return id.split('\u23F0').map(formatState).join(' \u2192 ');
 }
 
 export default function ChainVisualizer() {
@@ -97,12 +94,7 @@ export default function ChainVisualizer() {
       <h3>Training Sequences</h3>
       <div className="playground-control">
         <label htmlFor="cv-sequences">One sequence per line (tokens separated by spaces)</label>
-        <textarea
-          id="cv-sequences"
-          rows={4}
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
+        <textarea id="cv-sequences" rows={4} value={text} onChange={e => setText(e.target.value)} />
       </div>
 
       <hr className="playground-separator" />
@@ -111,16 +103,10 @@ export default function ChainVisualizer() {
         <div className="playground-control">
           <label htmlFor="cv-char-mode">Token mode</label>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className={`playground-button sm${!charMode ? ' primary' : ''}`}
-              onClick={() => setCharMode(false)}
-            >
+            <button className={`playground-button sm${!charMode ? ' primary' : ''}`} onClick={() => setCharMode(false)}>
               Word
             </button>
-            <button
-              className={`playground-button sm${charMode ? ' primary' : ''}`}
-              onClick={() => setCharMode(true)}
-            >
+            <button className={`playground-button sm${charMode ? ' primary' : ''}`} onClick={() => setCharMode(true)}>
               Character
             </button>
           </div>
@@ -243,9 +229,7 @@ export default function ChainVisualizer() {
                   if (entries.length === 0) return null;
                   return (
                     <div key={gram.id}>
-                      <div className="playground-gram-label">
-                        {formatGramId(gram.id)}
-                      </div>
+                      <div className="playground-gram-label">{formatGramId(gram.id)}</div>
                       <div className="playground-bar-chart">
                         {entries.map(([target, prob]) => {
                           const pct = (prob * 100).toFixed(1);
@@ -253,16 +237,11 @@ export default function ChainVisualizer() {
                             <div className="playground-bar-row" key={target}>
                               <span className="playground-bar-label">{formatState(target)}</span>
                               <div className="playground-bar-track">
-                                <div
-                                  className="playground-bar-fill"
-                                  style={{ width: `${Math.max(prob * 100, 2)}%` }}
-                                >
+                                <div className="playground-bar-fill" style={{ width: `${Math.max(prob * 100, 2)}%` }}>
                                   {prob >= 0.05 ? `${pct}%` : ''}
                                 </div>
                               </div>
-                              {prob < 0.05 && (
-                                <span className="playground-small-value">{pct}%</span>
-                              )}
+                              {prob < 0.05 && <span className="playground-small-value">{pct}%</span>}
                             </div>
                           );
                         })}
@@ -272,9 +251,7 @@ export default function ChainVisualizer() {
                 })}
             </div>
           ) : (
-            <div className="playground-output">
-              No grams at order {effectiveDisplayOrder}.
-            </div>
+            <div className="playground-output">No grams at order {effectiveDisplayOrder}.</div>
           )}
         </>
       )}

@@ -34,10 +34,7 @@ export default function WeightEditor() {
   const [count, setCount] = useState(20);
   const [results, setResults] = useState<string[] | null>(null);
 
-  const validItems = useMemo(
-    () => items.filter((item) => item.name.trim() !== '' && item.weight > 0),
-    [items]
-  );
+  const validItems = useMemo(() => items.filter(item => item.name.trim() !== '' && item.weight > 0), [items]);
 
   const sourceWeights = useMemo(() => {
     const w: Record<string, number> = {};
@@ -55,23 +52,23 @@ export default function WeightEditor() {
   const normalWeights = dist?.normal ?? {};
 
   const handleNameChange = useCallback((id: number, name: string) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, name } : item)));
+    setItems(prev => prev.map(item => (item.id === id ? { ...item, name } : item)));
     setResults(null);
   }, []);
 
   const handleWeightChange = useCallback((id: number, value: string) => {
     const weight = Math.max(0, Number(value) || 0);
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, weight } : item)));
+    setItems(prev => prev.map(item => (item.id === id ? { ...item, weight } : item)));
     setResults(null);
   }, []);
 
   const handleRemove = useCallback((id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems(prev => prev.filter(item => item.id !== id));
     setResults(null);
   }, []);
 
   const handleAdd = useCallback(() => {
-    setItems((prev) => [...prev, { id: nextId.current++, name: '', weight: 1 }]);
+    setItems(prev => [...prev, { id: nextId.current++, name: '', weight: 1 }]);
     setResults(null);
   }, []);
 
@@ -99,17 +96,14 @@ export default function WeightEditor() {
     <div className="playground">
       <h3>Distribution Items</h3>
       <div className="playground-items">
-        {items.map((item) => (
+        {items.map(item => (
           <div key={item.id} className="playground-item-row">
-            <div
-              className="playground-color-pip"
-              style={{ background: getItemColor(item.name) }}
-            />
+            <div className="playground-color-pip" style={{ background: getItemColor(item.name) }} />
             <div className="playground-control">
               <input
                 type="text"
                 value={item.name}
-                onChange={(e) => handleNameChange(item.id, e.target.value)}
+                onChange={e => handleNameChange(item.id, e.target.value)}
                 placeholder="Item name"
               />
             </div>
@@ -118,14 +112,10 @@ export default function WeightEditor() {
                 type="number"
                 value={item.weight}
                 min={0}
-                onChange={(e) => handleWeightChange(item.id, e.target.value)}
+                onChange={e => handleWeightChange(item.id, e.target.value)}
               />
             </div>
-            <button
-              className="playground-button sm"
-              onClick={() => handleRemove(item.id)}
-              title="Remove item"
-            >
+            <button className="playground-button sm" onClick={() => handleRemove(item.id)} title="Remove item">
               Remove
             </button>
           </div>
@@ -154,9 +144,7 @@ export default function WeightEditor() {
                     {prob >= 0.03 ? `${pct}%` : ''}
                   </div>
                 </div>
-                {prob < 0.03 && (
-                  <span className="playground-small-value">{pct}%</span>
-                )}
+                {prob < 0.03 && <span className="playground-small-value">{pct}%</span>}
               </div>
             );
           })}
@@ -174,7 +162,7 @@ export default function WeightEditor() {
           <input
             type="number"
             value={seed}
-            onChange={(e) => {
+            onChange={e => {
               setSeed(Number(e.target.value) || 0);
               setResults(null);
             }}
@@ -187,7 +175,7 @@ export default function WeightEditor() {
             min={1}
             max={100}
             value={count}
-            onChange={(e) => {
+            onChange={e => {
               setCount(Number(e.target.value));
               setResults(null);
             }}
@@ -208,11 +196,7 @@ export default function WeightEditor() {
           <h3>Results</h3>
           <div className="playground-tags">
             {results.map((name, i) => (
-              <span
-                key={i}
-                className="playground-tag"
-                style={{ borderLeft: `3px solid ${getItemColor(name)}` }}
-              >
+              <span key={i} className="playground-tag" style={{ borderLeft: `3px solid ${getItemColor(name)}` }}>
                 {name}
               </span>
             ))}

@@ -2,8 +2,22 @@ import { useState, useMemo, useCallback } from 'react';
 import { MarkovChain } from 'acausal';
 
 const DEFAULT_NAMES = [
-  'honoka', 'akari', 'himari', 'mei', 'yui', 'sakura', 'koharu', 'aoi',
-  'grace', 'fiadh', 'emily', 'sophie', 'aisling', 'caoimhe', 'niamh', 'saoirse',
+  'honoka',
+  'akari',
+  'himari',
+  'mei',
+  'yui',
+  'sakura',
+  'koharu',
+  'aoi',
+  'grace',
+  'fiadh',
+  'emily',
+  'sophie',
+  'aisling',
+  'caoimhe',
+  'niamh',
+  'saoirse',
 ].join('\n');
 
 function parseNames(text: string): string[][] {
@@ -52,9 +66,7 @@ export default function NameGenerator() {
           });
 
           // Trim delimiters and join
-          const name = result
-            .filter(c => c !== '\u25CB' && c !== '\u25CD')
-            .join('');
+          const name = result.filter(c => c !== '\u25CB' && c !== '\u25CD').join('');
 
           if (name.length > 0 && !seen.has(name)) {
             seen.add(name);
@@ -81,12 +93,7 @@ export default function NameGenerator() {
       <h3>Training Data</h3>
       <div className="playground-control">
         <label htmlFor="ng-training">Names (comma or newline separated)</label>
-        <textarea
-          id="ng-training"
-          rows={4}
-          value={trainingText}
-          onChange={e => setTrainingText(e.target.value)}
-        />
+        <textarea id="ng-training" rows={4} value={trainingText} onChange={e => setTrainingText(e.target.value)} />
       </div>
 
       <hr className="playground-separator" />
@@ -139,12 +146,7 @@ export default function NameGenerator() {
 
         <div className="playground-control">
           <label htmlFor="ng-seed">Seed</label>
-          <input
-            id="ng-seed"
-            type="number"
-            value={seed}
-            onChange={e => setSeed(Number(e.target.value))}
-          />
+          <input id="ng-seed" type="number" value={seed} onChange={e => setSeed(Number(e.target.value))} />
         </div>
 
         <div className="playground-control">
@@ -161,13 +163,8 @@ export default function NameGenerator() {
 
         <div className="playground-control">
           <label htmlFor="ng-strict">
-            <input
-              id="ng-strict"
-              type="checkbox"
-              checked={strict}
-              onChange={e => setStrict(e.target.checked)}
-            />{' '}
-            Strict Mode
+            <input id="ng-strict" type="checkbox" checked={strict} onChange={e => setStrict(e.target.checked)} /> Strict
+            Mode
           </label>
         </div>
       </div>
@@ -203,15 +200,11 @@ export default function NameGenerator() {
               <div className="playground-stat-label">Gram Count</div>
             </div>
             <div className="playground-stat">
-              <div className="playground-stat-value">
-                {results.stats.avgDegreeOut.toFixed(2)}
-              </div>
+              <div className="playground-stat-value">{results.stats.avgDegreeOut.toFixed(2)}</div>
               <div className="playground-stat-label">Avg Degree Out</div>
             </div>
             <div className="playground-stat">
-              <div className="playground-stat-value">
-                {results.stats.avgDegreeIn.toFixed(2)}
-              </div>
+              <div className="playground-stat-value">{results.stats.avgDegreeIn.toFixed(2)}</div>
               <div className="playground-stat-label">Avg Degree In</div>
             </div>
             <div className="playground-stat">

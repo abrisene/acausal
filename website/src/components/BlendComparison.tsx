@@ -2,31 +2,20 @@ import { useState, useMemo } from 'react';
 import { MarkovChain, Random } from 'acausal';
 import type { BlendStrategy } from 'acausal';
 
-const DEFAULT_CHAIN_A = `honoka, akari, himari, sakura, mei`;
-const DEFAULT_CHAIN_B = `grace, fiadh, emily, sophie, aoife`;
+const DEFAULT_CHAIN_A = 'honoka, akari, himari, sakura, mei';
+const DEFAULT_CHAIN_B = 'grace, fiadh, emily, sophie, aoife';
 
-const STRATEGIES: BlendStrategy[] = [
-  'arithmetic',
-  'geometric',
-  'harmonic',
-  'max',
-  'min',
-];
+const STRATEGIES: BlendStrategy[] = ['arithmetic', 'geometric', 'harmonic', 'max', 'min'];
 
 function parseNames(text: string): string[][] {
   return text
     .split(/[,\n]+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-    .map((name) => name.split(''));
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+    .map(name => name.split(''));
 }
 
-function generateNames(
-  chain: MarkovChain,
-  count: number,
-  seed: number,
-  maxOrder: number
-): string[] {
+function generateNames(chain: MarkovChain, count: number, seed: number, maxOrder: number): string[] {
   const engine = new Random({ seed });
   const results: string[] = [];
   const seen = new Set<string>();
@@ -100,21 +89,11 @@ export default function BlendComparison() {
       <div className="playground-row">
         <div className="playground-control">
           <label htmlFor="blend-chain-a">Chain A names</label>
-          <textarea
-            id="blend-chain-a"
-            rows={3}
-            value={textA}
-            onChange={(e) => setTextA(e.target.value)}
-          />
+          <textarea id="blend-chain-a" rows={3} value={textA} onChange={e => setTextA(e.target.value)} />
         </div>
         <div className="playground-control">
           <label htmlFor="blend-chain-b">Chain B names</label>
-          <textarea
-            id="blend-chain-b"
-            rows={3}
-            value={textB}
-            onChange={(e) => setTextB(e.target.value)}
-          />
+          <textarea id="blend-chain-b" rows={3} value={textB} onChange={e => setTextB(e.target.value)} />
         </div>
       </div>
 
@@ -124,12 +103,8 @@ export default function BlendComparison() {
       <div className="playground-controls">
         <div className="playground-control">
           <label htmlFor="blend-strategy">Strategy</label>
-          <select
-            id="blend-strategy"
-            value={strategy}
-            onChange={(e) => setStrategy(e.target.value as BlendStrategy)}
-          >
-            {STRATEGIES.map((s) => (
+          <select id="blend-strategy" value={strategy} onChange={e => setStrategy(e.target.value as BlendStrategy)}>
+            {STRATEGIES.map(s => (
               <option key={s} value={s}>
                 {s}
               </option>
@@ -148,7 +123,7 @@ export default function BlendComparison() {
             max={1}
             step={0.05}
             value={weight}
-            onChange={(e) => setWeight(Number(e.target.value))}
+            onChange={e => setWeight(Number(e.target.value))}
           />
         </div>
 
@@ -161,18 +136,13 @@ export default function BlendComparison() {
             max={5}
             step={1}
             value={maxOrder}
-            onChange={(e) => setMaxOrder(Number(e.target.value))}
+            onChange={e => setMaxOrder(Number(e.target.value))}
           />
         </div>
 
         <div className="playground-control">
           <label htmlFor="blend-seed">Seed</label>
-          <input
-            id="blend-seed"
-            type="number"
-            value={seed}
-            onChange={(e) => setSeed(Number(e.target.value))}
-          />
+          <input id="blend-seed" type="number" value={seed} onChange={e => setSeed(Number(e.target.value))} />
         </div>
 
         <div className="playground-control">
@@ -183,9 +153,7 @@ export default function BlendComparison() {
             min={1}
             max={50}
             value={count}
-            onChange={(e) =>
-              setCount(Math.max(1, Math.min(50, Number(e.target.value))))
-            }
+            onChange={e => setCount(Math.max(1, Math.min(50, Number(e.target.value))))}
           />
         </div>
       </div>
@@ -209,11 +177,7 @@ export default function BlendComparison() {
           <div className="playground-column-header accent">Blended ({strategy})</div>
           <div className="playground-tags">
             {namesBlended.map((name, i) => (
-              <span
-                key={i}
-                className="playground-tag"
-                style={{ borderLeft: '2px solid var(--sl-color-accent)' }}
-              >
+              <span key={i} className="playground-tag" style={{ borderLeft: '2px solid var(--sl-color-accent)' }}>
                 {name}
               </span>
             ))}
