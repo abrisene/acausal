@@ -9,7 +9,7 @@
 - **Clone-on-write:** all classes use a clone-then-mutate pattern that preserves the integrity of existing models while supporting fluent chaining.
 - **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store, transfer, and rebuild regardless of whether it's on the client or the server.
 - **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models.
-- **Minimal Dependencies**: _acausal_ only depends on [random-js](https://www.npmjs.com/package/random-js) and [scalr](https://www.npmjs.com/package/scalr).
+- **Minimal Dependencies**: _acausal_ only depends on [scalr](https://www.npmjs.com/package/scalr). The PRNG is an internal MT19937 implementation.
 
 ## What's New in v3.0
 
@@ -71,8 +71,8 @@ rand.integer(1, 6); // Roll 1d6
 ## Quick Links
 
 - [_acausal_ Home](https://github.com/abrisene/acausal/#readme)
-- [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/readme/distribution.md#acausal-)
-- [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
+- [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/docs/distribution.md#acausal-)
+- [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/docs/markov.md#acausal-)
 
 ## Installation
 
@@ -162,7 +162,7 @@ console.log(picks);
 */
 ```
 
-You can learn more about how to use Random Distributions with _acausal_ in the [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/readme/distribution.md#acausal-).
+You can learn more about how to use Random Distributions with _acausal_ in the [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/docs/distribution.md#acausal-).
 
 ## Markov Chains
 
@@ -226,7 +226,7 @@ for (let i = 0; i < 3; i += 1) {
 */
 ```
 
-You can learn more about how to use Markov Chains with _acausal_ in the [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/readme/markov.md#acausal-)
+You can learn more about how to use Markov Chains with _acausal_ in the [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/docs/markov.md#acausal-)
 
 
 ## Extended API Documentation

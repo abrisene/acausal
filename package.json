@@ -1,6 +1,6 @@
 {
   "name": "acausal",
-  "version": "3.0.0-alpha.0",
+  "version": "3.0.0-alpha.1",
   "description": "Markov Chain and Random Distribution Toolset",
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
   "homepage": "https://github.com/abrisene/acausal#readme",
@@ -56,7 +56,7 @@
     "lint": "gts lint",
     "lint:fix": "gts fix",
     "docs": "typedoc",
-    "clean": "rm -rf dist lib coverage docs",
+    "clean": "rm -rf dist lib coverage .site",
     "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build"
   },
   "dependencies": {

@@ -144,6 +144,18 @@ describe('Random engine class', () => {
       expect(engA.bool(1)).toEqual(true);
     }
   });
+  it('can generate integers and floats via int/float aliases', () => {
+    const eng = new Random({ seed: 250, uses: 100 });
+
+    for (let i = 1; i < 50; i += 1) {
+      const intVal = eng.int(0, i);
+      expect(Number.isInteger(intVal)).toBe(true);
+      expect(intVal >= 0 && intVal <= i).toBe(true);
+
+      const floatVal = eng.float(0, i);
+      expect(floatVal >= 0 && floatVal < i).toBe(true);
+    }
+  });
   it('can pick a random item from an array', () => {
     const engA = new Random({ seed: 250, uses: 100 });
     const seqA = ['a', 'b', 'c', 'd', 'e', 'f'];
@@ -162,5 +174,10 @@ describe('Random engine class', () => {
       expect(Object.keys(seqA)).toContain(engA.pickWeighted(seqA));
       expect(['a', 'b']).toContain(engA.pickWeighted(seqA, ['c']));
     }
+
+    // All keys masked returns undefined
+    expect(engA.pickWeighted(seqA, ['a', 'b', 'c'])).toBeUndefined();
+    // Empty object returns undefined
+    expect(engA.pickWeighted({})).toBeUndefined();
   });
 });

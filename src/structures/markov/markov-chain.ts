@@ -49,6 +49,9 @@ export class MarkovChain<T extends string = string> {
     sequences,
     grams,
   }: MarkovChainConstructor) {
+    if (maxOrder <= 0) {
+      throw new RangeError(`MarkovChain: maxOrder must be > 0 (got ${maxOrder})`);
+    }
     this._engine = engine || new Random({ seed, uses });
     this._model = {
       ...defaultOptions,
@@ -196,14 +199,27 @@ export class MarkovChain<T extends string = string> {
   }
 
   /**
-   * Picks the last random value from a Markov Chain given a sequence.
+   * Picks the previous (backward) random value from a Markov Chain given a sequence.
    */
-  public last(gramSequence?: string[], mask?: string[]) {
+  public backward(gramSequence?: string[], mask?: string[]) {
     return MarkovChain.pick(this._model, gramSequence, false, mask, this._engine);
   }
 
   /**
+   * Picks the previous (backward) random value from a Markov Chain given a sequence.
+   * @deprecated Use {@link backward} instead. Will be removed in a future major version.
+   */
+  public last(gramSequence?: string[], mask?: string[]) {
+    return this.backward(gramSequence, mask);
+  }
+
+  /**
    * Generates a sequence from a Markov Chain.
+   *
+   * When `constraints` are provided, the generator retries up to
+   * `constraints.maxRetries` times (default 100) to find a sequence that
+   * satisfies all constraints. If no valid sequence is found within the retry
+   * limit, the last attempted sequence is returned as a best-effort fallback.
    */
   public generate({
     start,
@@ -232,7 +248,12 @@ export class MarkovChain<T extends string = string> {
   }
 
   /**
-   * Analyze's a sequences sources and sinks.
+   * Analyzes a sequence's sources and sinks by generating sample sequences.
+   *
+   * **Side effect:** This method generates `samples` forward and backward
+   * sequences, which advances the PRNG engine state. If you need deterministic
+   * generation after calling `analyze()`, clone the engine or use a separate
+   * `MarkovChain` instance for analysis.
    */
   public analyze({
     start,
@@ -270,6 +291,15 @@ export class MarkovChain<T extends string = string> {
    */
   public clone(stripSequences = false) {
     return new MarkovChain(this.serialize(stripSequences));
+  }
+
+  /**
+   * Returns a new {@link ImmutableMarkovChain} from the current state.
+   * Uses a dynamic import to avoid circular module dependencies.
+   */
+  public async freeze(): Promise<MarkovChain<T>> {
+    const { ImmutableMarkovChain } = await import('./immutable-markov-chain');
+    return new ImmutableMarkovChain<T>(this.serialize());
   }
 
   /**
@@ -402,6 +432,9 @@ export class MarkovChain<T extends string = string> {
     for (let i = 0; i < sequences.length; i += 1) {
       const sequence = sequences[i];
       if (!sequence) continue;
+      for (const element of sequence) {
+        if (element === '') throw new RangeError('addSequence: sequence elements must be non-empty strings');
+      }
       if (m.sequences !== undefined) m.sequences.push(sequence);
       addSequence(m.grams, sequence, insert, 1, m.maxOrder, delimiters);
     }
@@ -410,6 +443,9 @@ export class MarkovChain<T extends string = string> {
   }
 
   static addSequence(model: MarkovChainDTO, sequence: string[], insert: MCInsertOption = false): MarkovChainDTO {
+    for (const element of sequence) {
+      if (element === '') throw new RangeError('addSequence: sequence elements must be non-empty strings');
+    }
     const m = MarkovChain.clone(model);
     const delimiters = getDelimiters(m);
 
@@ -459,10 +495,29 @@ export class MarkovChain<T extends string = string> {
     return MarkovChain.pick(model, gramSequence, true, mask, engine);
   }
 
-  static last(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
+  /**
+   * Picks the previous (backward) random value from a Markov Chain DTO.
+   */
+  static backward(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
     return MarkovChain.pick(model, gramSequence, false, mask, engine);
   }
 
+  /**
+   * Picks the previous (backward) random value from a Markov Chain DTO.
+   * @deprecated Use {@link MarkovChain.backward} instead. Will be removed in a future major version.
+   */
+  static last(model: MarkovChainDTO, gramSequence?: string[], mask?: string[], engine?: Random) {
+    return MarkovChain.backward(model, gramSequence, mask, engine);
+  }
+
+  /**
+   * Generates a sequence from a Markov Chain DTO.
+   *
+   * When `constraints` are provided, the generator retries up to
+   * `constraints.maxRetries` times (default 100) to find a sequence that
+   * satisfies all constraints. If no valid sequence is found within the retry
+   * limit, the last attempted sequence is returned as a best-effort fallback.
+   */
   static generate({
     model,
     start,
@@ -476,6 +531,9 @@ export class MarkovChain<T extends string = string> {
     constraints,
     engine,
   }: MCGeneratorStaticOptions) {
+    if (min < 0) throw new RangeError('generate: min must be >= 0');
+    if (max < 0) throw new RangeError('generate: max must be >= 0');
+    if (min > max) throw new RangeError('generate: min must be <= max');
     const eng = engine || new Random({});
     const maxRetries = constraints?.maxRetries ?? (constraints ? 100 : 1);
 
@@ -534,6 +592,14 @@ export class MarkovChain<T extends string = string> {
     return lastAttempt ?? [];
   }
 
+  /**
+   * Analyzes a sequence's sources and sinks by generating sample sequences.
+   *
+   * **Side effect:** This method generates `samples` forward and backward
+   * sequences, which advances the PRNG engine state. If you need deterministic
+   * generation after calling `analyze()`, clone the engine before passing it,
+   * or use a dedicated engine instance for analysis.
+   */
   static analyze({
     model,
     start,
@@ -600,11 +666,17 @@ export class MarkovChain<T extends string = string> {
   }
 
   static new(
-    sequences?: string[][],
-    maxOrder = defaultOptions.maxOrder,
-    insert: MCInsertOption = false,
-    stripSequences = false
+    options: {
+      sequences?: string[][];
+      maxOrder?: number;
+      insert?: MCInsertOption;
+      stripSequences?: boolean;
+    } = {}
   ): MarkovChainDTO {
+    const { sequences, maxOrder = defaultOptions.maxOrder, insert = false, stripSequences = false } = options;
+    if (maxOrder <= 0) {
+      throw new RangeError(`MarkovChain.new: maxOrder must be > 0 (got ${maxOrder})`);
+    }
     const dto = stripSequences ? { ...defaultOptions, maxOrder, grams: {} } : { ...defaultDTO, maxOrder };
     return sequences ? MarkovChain.addSequences(dto, sequences, insert) : { ...defaultDTO, maxOrder };
   }
@@ -621,8 +693,8 @@ export class MarkovChain<T extends string = string> {
 
       gramsClone[key] = {
         ...gram,
-        last: { ...gram.last },
-        next: { ...gram.next },
+        last: { source: { ...gram.last.source }, normal: { ...gram.last.normal } },
+        next: { source: { ...gram.next.source }, normal: { ...gram.next.normal } },
       };
     }
 

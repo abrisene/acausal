@@ -210,19 +210,19 @@ const dtoGU3IExpected = {
   },
 };
 
-const dtoU = MarkovChain.new(sU);
-const dtoGU = MarkovChain.new(sU, defaultOptions.maxOrder, false, true);
-const dto6U = MarkovChain.new(sU, 6, false, false);
-const dto6GU = MarkovChain.new(sU, 6, false, true);
+const dtoU = MarkovChain.new({ sequences: sU });
+const dtoGU = MarkovChain.new({ sequences: sU, maxOrder: defaultOptions.maxOrder, stripSequences: true });
+const dto6U = MarkovChain.new({ sequences: sU, maxOrder: 6 });
+const dto6GU = MarkovChain.new({ sequences: sU, maxOrder: 6, stripSequences: true });
 
-const dtoA1 = MarkovChain.new(sA1);
-const dtoA2 = MarkovChain.new(sA2);
-const dtoA3 = MarkovChain.new(sA3);
+const dtoA1 = MarkovChain.new({ sequences: sA1 });
+const dtoA2 = MarkovChain.new({ sequences: sA2 });
+const dtoA3 = MarkovChain.new({ sequences: sA3 });
 
-const dtoB1 = MarkovChain.new(sB1);
-const dtoB3 = MarkovChain.new(sB3);
+const dtoB1 = MarkovChain.new({ sequences: sB1 });
+const dtoB3 = MarkovChain.new({ sequences: sB3 });
 
-const dtoC2 = MarkovChain.new(sC2);
+const dtoC2 = MarkovChain.new({ sequences: sC2 });
 
 /**
  # Tests
@@ -236,10 +236,10 @@ describe('Markov Chain', () => {
       expect(mEmpty).toEqual(defaultDTO);
 
       // Default DTOs
-      const mU1a = MarkovChain.new([gU1]);
-      const mU2a = MarkovChain.new([gU2]);
-      const mU3a = MarkovChain.new([gU3]);
-      const mU4a = MarkovChain.new(sU);
+      const mU1a = MarkovChain.new({ sequences: [gU1] });
+      const mU2a = MarkovChain.new({ sequences: [gU2] });
+      const mU3a = MarkovChain.new({ sequences: [gU3] });
+      const mU4a = MarkovChain.new({ sequences: sU });
       validateDTO(mU1a);
       validateDTO(mU2a);
       validateDTO(mU3a);
@@ -250,10 +250,10 @@ describe('Markov Chain', () => {
       validateGrams(mU4a);
 
       // With Max Order Set
-      const mU1b = MarkovChain.new([gU1], 6, false, false);
-      const mU2b = MarkovChain.new([gU2], 6, false, false);
-      const mU3b = MarkovChain.new([gU3], 6, false, false);
-      const mU4b = MarkovChain.new(sU, 6, false, false);
+      const mU1b = MarkovChain.new({ sequences: [gU1], maxOrder: 6 });
+      const mU2b = MarkovChain.new({ sequences: [gU2], maxOrder: 6 });
+      const mU3b = MarkovChain.new({ sequences: [gU3], maxOrder: 6 });
+      const mU4b = MarkovChain.new({ sequences: sU, maxOrder: 6 });
       validateDTO(mU1b, defaultDTO6);
       validateDTO(mU2b, defaultDTO6);
       validateDTO(mU3b, defaultDTO6);
@@ -266,10 +266,10 @@ describe('Markov Chain', () => {
       // We test insertion later.
 
       // With Sequences Stripped
-      const mU1c = MarkovChain.new([gU1], 4, false, true);
-      const mU2c = MarkovChain.new([gU2], 4, false, true);
-      const mU3c = MarkovChain.new([gU3], 4, false, true);
-      const mU4c = MarkovChain.new(sU, 4, false, true);
+      const mU1c = MarkovChain.new({ sequences: [gU1], maxOrder: 4, stripSequences: true });
+      const mU2c = MarkovChain.new({ sequences: [gU2], maxOrder: 4, stripSequences: true });
+      const mU3c = MarkovChain.new({ sequences: [gU3], maxOrder: 4, stripSequences: true });
+      const mU4c = MarkovChain.new({ sequences: sU, maxOrder: 4, stripSequences: true });
       validateDTO(mU1c, defaultGramDTO);
       validateDTO(mU2c, defaultGramDTO);
       validateDTO(mU3c, defaultGramDTO);
@@ -299,7 +299,7 @@ describe('Markov Chain', () => {
       expect(MarkovChain.clone(dto6GU, true)).toEqual(stripSequences(dto6GU));
     });
     it('create immutable clones', () => {
-      const mA = MarkovChain.new(sU, 4, false, false);
+      const mA = MarkovChain.new({ sequences: sU, maxOrder: 4 });
       const mB = MarkovChain.clone(mA);
       const mC = MarkovChain.clone(mB);
 
@@ -361,7 +361,7 @@ describe('Markov Chain', () => {
     });
     it('can insert a sequence into an existing markov chain', () => {
       // dtoGU3IExpected
-      expect(MarkovChain.addSequence(defaultGramDTO2, gU3, true)).toEqual(dtoGU3IExpected);
+      expect(MarkovChain.addSequence(defaultGramDTO2, gU3, 'middle')).toEqual(dtoGU3IExpected);
 
       // Insertion
       const mIB1 = MarkovChain.addSequence(defaultDTO, gB1, 'start');
@@ -730,7 +730,7 @@ describe('Markov Chain', () => {
       expect(mA.dto).toEqual(dtoA3);
     });
     it('can insert a sequence into an existing markov chain', () => {
-      expect(MarkovChain.addSequence(defaultGramDTO2, gU3, true)).toEqual(dtoGU3IExpected);
+      expect(MarkovChain.addSequence(defaultGramDTO2, gU3, 'middle')).toEqual(dtoGU3IExpected);
 
       // Insertion
       const mIB1 = new MarkovChain({ sequences: [] }).addSequence(gB1, 'start');
@@ -1014,7 +1014,7 @@ describe('Markov Chain', () => {
       // At runtime, this should be one of the three options
       expect(['red', 'blue', 'green']).toContain(pick);
 
-      const picks = dist.pick(10);
+      const picks = dist.pick({ count: 10 });
       picks.forEach(p => {
         expect(['red', 'blue', 'green']).toContain(p);
       });
@@ -1538,7 +1538,10 @@ describe('Markov Chain', () => {
 
     test('fromDTO throws when stateKey not registered and not provided', () => {
       const dto = {
-        internalChain: MarkovChain.new([], 1) as import('../structures/markov/types').MarkovChainDTO,
+        internalChain: MarkovChain.new({
+          sequences: [],
+          maxOrder: 1,
+        }) as import('../structures/markov/types').MarkovChainDTO,
         stateStore: {},
         stateKeyName: 'nonexistent',
       };
@@ -1590,13 +1593,13 @@ describe('Markov Chain', () => {
 
   describe('Static Dual-API Methods', () => {
     test('static score() should score a sequence against a DTO', () => {
-      const model = MarkovChain.new(
-        [
+      const model = MarkovChain.new({
+        sequences: [
           ['a', 'b', 'c'],
           ['a', 'b', 'd'],
         ],
-        2
-      );
+        maxOrder: 2,
+      });
 
       const score = MarkovChain.score(model, ['a', 'b', 'c']);
       expect(score.sequence).toEqual(['a', 'b', 'c']);
@@ -1611,13 +1614,13 @@ describe('Markov Chain', () => {
     });
 
     test('static getStats() should return stats from a DTO', () => {
-      const model = MarkovChain.new(
-        [
+      const model = MarkovChain.new({
+        sequences: [
           ['a', 'b', 'c'],
           ['d', 'e', 'f'],
         ],
-        2
-      );
+        maxOrder: 2,
+      });
 
       const stats = MarkovChain.getStats(model);
       expect(stats.gramCount).toBeGreaterThan(0);
@@ -1627,7 +1630,7 @@ describe('Markov Chain', () => {
     });
 
     test('static getStats() on empty model', () => {
-      const model = MarkovChain.new(undefined, 2);
+      const model = MarkovChain.new({ maxOrder: 2 });
 
       const stats = MarkovChain.getStats(model);
       expect(stats.gramCount).toBe(0);
@@ -1637,8 +1640,8 @@ describe('Markov Chain', () => {
     });
 
     test('static blendDTOs() should blend DTO models', () => {
-      const model1 = MarkovChain.new([['a', 'b', 'c']], 1);
-      const model2 = MarkovChain.new([['a', 'x', 'y']], 1);
+      const model1 = MarkovChain.new({ sequences: [['a', 'b', 'c']], maxOrder: 1 });
+      const model2 = MarkovChain.new({ sequences: [['a', 'x', 'y']], maxOrder: 1 });
 
       const blended = MarkovChain.blendDTOs([
         { model: model1, weight: 0.5 },
@@ -1657,7 +1660,7 @@ describe('Markov Chain', () => {
     });
 
     test('static blendDTOs() with single model returns clone', () => {
-      const model = MarkovChain.new([['a', 'b']], 1);
+      const model = MarkovChain.new({ sequences: [['a', 'b']], maxOrder: 1 });
       const result = MarkovChain.blendDTOs([{ model, weight: 1 }]);
 
       expect(result.grams).toEqual(model.grams);
@@ -2267,6 +2270,184 @@ describe('Markov Chain', () => {
       expect(cloned).not.toBe(updated);
       expect(cloned).toBeInstanceOf(ImmutableMultiDimMarkovChain);
       expect(cloned.getStates().length).toBe(updated.getStates().length);
+    });
+  });
+
+  describe('freeze / toMutable bridge', () => {
+    it('MarkovChain.freeze() returns an ImmutableMarkovChain with the same state', async () => {
+      const chain = new MarkovChain({ seed: 1, sequences: sA3 });
+      const frozen = await chain.freeze();
+      expect(frozen).toBeInstanceOf(ImmutableMarkovChain);
+      expect(frozen).not.toBe(chain);
+      expect(frozen.serialize()).toEqual(chain.serialize());
+    });
+
+    it('ImmutableMarkovChain.toMutable() returns a MarkovChain with the same state', () => {
+      const chain = new ImmutableMarkovChain({ seed: 1, sequences: sA3 });
+      const mutable = chain.toMutable();
+      expect(mutable).toBeInstanceOf(MarkovChain);
+      expect(mutable).not.toBeInstanceOf(ImmutableMarkovChain);
+      expect(mutable).not.toBe(chain);
+      expect(mutable.serialize()).toEqual(chain.serialize());
+    });
+
+    it('MultiDimMarkovChain.freeze() returns an ImmutableMultiDimMarkovChain', async () => {
+      const chain = new MultiDimMarkovChain<{ value: string; index: number }>({
+        seed: 1,
+        maxOrder: 1,
+        stateKey: (s: { value: string; index: number }) => `${s.value}_${s.index}`,
+      });
+      chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+      ]);
+      const frozen = await chain.freeze();
+      expect(frozen).toBeInstanceOf(ImmutableMultiDimMarkovChain);
+      expect(frozen).not.toBe(chain);
+      expect(frozen.getStates().length).toBe(chain.getStates().length);
+    });
+
+    it('ImmutableMultiDimMarkovChain.toMutable() returns a MultiDimMarkovChain', () => {
+      const chain = new ImmutableMultiDimMarkovChain<{ value: string; index: number }>({
+        seed: 1,
+        maxOrder: 1,
+        stateKey: (s: { value: string; index: number }) => `${s.value}_${s.index}`,
+      });
+      const updated = chain.addSequence([
+        { value: 'a', index: 0 },
+        { value: 'b', index: 1 },
+      ]);
+      const mutable = updated.toMutable();
+      expect(mutable).toBeInstanceOf(MultiDimMarkovChain);
+      expect(mutable).not.toBeInstanceOf(ImmutableMultiDimMarkovChain);
+      expect(mutable).not.toBe(updated);
+      expect(mutable.getStates().length).toBe(updated.getStates().length);
+    });
+  });
+
+  describe('blend statistical validation', () => {
+    it('arithmetic 50/50 blend produces roughly equal output from two models', () => {
+      // Model A: heavily favors 'x' -> 'a'
+      const chainA = new MarkovChain({ seed: 1, maxOrder: 1 });
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+
+      // Model B: heavily favors 'x' -> 'b'
+      const chainB = new MarkovChain({ seed: 2, maxOrder: 1 });
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+
+      const blended = MarkovChain.blend(
+        [
+          { chain: chainA, weight: 1 },
+          { chain: chainB, weight: 1 },
+        ],
+        { strategy: 'arithmetic' }
+      );
+
+      const eng = new Random({ seed: 99 });
+      const counts: Record<string, number> = { a: 0, b: 0 };
+      const sampleCount = 2000;
+
+      for (let i = 0; i < sampleCount; i++) {
+        const result = MarkovChain.generate({
+          model: blended.model,
+          start: ['x'],
+          max: 2,
+          strict: false,
+          trim: true,
+          engine: eng,
+        });
+        const last = result[result.length - 1];
+        if (last === 'a' || last === 'b') counts[last]++;
+      }
+
+      // With 50/50 blend, each should appear roughly 50% of the time
+      const ratioA = counts.a! / sampleCount;
+      const ratioB = counts.b! / sampleCount;
+      expect(ratioA).toBeGreaterThan(0.35);
+      expect(ratioA).toBeLessThan(0.65);
+      expect(ratioB).toBeGreaterThan(0.35);
+      expect(ratioB).toBeLessThan(0.65);
+    });
+
+    it('geometric and harmonic strategies produce valid (non-NaN, non-zero) results', () => {
+      const chainA = new MarkovChain({ seed: 1, maxOrder: 1 });
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'a']);
+      chainA.addSequence(['x', 'b']);
+
+      const chainB = new MarkovChain({ seed: 2, maxOrder: 1 });
+      chainB.addSequence(['x', 'a']);
+      chainB.addSequence(['x', 'b']);
+      chainB.addSequence(['x', 'b']);
+
+      for (const strategy of ['geometric', 'harmonic'] as const) {
+        const blended = MarkovChain.blend(
+          [
+            { chain: chainA, weight: 1 },
+            { chain: chainB, weight: 1 },
+          ],
+          { strategy }
+        );
+
+        // Verify the blended model has valid gram distributions
+        const grams = blended.model.grams;
+        for (const gramId of Object.keys(grams)) {
+          const gram = grams[gramId]!;
+          for (const val of Object.values(gram.next.normal)) {
+            expect(Number.isNaN(val)).toBe(false);
+            expect(Number.isFinite(val)).toBe(true);
+          }
+          for (const val of Object.values(gram.last.normal)) {
+            expect(Number.isNaN(val)).toBe(false);
+            expect(Number.isFinite(val)).toBe(true);
+          }
+        }
+
+        // Verify generation works and produces output
+        const eng = new Random({ seed: 55 });
+        const results: string[][] = [];
+        for (let i = 0; i < 100; i++) {
+          results.push(
+            MarkovChain.generate({
+              model: blended.model,
+              start: ['x'],
+              max: 2,
+              strict: false,
+              trim: true,
+              engine: eng,
+            })
+          );
+        }
+        expect(results.length).toBe(100);
+        expect(results.every(r => r.length > 0)).toBe(true);
+      }
+    });
+  });
+
+  describe('backward() alias', () => {
+    it('backward() produces the same results as last() for both static and instance methods', () => {
+      const eng1 = new Random({ seed: 99 });
+      const eng2 = eng1.clone();
+
+      // Static: backward() vs last()
+      const resultBackward = MarkovChain.backward(dtoC2, ['+'], undefined, eng1);
+      const resultLast = MarkovChain.last(dtoC2, ['+'], undefined, eng2);
+      expect(resultBackward).toEqual(resultLast);
+
+      // Instance: backward() vs last()
+      const mc1 = new MarkovChain({ ...dtoC2, seed: 42 });
+      const mc2 = new MarkovChain({ ...dtoC2, seed: 42 });
+      const instBackward = mc1.backward(['+']);
+      const instLast = mc2.last(['+']);
+      expect(instBackward).toEqual(instLast);
     });
   });
 });

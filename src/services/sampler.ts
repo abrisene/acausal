@@ -264,23 +264,41 @@ export class RandomSampler {
    * @param sigma - Standard deviation (default 1)
    */
   normal(mu = 0, sigma = 1): number {
-    const u1 = this.next();
+    if (sigma < 0) throw new RangeError('normal: sigma must be >= 0');
+    if (sigma === 0) return mu;
+    const u1 = 1 - this.next(); // (0, 1] — avoids log(0) singularity
     const u2 = this.next();
     const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
     return z0 * sigma + mu;
   }
 
   /**
-   * Sample from a truncated normal distribution.
-   * Uses clamping (not rejection) for deterministic draw count.
+   * Sample from a clamped normal distribution.
+   * Draws from a normal distribution and clamps the result to [min, max].
+   * Uses clamping (not rejection sampling) for a deterministic draw count
+   * (always exactly 2 PRNG draws, same as `normal()`).
+   *
+   * Note: This is not a true truncated normal distribution (which would use
+   * rejection sampling to only return values within bounds, preserving the
+   * conditional PDF shape). Clamping produces point masses at the boundaries.
    *
    * @param mu - Mean
    * @param sigma - Standard deviation
    * @param min - Lower bound (clamp)
    * @param max - Upper bound (clamp)
    */
-  truncatedNormal(mu: number, sigma: number, min: number, max: number): number {
+  clampedNormal(mu: number, sigma: number, min: number, max: number): number {
+    if (sigma < 0) throw new RangeError('clampedNormal: sigma must be >= 0');
+    if (min > max) throw new RangeError('clampedNormal: min must be <= max');
     return Math.max(min, Math.min(max, this.normal(mu, sigma)));
+  }
+
+  /**
+   * @deprecated Use {@link clampedNormal} instead. This method clamps rather
+   * than truly truncating (rejection sampling). Renamed for clarity.
+   */
+  truncatedNormal(mu: number, sigma: number, min: number, max: number): number {
+    return this.clampedNormal(mu, sigma, min, max);
   }
 
   /**
@@ -290,6 +308,7 @@ export class RandomSampler {
    * @param sigma - Standard deviation of the underlying normal distribution
    */
   logNormal(mu = 0, sigma = 1): number {
+    if (sigma < 0) throw new RangeError('logNormal: sigma must be >= 0');
     return Math.exp(this.normal(mu, sigma));
   }
 
@@ -299,6 +318,7 @@ export class RandomSampler {
    * @param lambda - Rate parameter (default 1)
    */
   exponential(lambda = 1): number {
+    if (!(lambda > 0)) throw new RangeError('exponential: lambda must be > 0');
     return -Math.log(1 - this.next()) / lambda;
   }
 
@@ -309,6 +329,7 @@ export class RandomSampler {
    * @param max - Maximum value (default 1)
    */
   uniform(min = 0, max = 1): number {
+    if (min > max) throw new RangeError('uniform: min must be <= max');
     return this.float(min, max);
   }
 
@@ -319,6 +340,8 @@ export class RandomSampler {
    * @param theta - Scale parameter (default 1)
    */
   gamma(k: number, theta = 1): number {
+    if (!(k > 0)) throw new RangeError('gamma: shape k must be > 0');
+    if (!(theta > 0)) throw new RangeError('gamma: scale theta must be > 0');
     if (k < 1) {
       // For k < 1, use the transformation: Gamma(k) = Gamma(k+1) * U^(1/k)
       return this.gamma(k + 1, theta) * Math.pow(this.next(), 1 / k);
@@ -357,6 +380,8 @@ export class RandomSampler {
    * @param beta - Shape parameter beta (must be > 0)
    */
   beta(alpha: number, beta: number): number {
+    if (!(alpha > 0)) throw new RangeError('beta: alpha must be > 0');
+    if (!(beta > 0)) throw new RangeError('beta: beta must be > 0');
     const x = this.gamma(alpha);
     const y = this.gamma(beta);
     return x / (x + y);
@@ -370,9 +395,17 @@ export class RandomSampler {
    * Sample from a Poisson distribution.
    * Uses Knuth's algorithm for small lambda, normal approximation for large.
    *
+   * **PRNG draw count:** For lambda < 30 (Knuth's algorithm), the number of
+   * PRNG draws is proportional to the returned value (roughly lambda + 1 draws
+   * on average). For lambda >= 30 (normal approximation), exactly 2 draws are
+   * consumed. This means PRNG state advancement is data-dependent for small
+   * lambda — two calls with different lambda values will leave the engine in
+   * different states even if the returned values happen to match.
+   *
    * @param lambda - Expected number of occurrences
    */
   poisson(lambda: number): number {
+    if (!(lambda >= 0)) throw new RangeError('poisson: lambda must be >= 0');
     if (lambda < 30) {
       const L = Math.exp(-lambda);
       let k = 0;
@@ -396,6 +429,8 @@ export class RandomSampler {
    * @param p - Probability of success per trial
    */
   binomial(n: number, p: number): number {
+    if (n < 0 || !Number.isInteger(n)) throw new RangeError('binomial: n must be a non-negative integer');
+    if (p < 0 || p > 1) throw new RangeError('binomial: p must be in [0, 1]');
     let successes = 0;
     for (let i = 0; i < n; i++) {
       if (this.bool(p)) {
@@ -412,6 +447,7 @@ export class RandomSampler {
    * @param p - Probability of success per trial
    */
   geometric(p: number): number {
+    if (!(p > 0) || p > 1) throw new RangeError('geometric: p must be in (0, 1]');
     return Math.floor(Math.log(1 - this.next()) / Math.log(1 - p)) + 1;
   }
 
@@ -420,9 +456,12 @@ export class RandomSampler {
    *
    * @param k - Shape parameter
    * @param a - Scale parameter (default 1)
+   * @param b - Location parameter (default 0)
    */
-  weibull(k: number, a = 1): number {
-    return a * Math.pow(-Math.log(1 - this.next()), 1 / k);
+  weibull(k: number, a = 1, b = 0): number {
+    if (!(k > 0)) throw new RangeError('weibull: shape k must be > 0');
+    if (!(a > 0)) throw new RangeError('weibull: scale a must be > 0');
+    return a * Math.pow(-Math.log(1 - this.next()), 1 / k) + b;
   }
 
   /**
@@ -432,6 +471,7 @@ export class RandomSampler {
    * @param b - Scale parameter (default 1)
    */
   cauchy(a = 0, b = 1): number {
+    if (!(b > 0)) throw new RangeError('cauchy: scale b must be > 0');
     return a + b * Math.tan(Math.PI * (this.next() - 0.5));
   }
 
@@ -442,7 +482,8 @@ export class RandomSampler {
    * @param b - Scale parameter (default 1)
    */
   logistic(a = 0, b = 1): number {
-    const u = this.next();
+    if (!(b > 0)) throw new RangeError('logistic: scale b must be > 0');
+    const u = 1 - this.next(); // (0, 1] — avoids log(0) singularity
     return a + b * Math.log(u / (1 - u));
   }
 
@@ -483,7 +524,7 @@ export class RandomSampler {
       case 'bernoulli':
         return this.bool(params.p) ? 1 : 0;
       case 'weibull':
-        return this.weibull(params.k, params.a);
+        return this.weibull(params.k, params.a, params.b);
       case 'cauchy':
         return this.cauchy(params.a, params.b);
       case 'logistic':

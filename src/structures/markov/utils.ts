@@ -7,7 +7,37 @@
  */
 
 import { Distribution } from '../distribution';
+import { CONSTANTS } from '../../constants';
 import { MCInsertOption, MCDelimitersShort, MCDirectionOption, GramDictionary, Gram, MarkovChainDTO } from './types';
+
+/**
+ * Normalizes an MCInsertOption value, converting deprecated `true` to `'middle'`.
+ * @internal
+ */
+export function normalizeInsertOption(insert: MCInsertOption | boolean): MCInsertOption {
+  if (insert === true) {
+    console.warn(
+      "MCInsertOption: passing `true` is deprecated. Use 'middle' instead. " +
+        '`true` will be removed in a future version.'
+    );
+    return 'middle';
+  }
+  return insert as MCInsertOption;
+}
+
+/**
+ * The set of reserved delimiter characters used internally for gram ID
+ * construction and sequence boundary markers. Sequence elements that contain
+ * any of these characters will produce corrupted gram IDs or false boundary
+ * matches, leading to silent data integrity issues.
+ *
+ * @internal
+ */
+const RESERVED_DELIMITERS: Set<string> = new Set([
+  CONSTANTS.MC_START_DELIMITER,
+  CONSTANTS.MC_GRAM_DELIMITER,
+  CONSTANTS.MC_END_DELIMITER,
+]);
 
 /**
  * Formats a sequence for addition or insertion into a gram dictionary.
@@ -29,7 +59,6 @@ export function formatGramSequence(
       result = [...gramSequence, delimiters[2]];
       break;
     case 'middle':
-    case true:
       result = [...gramSequence];
       break;
     case false:
@@ -70,6 +99,12 @@ export function getDelimiters(data: MarkovChainDTO): MCDelimitersShort {
 /**
  * Breaks down a sequence into Grams and adds them plus any edges to
  * the gram dictionary.
+ *
+ * **Delimiter constraint:** Sequence elements must not contain any of the
+ * reserved delimiter characters (`○`, `⏐`, `◍`). Elements matching a
+ * delimiter will produce a console warning and may cause corrupted gram IDs
+ * or false boundary matches.
+ *
  * @param grams       The Gram Dictionary.
  * @param sequence    The sequence to be added to the dictionary.
  * @param insert      Whether or not the sequence should be added or inserted.
@@ -80,13 +115,26 @@ export function getDelimiters(data: MarkovChainDTO): MCDelimitersShort {
 export function addSequence(
   grams: GramDictionary,
   sequence: string[],
-  insert: MCInsertOption,
+  insert: MCInsertOption | boolean,
   weight: number,
   maxOrder: number,
   delimiters: MCDelimitersShort
 ) {
+  // Warn if any sequence element matches a reserved delimiter character.
+  for (const element of sequence) {
+    if (RESERVED_DELIMITERS.has(element)) {
+      console.warn(
+        `addSequence: element "${element}" matches a reserved delimiter character (○, ⏐, or ◍). ` +
+          'This may corrupt gram IDs or cause false boundary matches.'
+      );
+    }
+  }
+
+  // Normalize the insert option (handles deprecated `true` → 'middle').
+  const normalizedInsert = normalizeInsertOption(insert);
+
   // Format the sequence for addition or insertion.
-  const seq = formatGramSequence(sequence, insert, delimiters);
+  const seq = formatGramSequence(sequence, normalizedInsert, delimiters);
 
   // Iterate through each order.
   for (let order = 1; order <= maxOrder; order += 1) {

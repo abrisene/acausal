@@ -9,6 +9,19 @@ import { MarkovChain } from './markov-chain';
 import { MCInsertOption } from './types';
 import type { BlendOptions } from './blend';
 
+/**
+ * Immutable variant of MarkovChain.
+ * Mutating methods return new instances instead of modifying internal state.
+ *
+ * Note: Forked instances (returned by mutating methods) share initial PRNG
+ * state with the original via `engine.clone()`. They will produce identical
+ * random sequences until their usage patterns (number of draws) diverge.
+ * If independent randomness is needed immediately after forking, re-seed or
+ * advance one of the engines before use.
+ *
+ * Note: Not designed for further subclassing. The `this` return type is a
+ * convenience for method chaining, not a polymorphism guarantee.
+ */
 export class ImmutableMarkovChain<T extends string = string> extends MarkovChain<T> {
   public override addSequences(sequences: string[][], insert: MCInsertOption = false): this {
     const data = MarkovChain.addSequences(this._model, sequences, insert);
@@ -43,5 +56,12 @@ export class ImmutableMarkovChain<T extends string = string> extends MarkovChain
 
   public override clone(stripSequences = false) {
     return new ImmutableMarkovChain<T>(this.serialize(stripSequences));
+  }
+
+  /**
+   * Returns a new mutable {@link MarkovChain} from the current state.
+   */
+  public toMutable(): MarkovChain<T> {
+    return new MarkovChain<T>(this.serialize());
   }
 }

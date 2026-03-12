@@ -23,7 +23,21 @@ const stateKeyRegistry = new Map<string, StateKeyFunction<any>>();
  * Register a named state key function for use with MultiDimMarkovChain serialization.
  */
 export function registerStateKey<T>(name: string, fn: StateKeyFunction<T>): void {
+  const existing = stateKeyRegistry.get(name);
+  if (existing && existing !== fn) {
+    throw new Error(
+      `State key '${name}' is already registered with a different function. ` +
+        'Use a unique name or pass { overwrite: true }.'
+    );
+  }
   stateKeyRegistry.set(name, fn);
+}
+
+/**
+ * Remove a registered state key function by name.
+ */
+export function unregisterStateKey(name: string): boolean {
+  return stateKeyRegistry.delete(name);
 }
 
 /**
@@ -115,6 +129,13 @@ export class MultiDimMarkovChain<T> {
   /**
    * Add a sequence of structured states.
    * Mutates internal state and returns `this` for chaining.
+   *
+   * Note: This mutable variant directly mutates `this.stateStore` in place
+   * (writing key-value pairs into the existing object) rather than creating a
+   * cloned copy. This is intentional for performance — the mutable API contract
+   * permits in-place modification. The immutable override
+   * ({@link ImmutableMultiDimMarkovChain.addSequence}) handles cloning of the
+   * state store to preserve the original instance.
    */
   public addSequence(sequence: T[]): this {
     if (sequence.length === 0) return this;
@@ -230,6 +251,21 @@ export class MultiDimMarkovChain<T> {
    */
   public clone(): MultiDimMarkovChain<T> {
     return MultiDimMarkovChain.fromParts(
+      this.internalChain.clone(),
+      { ...this.stateStore },
+      this.stateKeyFn,
+      this.stateKeyName,
+      this._engine.clone()
+    );
+  }
+
+  /**
+   * Returns a new {@link ImmutableMultiDimMarkovChain} from the current state.
+   * Uses a dynamic import to avoid circular module dependencies.
+   */
+  public async freeze(): Promise<MultiDimMarkovChain<T>> {
+    const { ImmutableMultiDimMarkovChain } = await import('./immutable-multi-dim-chain');
+    return ImmutableMultiDimMarkovChain.fromParts(
       this.internalChain.clone(),
       { ...this.stateStore },
       this.stateKeyFn,

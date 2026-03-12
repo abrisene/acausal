@@ -5,23 +5,12 @@
 
 /*
  # Specification
+ - Class definition for weighted distribution.
+ - Randomly picks a value from a weighted distribution.
+ - All static functions should be immutable.
+ - All member functions should utilize immutable static functions.
+ - Supports READ ONLY functionality by providing only normalized distribution.
  */
-
-/****************
-SUMMARY:
-- Class definition for weighted distribution.
-- Randomly picks a value from a weighted distribution.
-- All static functions should be immutable.
-- All member functions should utilize immutable static functions.
-- Supports READ ONLY functionality by providing only normalized distribution.
-
-TESTING:
-
-
-TODO:
-- Implement a way to have exclusion with multiple picks (i.e. "There are 4 instances of A").
-- Figure out whether or not we care about negative values.
-*****************/
 
 /**
  # Module Dependencies
@@ -35,11 +24,13 @@ import { WeightedDistribution } from '../types';
  # Types
  */
 
+/** @internal */
 export interface DistributionSourceDTO {
   source: WeightedDistribution;
   normal: WeightedDistribution;
 }
 
+/** @internal */
 export interface DistributionNormalDTO {
   source?: WeightedDistribution;
   normal: WeightedDistribution;
@@ -51,6 +42,13 @@ export interface DistributionConstructor extends RandomDTO {
   engine?: Random;
   source?: WeightedDistribution;
   normal?: WeightedDistribution;
+}
+
+export interface DistributionPickOptions<T extends string = string> {
+  count?: number;
+  mask?: T[];
+  exclusive?: boolean;
+  engine?: Random;
 }
 
 /**
@@ -79,6 +77,14 @@ function addObjects(...objects: WeightedDistribution[]): WeightedDistribution {
   return result;
 }
 
+function validateWeights(additions: WeightedDistribution): void {
+  for (const v of Object.values(additions)) {
+    if (v !== undefined && !Number.isFinite(v)) {
+      throw new RangeError('Distribution: weight must be a finite number');
+    }
+  }
+}
+
 /**
  # Class
  */
@@ -89,7 +95,6 @@ export class Distribution<T extends string = string> {
   protected _normal: WeightedDistribution;
 
   constructor({ engine, seed, uses, source, normal }: DistributionConstructor) {
-    // const { engine, source, normal, ...randomConfig } = config;
     this._engine = engine || new Random({ seed, uses });
 
     if (source !== undefined) {
@@ -100,8 +105,8 @@ export class Distribution<T extends string = string> {
       const dto = Distribution.addNormalValues(defaultDTO, normal);
       this._normal = dto.normal;
     } else {
-      this._source = defaultDTO.source;
-      this._normal = defaultDTO.normal;
+      this._source = {};
+      this._normal = {};
     }
   }
 
@@ -124,12 +129,17 @@ export class Distribution<T extends string = string> {
   /**
    * Picks one more values from a Distribution without exclusion.
    * If you just need to pick one value, you should use pickOne instead.
-   * @param count       The number of picks to make (default 1).
-   * @param mask        A mask containing keys in the distribution that should be ignored.
-   * @param exclusive   If true picks are considered exclusive and are removed.
+   * @param options Options for picking values.
+   * @param options.count The number of picks to make (default 1).
+   * @param options.mask A mask containing keys in the distribution that should be ignored.
+   * @param options.exclusive If true picks are considered exclusive and are removed.
    */
-  public pick(count = 1, mask?: T[], exclusive = false) {
-    return Distribution.pick({ source: this._source, normal: this._normal }, count, mask, exclusive, this._engine);
+  public pick(options: DistributionPickOptions<T> = {}) {
+    const { count = 1, mask, exclusive = false } = options;
+    return Distribution.pick(
+      { source: this._source, normal: this._normal },
+      { count, mask, exclusive, engine: this._engine }
+    );
   }
 
   /**
@@ -209,21 +219,33 @@ export class Distribution<T extends string = string> {
   }
 
   /**
+   * Returns a new {@link ImmutableDistribution} from the current state.
+   */
+  public freeze(): ImmutableDistribution<T> {
+    const { source, normal } = this.serialize();
+    return new ImmutableDistribution<T>({
+      seed: this.seed,
+      uses: this.uses,
+      source,
+      normal,
+    });
+  }
+
+  /**
    * Picks one more values from a Distribution without exclusion.
    * If you just need to pick one value, you should use pickOne instead.
    * @param model        A Distribution data transfer object.
-   * @param count       The number of picks to make (default 1).
-   * @param mask        A mask containing keys in the distribution that should be ignored.
-   * @param exclusive   If true picks are considered exclusive and are removed.
-   * @param engine      A Random engine. This is created if not provided.
+   * @param options      Options for picking values.
+   * @param options.count       The number of picks to make (default 1).
+   * @param options.mask        A mask containing keys in the distribution that should be ignored.
+   * @param options.exclusive   If true picks are considered exclusive and are removed.
+   * @param options.engine      A Random engine. This is created if not provided.
    */
   public static pick<T extends string = string>(
     model: DistributionNormalDTO,
-    count = 1,
-    mask?: T[],
-    exclusive = false,
-    engine?: Random
+    options: DistributionPickOptions<T> = {}
   ) {
+    const { count = 1, mask, exclusive = false, engine } = options;
     const eng = engine || new Random({});
     const picks: T[] = [];
     const iMask = mask ? [...mask] : exclusive ? [] : undefined;
@@ -255,10 +277,12 @@ export class Distribution<T extends string = string> {
 
   /**
    * Adds an object of values to a Distribution's source and renormalizes it.
+   * @internal
    * @param model        A Distribution data transfer object.
    * @param additions   An object containing additions.
    */
   public static addSourceValues(model: DistributionSourceDTO, additions: WeightedDistribution): DistributionSourceDTO {
+    validateWeights(additions);
     // Create the new distribution and normalize.
     const src = addObjects(model.source, additions);
     const nrm = Object.keys(src).length > 0 ? normalizeObject(src) : {};
@@ -269,6 +293,7 @@ export class Distribution<T extends string = string> {
    * Adds a key / value pair to a distribution's source and renormalizes it.
    * If a source distribution exists, it will be recalculated based off of the
    * new normal distribution.
+   * @internal
    * @param model  A Distribution data transfer object.
    * @param key   Key to be added.
    * @param value Value of the key to add.
@@ -285,10 +310,12 @@ export class Distribution<T extends string = string> {
    * Adds an object of values to a normal Distribution and renormalizes it.
    * If a source distribution exists, it will be recalculated by scaling the
    * new normal distribution to fit its sum.
+   * @internal
    * @param model        A Distribution data transfer object.
    * @param additions   An object containing additions.
    */
   public static addNormalValues(model: DistributionDTO, additions: WeightedDistribution): DistributionDTO {
+    validateWeights(additions);
     //  Add the values and then renormalize. We have to strip out the distribution because it'll no longer be valid.
     const { normal, source, ...dto } = model;
 
@@ -297,12 +324,6 @@ export class Distribution<T extends string = string> {
 
     // Calculate the normalized values.
     const nrm = normalizeObject(addObjects(normal, additions));
-    /* let nrm: WeightedDistribution = {};
-    if (normal !== undefined) {
-      nrm = normalizeObject(addObjects(normal, additions));
-    } else if (source !== undefined) {
-      nrm = addObjects(normalizeObject(source), additions);
-    } */
 
     // If we have sources, recalculate it from the normalized values.
     const src =
@@ -315,6 +336,7 @@ export class Distribution<T extends string = string> {
    * Adds a key / value pair to a normal distribution and renormalizes it.
    * If a source distribution exists, it will be recalculated based off of the
    * new normal distribution.
+   * @internal
    * @param model  A Distribution data transfer object.
    * @param key   Key to be added.
    * @param value Value of the key to add.
@@ -385,7 +407,8 @@ export class Distribution<T extends string = string> {
    * @param source An optional source of values to generate the distribution from.
    */
   public static new(source?: WeightedDistribution): DistributionSourceDTO {
-    return source ? Distribution.addSourceValues(defaultDTO, source) : defaultDTO;
+    const empty: DistributionSourceDTO = { source: {}, normal: {} };
+    return source ? Distribution.addSourceValues(empty, source) : empty;
   }
 
   /**
@@ -411,6 +434,15 @@ export class Distribution<T extends string = string> {
 /**
  * Immutable variant of Distribution.
  * Mutating methods return new instances instead of modifying internal state.
+ *
+ * Note: Forked instances (returned by mutating methods) share initial PRNG
+ * state with the original via `engine.clone()`. They will produce identical
+ * random sequences until their usage patterns (number of draws) diverge.
+ * If independent randomness is needed immediately after forking, re-seed or
+ * advance one of the engines before use.
+ *
+ * Note: Not designed for further subclassing. The `this` return type is a
+ * convenience for method chaining, not a polymorphism guarantee.
  */
 export class ImmutableDistribution<T extends string = string> extends Distribution<T> {
   public override add(key: T, value: number): this {
@@ -443,6 +475,19 @@ export class ImmutableDistribution<T extends string = string> extends Distributi
   public override clone(stripSource = false) {
     const { source, normal } = this.serialize(stripSource);
     return new ImmutableDistribution<T>({
+      seed: this.seed,
+      uses: this.uses,
+      source,
+      normal,
+    });
+  }
+
+  /**
+   * Returns a new mutable {@link Distribution} from the current state.
+   */
+  public toMutable(): Distribution<T> {
+    const { source, normal } = this.serialize();
+    return new Distribution<T>({
       seed: this.seed,
       uses: this.uses,
       source,

@@ -164,15 +164,6 @@ export function real(min: number, max: number, inclusive = false): (engine: Mers
 }
 
 /**
- * Generate a boolean with the given probability of being true.
- */
-export function bool(percentage = 0.5): (engine: MersenneTwister19937) => boolean {
-  return (engine: MersenneTwister19937): boolean => {
-    return real(0, 1)(engine) < percentage;
-  };
-}
-
-/**
  * Pick a random element from an array-like source.
  */
 export function pick<T>(engine: MersenneTwister19937, source: ArrayLike<T>, begin?: number, end?: number): T {

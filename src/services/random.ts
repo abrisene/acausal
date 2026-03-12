@@ -44,16 +44,32 @@ export class Random {
     return this._engine.getUseCount();
   }
 
+  /** @internal */
   public integer(min: number, max: number) {
     return integer(min, max)(this._engine);
   }
 
+  /** @internal */
   public real(min: number, max: number, inclusive?: boolean) {
     return real(min, max, inclusive)(this._engine);
   }
 
+  /**
+   * Generate a random integer in [min, max] (inclusive).
+   */
+  public int(min: number, max: number) {
+    return this.integer(min, max);
+  }
+
+  /**
+   * Generate a random float in [min, max).
+   */
+  public float(min: number, max: number, inclusive?: boolean) {
+    return this.real(min, max, inclusive);
+  }
+
   public bool(percentage = 0.5) {
-    return real(0, 1)(this._engine) < percentage;
+    return this.real(0, 1) < percentage;
   }
 
   public pick<T>(source: ArrayLike<T>, begin?: number, end?: number) {
@@ -66,29 +82,29 @@ export class Random {
    * @param {array}  mask     Array of keys to be ignored while evaluating.
    */
   public pickWeighted(object: WeightedDistribution, mask?: string[]): string | undefined {
-    const value = this.real(0, 1);
-    let lastValid: string | undefined;
-    let result: string | undefined = undefined;
-    let sum = 0;
+    const keys = Object.keys(object);
 
-    Object.keys(object).some(key => {
+    // Compute sum of unmasked, positive weights
+    let totalWeight = 0;
+    for (const key of keys) {
       const weight = object[key];
-      if (weight === undefined) return false;
+      if (weight === undefined || weight <= 0) continue;
+      if (mask && mask.includes(key)) continue;
+      totalWeight += weight;
+    }
+    if (totalWeight <= 0) return undefined;
 
+    // Draw proportional to unmasked weights
+    const value = this.real(0, 1) * totalWeight;
+    let sum = 0;
+    for (const key of keys) {
+      const weight = object[key];
+      if (weight === undefined || weight <= 0) continue;
+      if (mask && mask.includes(key)) continue;
       sum += weight;
-      if (!mask || !mask.includes(key)) {
-        if (sum >= value) {
-          result = key;
-        } else {
-          lastValid = key;
-        }
-      } else if (sum >= value) {
-        result = lastValid;
-      }
-      return result !== undefined;
-    });
-
-    return result;
+      if (sum >= value) return key;
+    }
+    return undefined;
   }
 
   public clone(useCount?: number) {
