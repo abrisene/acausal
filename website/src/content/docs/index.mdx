@@ -1,0 +1,32 @@
+---
+title: acausal
+description: Weighted random distributions, Markov chains, and seeded PRNG for TypeScript
+template: splash
+hero:
+  tagline: Deterministic, reproducible randomness for procedural generation, name generators, game systems, and stochastic modeling.
+  actions:
+    - text: Get Started
+      link: /acausal/getting-started/introduction/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/abrisene/acausal
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid stagger>
+  <Card title="Weighted Distributions" icon="random">
+    Model discrete probability with `Distribution<T>`. Type-safe picks, masking, and serializable DTOs.
+  </Card>
+  <Card title="Markov Chains" icon="puzzle">
+    N-gram models with bidirectional traversal, chain blending, batch operations, and constraint-based generation.
+  </Card>
+  <Card title="Seeded PRNG" icon="setting">
+    Mersenne Twister MT19937 with reproducible state. Serialize `{seed, uses}` to replay exact sequences.
+  </Card>
+  <Card title="Statistical Sampling" icon="bars">
+    Normal, exponential, Poisson, beta, gamma, Weibull, and more via `RandomSampler`.
+  </Card>
+</CardGrid>

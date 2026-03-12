@@ -1,0 +1,344 @@
+---
+title: Markov Chains
+description: Build n-gram Markov chains for sequence generation, name generators, and procedural content
+---
+
+A **Markov Chain** is a mathematical model where the future state depends only on the present state. acausal builds statistical n-gram models from sample data that can then generate new sequences resembling the training data.
+
+A key property: sample data can be "mixed" like paint. Train on Irish and Japanese names together, and the model generates names that blend the two.
+
+## Name generator example
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+const jpNames = ['honoka', 'akari', 'himari', 'mei', 'ema'];
+const ieNames = ['grace', 'fiadh', 'emily', 'sophie', 'ava'];
+const names = [...jpNames, ...ieNames];
+
+const src = names.map(name => name.split(''));
+
+const chain = new MarkovChain({
+  seed: 33,
+  maxOrder: 2,
+  sequences: src,
+});
+
+for (let i = 0; i < 3; i++) {
+  const pick = chain.generate({
+    min: 4,
+    max: 10,
+    order: 2,
+    strict: false,
+  });
+  console.log(pick.join(''));
+}
+// sophimari
+// emari
+// hie
+```
+
+## Generic types (v3.0)
+
+`MarkovChain<T>` is now generic for type-safe states:
+
+```typescript
+type Weather = 'sunny' | 'cloudy' | 'rainy';
+const chain = new MarkovChain<Weather>({ maxOrder: 2 });
+```
+
+## Batch operations
+
+Add multiple sequences efficiently with `MarkovChainBatch`, which avoids per-sequence cloning:
+
+```typescript
+const chain = new MarkovChain({ maxOrder: 2 });
+
+// Single clone at commit time
+const updated = chain.batch()
+  .addSequence(['a', 'l', 'i', 'c', 'e'])
+  .addSequence(['b', 'o', 'b'])
+  .addSequence(['c', 'h', 'a', 'r', 'l', 'i', 'e'])
+  .commit();
+```
+
+## Utility methods
+
+```typescript
+// Check if a gram exists
+chain.hasGram(['a', 'b']);
+
+// Get grams by order
+const bigrams = chain.getGramsByOrder(2);
+
+// Get chain statistics
+const stats = chain.getStats();
+console.log(`${stats.gramCount} grams, avg out-degree: ${stats.avgDegreeOut}`);
+```
+
+## Creating chains
+
+### Instance workflow
+
+```typescript
+const weather = new MarkovChain({
+  seed: 5,
+  sequences: [
+    ['sunny', 'sunny', 'sunny', 'cloudy', 'cloudy', 'sunny', 'sunny'],
+    ['sunny', 'cloudy', 'cloudy', 'cloudy', 'cloudy', 'rainy', 'cloudy'],
+  ],
+  maxOrder: 2,
+});
+
+const weatherClone = weather.clone();
+const weatherData = weather.serialize();
+```
+
+### Static workflow
+
+```typescript
+let weatherData = MarkovChain.new({
+  seed: 5,
+  sequences: src,
+  maxOrder: 2,
+});
+
+const weatherClone = MarkovChain.clone(weatherData);
+```
+
+## Adding sequences
+
+Sequences have start/end markers by default. You can control this with insertion modes:
+
+| Mode | Start marker | End marker | Use case |
+|------|:---:|:---:|------|
+| *(default)* | Yes | Yes | Normal training data |
+| `'middle'` | No | No | Adjust transitions without affecting start/end probabilities |
+| `'start'` | Yes | No | Allow new starting states |
+| `'end'` | No | Yes | Allow new ending states |
+
+```typescript
+// Normal — adds start and end markers
+weather.addSequence(['sunny', 'cloudy', 'rainy', 'cloudy']);
+
+// Middle — no markers, won't affect start/end probabilities
+weather.addSequence(['stormy', 'cloudy'], 'middle');
+
+// Start — allows starting on 'rainy'
+weather.addSequence(['rainy'], 'start');
+
+// End — allows ending on 'stormy'
+weather.addSequence(['stormy'], 'end');
+```
+
+## Generating sequences
+
+### Single picks
+
+```typescript
+// Next state from start
+weather.pick();                          // => 'rainy'
+
+// Previous state from end
+weather.pick(false, false);              // => 'cloudy'
+
+// Next state after 'cloudy'
+weather.pick(['cloudy']);                 // => 'sunny'
+
+// Next after 'stormy', excluding 'cloudy'
+weather.pick(['stormy'], true, ['cloudy']); // => 'rainy'
+
+// Convenience aliases
+weather.next(['stormy']);                 // => 'cloudy'
+weather.last(['stormy']);                 // => 'rainy'
+```
+
+### Sequence generation
+
+```typescript
+// At least 3 days
+weather.generate({ order: 1, min: 3 });
+// => ['cloudy', 'sunny', 'cloudy', 'sunny', 'sunny']
+
+// Exactly 5 days starting on 'sunny'
+weather.generate({ order: 1, min: 5, max: 5, start: ['sunny'] });
+// => ['sunny', 'cloudy', 'cloudy', 'sunny', 'sunny']
+
+// Exclude certain states with a mask
+weather.generate({ order: 1, min: 5, max: 5, mask: ['sunny', 'cloudy'] });
+// => ['rainy', 'rainy', 'rainy', 'stormy', 'rainy']
+
+// Generate backward (previous days)
+weather.generate({ order: 1, min: 4, max: 4, start: ['stormy'], direction: 'last' });
+// => ['rainy', 'stormy', 'rainy', 'stormy']
+```
+
+## Chain blending
+
+Combine multiple chains with weighted probabilities. Useful for genetics simulation, loot table mixing, and style interpolation.
+
+### Basic blending
+
+```typescript
+const chain1 = new MarkovChain({ maxOrder: 2 });
+chain1.addSequences([['a', 'b', 'c'], ['a', 'b', 'd']]);
+
+const chain2 = new MarkovChain({ maxOrder: 2 });
+chain2.addSequences([['x', 'y', 'z'], ['x', 'y', 'w']]);
+
+const blended = MarkovChain.blend([
+  { chain: chain1, weight: 0.5 },
+  { chain: chain2, weight: 0.5 },
+]);
+```
+
+### Interpolation (two chains)
+
+```typescript
+// 0 = all chain1, 1 = all chain2
+const hybrid = chain1.interpolate(chain2, 0.3); // 70% chain1, 30% chain2
+```
+
+### Blend strategies
+
+| Strategy | Description |
+|----------|-------------|
+| `arithmetic` | Weighted average (default) |
+| `geometric` | Multiplicative combination |
+| `harmonic` | Reciprocal weighting |
+| `max` | Maximum probability per transition |
+| `min` | Minimum non-zero probability |
+
+```typescript
+const geometric = MarkovChain.blend(chains, { strategy: 'geometric' });
+```
+
+### Filter low-weight states
+
+```typescript
+const filtered = MarkovChain.blend(chains, {
+  minWeight: 0.1, // Only include states with >= 10% combined weight
+});
+```
+
+### Practical example: character genetics
+
+```typescript
+const motherTraits = new MarkovChain({ maxOrder: 2 });
+motherTraits.addSequences([
+  ['black', 'brown', 'black'],
+  ['brown', 'black', 'brown'],
+]);
+
+const fatherTraits = new MarkovChain({ maxOrder: 2 });
+fatherTraits.addSequences([
+  ['blonde', 'blonde', 'light-brown'],
+  ['light-brown', 'blonde', 'blonde'],
+]);
+
+// Child inherits 50% from each parent
+const childTraits = MarkovChain.blend([
+  { chain: motherTraits, weight: 0.5 },
+  { chain: fatherTraits, weight: 0.5 },
+]);
+```
+
+## Multi-dimensional chains
+
+`MultiDimMarkovChain<T>` preserves structured state objects instead of flattening to strings. Ideal for tile-based procedural generation, game state management, and spatial systems.
+
+### Setup
+
+```typescript
+import { MultiDimMarkovChain, registerStateKey } from 'acausal';
+
+interface TileState {
+  terrain: string;
+  x: number;
+  y: number;
+  biome: string;
+}
+
+// Register a named state key function (enables serialization)
+registerStateKey<TileState>('tileKey', (s) => `${s.terrain}_${s.x}_${s.y}_${s.biome}`);
+
+const tileChain = new MultiDimMarkovChain<TileState>({
+  maxOrder: 2,
+  stateKey: 'tileKey',
+});
+```
+
+### Training and generation
+
+```typescript
+const updated = tileChain.addSequence([
+  { terrain: 'grass', x: 0, y: 0, biome: 'plains' },
+  { terrain: 'forest', x: 1, y: 0, biome: 'woodland' },
+  { terrain: 'water', x: 2, y: 0, biome: 'lake' },
+]);
+
+// Generate returns structured states, not strings
+const tiles = updated.generate({ order: 2, min: 3, max: 5 });
+tiles[0].terrain; // 'grass'
+tiles[0].x;       // 0
+```
+
+### Serialization
+
+```typescript
+const dto = chain.serialize();
+const restored = MultiDimMarkovChain.fromDTO<TileState>(dto);
+```
+
+## Sequence scoring
+
+Calculate likelihood scores for sequences — useful for quality filtering, autocomplete ranking, and validation.
+
+```typescript
+const score = chain.score(['j', 'o', 'h', 'n']);
+// {
+//   sequence: ['j', 'o', 'h', 'n'],
+//   logProb: -8.3,
+//   perplexity: 12.4,     // Lower is better
+//   isValid: true,
+//   normalized: -2.1      // Normalized by sequence length
+// }
+```
+
+Static dual-API:
+
+```typescript
+const model = MarkovChain.new([['j', 'o', 'h', 'n'], ['j', 'a', 'n', 'e']], 2);
+const score = MarkovChain.score(model, ['j', 'o', 'h', 'n']);
+```
+
+## Constraint-based generation
+
+Control generated output with constraints:
+
+```typescript
+const result = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 5,
+    maxLength: 8,
+    mustContain: ['a'],
+    mustNotContain: ['x', 'z'],
+    pattern: /^[a-z]+$/,
+    validator: (seq) => !/(.)\\1{2,}/.test(seq.join('')),
+    maxRetries: 200,
+  },
+});
+```
+
+### Constraint types
+
+| Constraint | Description |
+|-----------|-------------|
+| `minLength` / `maxLength` | Sequence length bounds |
+| `mustContain` | Required elements |
+| `mustNotContain` | Forbidden elements |
+| `pattern` | Regex the joined sequence must match |
+| `validator` | Custom function returning `true`/`false` |
+| `maxRetries` | Maximum generation attempts |

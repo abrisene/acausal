@@ -1,0 +1,137 @@
+---
+title: Quick Start
+description: Get up and running with acausal in 5 minutes
+---
+
+This guide covers the three core primitives: **Distribution**, **MarkovChain**, and **Random**.
+
+## Random numbers
+
+The `Random` class wraps a Mersenne Twister MT19937 engine. Given the same seed, it produces identical sequences every time.
+
+```typescript
+import { Random } from 'acausal';
+
+const rand = new Random({ seed: 1 });
+
+rand.integer(1, 6);  // Roll 1d6 → 6
+rand.real();          // Float in [0, 1) with 53-bit resolution
+rand.bool();          // true or false
+rand.pick(['a', 'b', 'c']);  // Random element from array
+```
+
+### Reproducible state
+
+`Random` tracks a `uses` counter. Serialize `{ seed, uses }` and replay with `discard(uses)` to reproduce the exact engine state later.
+
+```typescript
+const state = rand.serialize(); // { seed: 1, uses: 4 }
+// Later...
+const restored = new Random(state); // Picks up exactly where it left off
+```
+
+## Weighted distributions
+
+`Distribution<T>` models weighted random picks from a discrete set of items.
+
+```typescript
+import { Distribution } from 'acausal';
+
+// Rarity tiers
+const loot = new Distribution({ seed: 1 });
+loot.add('Common', 60);
+loot.add('Uncommon', 25);
+loot.add('Rare', 10);
+loot.add('Epic', 4);
+loot.add('Legendary', 1);
+
+// Single pick
+loot.pickOne();         // => 'Common'
+
+// Multiple picks
+loot.pick(5);           // => ['Common', 'Uncommon', 'Common', 'Common', 'Rare']
+
+// Pick without replacement (unique results)
+loot.pick(3, undefined, true);  // => ['Common', 'Uncommon', 'Rare']
+```
+
+### Modify in place
+
+```typescript
+loot.add('Mythic', 0.1);                    // Add a new tier
+loot.addValues({ Common: -10, Rare: 5 });   // Adjust weights
+loot.remove(['Mythic']);                     // Remove items
+```
+
+### Serialize and restore
+
+```typescript
+const dto = loot.serialize();
+// Store dto as JSON, send over network, etc.
+const restored = new Distribution(dto);
+```
+
+## Markov chains
+
+`MarkovChain<T>` builds n-gram models from sample sequences and generates new sequences that resemble the training data.
+
+```typescript
+import { MarkovChain } from 'acausal';
+
+// Name generator
+const chain = new MarkovChain({ seed: 33, maxOrder: 2 });
+chain.addSequences([
+  'honoka'.split(''),
+  'akari'.split(''),
+  'himari'.split(''),
+  'grace'.split(''),
+  'emily'.split(''),
+]);
+
+// Generate names
+for (let i = 0; i < 3; i++) {
+  const name = chain.generate({
+    order: 2,
+    min: 4,
+    max: 10,
+    strict: false,
+  });
+  console.log(name.join(''));
+}
+```
+
+### Constraints
+
+Control what gets generated with constraints:
+
+```typescript
+const name = chain.generate({
+  order: 2,
+  max: 20,
+  constraints: {
+    minLength: 4,
+    maxLength: 8,
+    mustContain: ['a'],
+    pattern: /^[a-z]+$/,
+    maxRetries: 100,
+  },
+});
+```
+
+### Batch operations
+
+For bulk training, use `MarkovChainBatch` to avoid per-sequence cloning overhead:
+
+```typescript
+const updated = chain.batch()
+  .addSequence('alice'.split(''))
+  .addSequence('bob'.split(''))
+  .addSequence('charlie'.split(''))
+  .commit();
+```
+
+## Next steps
+
+- [Distribution guide](/acausal/guides/distributions/) — deep dive into weighted distributions
+- [Markov chain guide](/acausal/guides/markov-chains/) — blending, multi-dimensional chains, scoring, and more
+- [API Reference](/acausal/api/) — auto-generated from TypeScript source

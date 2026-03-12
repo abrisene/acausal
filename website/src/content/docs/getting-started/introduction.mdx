@@ -1,0 +1,69 @@
+---
+title: Introduction
+description: acausal — weighted random distributions, Markov chains, and seeded PRNG for TypeScript
+---
+
+**acausal** is a TypeScript library for creating, editing, and generating pseudo-random data from **weighted random distributions**, **Markov chains**, and a **seeded PRNG** (Mersenne Twister MT19937).
+
+It's designed for procedural generation, name generators, game systems, stochastic modeling, and anywhere you need deterministic, reproducible randomness.
+
+## Design Philosophy
+
+- **Clone-on-write** — static methods clone the DTO, mutate the clone, and return the new DTO. Instance methods mutate in place and return `this` for chaining. Use `.clone()` to preserve originals.
+- **Portable DTOs** — all classes serialize to/from plain JSON objects. Models can be stored, transferred over the network, and rebuilt without the original training data.
+- **Dual API** — every feature has both an instance method and a static method that operates on raw DTOs.
+- **Minimal dependencies** — only depends on [scalr](https://www.npmjs.com/package/scalr) for weight normalization. The PRNG is an internal MT19937 implementation.
+
+## What's in the box
+
+| Module | Description |
+|--------|-------------|
+| `Distribution<T>` | Weighted random picks from discrete item sets |
+| `MarkovChain<T>` | N-gram Markov chain with bidirectional traversal |
+| `MarkovChainBatch<T>` | Efficient bulk sequence/edge additions |
+| `MultiDimMarkovChain<T>` | Structured state spaces with serializable state keys |
+| `Random` | Seeded MT19937 PRNG with reproducible state |
+| `RandomSampler` | Statistical distribution sampling (normal, exponential, Poisson, beta, gamma, etc.) |
+
+## What's new in v3.0
+
+- **Modular architecture** — focused modules instead of a monolithic file
+- **Batch operations** — `MarkovChainBatch` for bulk additions without N clones
+- **Chain blending** — merge chains with arithmetic, geometric, harmonic, max, or min strategies
+- **MultiDimMarkovChain** — structured state spaces with named-function registry
+- **Sequence scoring** — log probability and perplexity via `score()`
+- **Constraint-based generation** — length, content, pattern, and custom validator constraints
+- **Generic types** — `MarkovChain<T>` and `Distribution<T>` with full type safety
+- **Dual ESM/CJS output** with proper `exports` field
+- **95%+ test coverage** enforced
+
+## Quick example
+
+```typescript
+import { MarkovChain, Distribution, Random } from 'acausal';
+
+// Weighted distribution
+const dist = new Distribution({ seed: 1 });
+dist.add('Green', 10);   // Common
+dist.add('Blue', 5);     // Uncommon
+dist.add('Purple', 1);   // Rare
+dist.pick(10);
+// => ['Green', 'Green', 'Green', 'Blue', 'Green', 'Blue', 'Purple', 'Green', 'Green', 'Green']
+
+// Markov chain name generator
+const mc = new MarkovChain({ seed: 1 });
+mc.addSequence('alice'.split(''));
+mc.addSequence('bob'.split(''));
+mc.addSequence('erwin'.split(''));
+mc.generate({ order: 1 });
+// => ['a', 'l', 'i', 'n']
+
+// Seeded random numbers
+const rand = new Random({ seed: 1 });
+rand.integer(1, 6); // Roll 1d6
+// => 6
+```
+
+## Also available in Go
+
+acausal is also implemented in Golang: [gocausal](https://github.com/abrisene/gocausal).
