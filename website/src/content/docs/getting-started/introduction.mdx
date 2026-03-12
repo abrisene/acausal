@@ -7,6 +7,19 @@ description: acausal — weighted random distributions, Markov chains, and seede
 
 It's designed for procedural generation, name generators, game systems, stochastic modeling, and anywhere you need deterministic, reproducible randomness.
 
+### Architecture
+
+```mermaid
+graph TD
+    MT["MersenneTwister19937\n<i>Internal PRNG engine</i>"] --> R["Random\n<i>Seeded RNG</i>"]
+    R --> RS["RandomSampler\n<i>Statistical distributions</i>"]
+    R --> D["Distribution&lt;T&gt;\n<i>Weighted random selection</i>"]
+    R --> MC["MarkovChain&lt;T&gt;\n<i>Sequence generation</i>"]
+    MC --> MCB["MarkovChainBatch\n<i>Bulk operations</i>"]
+    MC --> MDMC["MultiDimMarkovChain\n<i>Multi-layer chains</i>"]
+    MC --> BL["Blend\n<i>Chain interpolation</i>"]
+```
+
 ## Design Philosophy
 
 - **Clone-on-write** — static methods clone the DTO, mutate the clone, and return the new DTO. Instance methods mutate in place and return `this` for chaining. Use `.clone()` to preserve originals.

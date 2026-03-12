@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import mermaid from 'astro-mermaid';
 import starlight from '@astrojs/starlight';
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc';
 
@@ -6,6 +7,7 @@ export default defineConfig({
   site: 'https://abrisene.github.io/acausal',
   base: '/acausal',
   integrations: [
+    mermaid({ theme: 'dark', autoTheme: true }),
     starlight({
       title: 'acausal',
       tagline:
@@ -51,7 +53,10 @@ export default defineConfig({
           label: 'Guides',
           items: [
             { slug: 'guides/distributions' },
+            { slug: 'guides/random-sampler' },
             { slug: 'guides/markov-chains' },
+            { slug: 'guides/chain-analysis' },
+            { slug: 'guides/immutable-patterns' },
           ],
         },
         typeDocSidebarGroup,
