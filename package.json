@@ -55,8 +55,10 @@
     "test:coverage": "vitest run --coverage",
     "lint": "gts lint",
     "lint:fix": "gts fix",
-    "docs": "typedoc",
-    "clean": "rm -rf dist lib coverage .site",
+    "docs": "pnpm --dir website run build",
+    "docs:dev": "pnpm --dir website run dev",
+    "docs:typedoc": "typedoc",
+    "clean": "rm -rf dist lib coverage .site website/dist website/.astro",
     "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build"
   },
   "dependencies": {

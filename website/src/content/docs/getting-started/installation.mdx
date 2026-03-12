@@ -1,0 +1,62 @@
+---
+title: Installation
+description: How to install acausal in your project
+---
+
+## Requirements
+
+- **Node.js** >= 18.0.0
+- **TypeScript** >= 5.0 (recommended, but not required)
+
+## Install
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+<Tabs>
+  <TabItem label="npm">
+    ```bash
+    npm install acausal
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```bash
+    pnpm add acausal
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```bash
+    yarn add acausal
+    ```
+  </TabItem>
+</Tabs>
+
+## Module format
+
+acausal ships as both ESM and CommonJS with full TypeScript declarations:
+
+```json
+// package.json exports
+{
+  ".": {
+    "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+  }
+}
+```
+
+## Dependencies
+
+acausal has a single runtime dependency:
+
+- [**scalr**](https://www.npmjs.com/package/scalr) — weight normalization
+
+The PRNG (Mersenne Twister MT19937) is implemented internally.
+
+## Verify installation
+
+```typescript
+import { Distribution, MarkovChain, Random } from 'acausal';
+
+const rand = new Random({ seed: 42 });
+console.log(rand.integer(1, 100)); // Deterministic output
+```

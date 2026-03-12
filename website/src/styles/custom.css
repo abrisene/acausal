@@ -1,0 +1,11 @@
+/* Default to dark mode */
+:root {
+  color-scheme: dark;
+}
+
+/* Subtle accent color adjustments */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #1a1f36;
+  --sl-color-accent: #6c8aec;
+  --sl-color-accent-high: #c4d0f6;
+}

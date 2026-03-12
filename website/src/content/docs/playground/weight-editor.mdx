@@ -1,0 +1,12 @@
+---
+title: Weight Editor
+description: Interactive weighted distribution editor and sampler
+---
+
+import WeightEditor from '../../../components/WeightEditor';
+
+Edit weights, add or remove items, and see how the normalized probability distribution updates in real time. Then sample from the distribution to compare actual vs expected frequencies.
+
+<WeightEditor client:load />
+
+This playground uses acausal's `Distribution` class under the hood. Source weights are normalized via [scalr](https://github.com/abrisene/scalr) so they always sum to 1.0. Changing the seed produces a deterministic sequence of picks, letting you reproduce and compare results.

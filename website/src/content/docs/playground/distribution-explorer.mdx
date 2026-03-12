@@ -1,0 +1,12 @@
+---
+title: Distribution Explorer
+description: Visualize statistical distributions with adjustable parameters
+---
+
+import DistributionExplorer from '../../../components/DistributionExplorer';
+
+Explore the statistical distributions available in acausal's `RandomSampler`. Adjust the parameters below to see how each distribution behaves -- the histogram updates live as you change values.
+
+<DistributionExplorer client:load />
+
+All samples are generated deterministically using acausal's seeded MT19937 PRNG. Changing the seed produces a different but reproducible sequence. The same seed and parameters will always produce the same histogram.

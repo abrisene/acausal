@@ -3,8 +3,12 @@
 dist/
 lib/
 
-# Generated site (typedoc)
+# Generated site (typedoc / starlight)
 .site/
+website/dist/
+website/node_modules/
+website/.astro/
+website/src/content/docs/api/
 
 # Local planning docs
 docs/.local/
