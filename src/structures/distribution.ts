@@ -5,23 +5,12 @@
 
 /*
  # Specification
+ - Class definition for weighted distribution.
+ - Randomly picks a value from a weighted distribution.
+ - All static functions should be immutable.
+ - All member functions should utilize immutable static functions.
+ - Supports READ ONLY functionality by providing only normalized distribution.
  */
-
-/****************
-SUMMARY:
-- Class definition for weighted distribution.
-- Randomly picks a value from a weighted distribution.
-- All static functions should be immutable.
-- All member functions should utilize immutable static functions.
-- Supports READ ONLY functionality by providing only normalized distribution.
-
-TESTING:
-
-
-TODO:
-- Implement a way to have exclusion with multiple picks (i.e. "There are 4 instances of A").
-- Figure out whether or not we care about negative values.
-*****************/
 
 /**
  # Module Dependencies
