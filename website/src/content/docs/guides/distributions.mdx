@@ -1,0 +1,186 @@
+---
+title: Random Distributions
+description: Create weighted random distributions for modeling discrete probability
+---
+
+A **Random Distribution** is a model that simulates picks from a weighted distribution of items. Each item has a different probability of appearing based on its weight.
+
+## Use cases
+
+- Simulating draws from a deck of cards
+- Game loot tables and rarity tiers
+- Generating character traits (eye color, hair color)
+- Generating star spectral classes for fictional universes
+- Modeling any discrete pseudo-random system
+
+## Card deck example
+
+```typescript
+import { Distribution } from 'acausal';
+
+// Build a standard deck
+const suits = ['♣️', '♦️', '♥️', '♠️'];
+const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+const cards = suits.reduce((last, suit) => {
+  return [...last, ...ranks.map(rank => `${rank}${suit}`)];
+}, [] as string[]);
+
+// Every card has equal weight
+const src = cards.reduce((last, card) => ({ ...last, [card]: 1 }), {} as Record<string, number>);
+
+// Create the distribution
+const deck = new Distribution({
+  seed: 23,
+  source: src,
+});
+
+// Add 2 Jokers
+deck.add('🃏', 2);
+
+// Draw 4 cards without replacement
+const hand = deck.pick(4, undefined, true);
+// => ['J♣️', '10♠️', '3♦️', '9♣️']
+```
+
+## Generic type safety (v3.0)
+
+`Distribution<T>` accepts a type parameter for type-safe picks:
+
+```typescript
+type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+const loot = new Distribution<Rarity>({
+  seed: 1,
+  source: { common: 60, uncommon: 25, rare: 10, epic: 4, legendary: 1 },
+});
+
+// TypeScript knows this returns Rarity | undefined
+const drop = loot.pickOne();
+
+// Type-safe array
+const drops = loot.pick(5);
+// drops: Rarity[]
+```
+
+## Core concepts
+
+A distribution maintains two parallel representations:
+
+| Property | Description |
+|----------|-------------|
+| `source` | Raw weights as provided (human-readable) |
+| `normal` | Normalized probabilities summing to 1.0 |
+
+Normalization is handled automatically by [scalr](https://www.npmjs.com/package/scalr) whenever the source changes.
+
+## Creating distributions
+
+### Instance workflow
+
+```typescript
+import { Distribution, Random } from 'acausal';
+
+const src = {
+  white: 1000,
+  green: 500,
+  blue: 100,
+  purple: 50,
+};
+
+// Create instance
+const jar = new Distribution({ seed: 5, source: src });
+
+// Clone
+const jarClone = jar.clone();
+
+// Serialize to DTO
+const jarData = jar.serialize();
+```
+
+### Static (functional) workflow
+
+```typescript
+// Create DTO directly
+let jarData = Distribution.new(src);
+
+// Clone the DTO
+let jarClone = Distribution.clone(jarData);
+```
+
+## Modifying distributions
+
+### Adding items
+
+```typescript
+// Instance
+jar.add('yellow', 5);
+jar.addValues({ black: 1, silver: 2, yellow: 5, purple: 10 });
+
+// Static
+jarData = Distribution.add(jarData, 'yellow', 5);
+jarData = Distribution.addValues(jarData, { black: 1, silver: 2, yellow: 5, purple: 10 });
+```
+
+### Subtracting items
+
+Pass negative weights to reduce, or use `remove()` to delete keys entirely:
+
+```typescript
+// Instance
+jar.add('yellow', -5);
+jar.addValues({ black: -1, yellow: -5, purple: -10 });
+jar.remove(['black', 'silver', 'yellow']);
+
+// Static
+jarData = Distribution.add(jarData, 'yellow', -5);
+jarData = Distribution.addValues(jarData, { black: -1, yellow: -5, purple: -10 });
+jarData = Distribution.remove(jarData, ['black', 'silver', 'yellow']);
+```
+
+## Generating picks
+
+### Instance workflow
+
+```typescript
+// Single pick
+jar.pickOne();
+// => 'green'
+
+// Single pick, ignoring certain items
+jar.pickOne(['white', 'green']);
+// => 'blue'
+
+// Multiple picks
+jar.pick(5);
+// => ['white', 'green', 'green', 'white', 'white']
+
+// Multiple picks with mask
+jar.pick(5, ['white', 'green']);
+// => ['blue', 'blue', 'blue', 'blue', 'blue']
+
+// Picks without replacement (unique results)
+jar.pick(5, undefined, true);
+// => ['green', 'white', 'blue', 'purple']
+```
+
+### Static workflow
+
+```typescript
+const rng = new Random({ seed: 5 });
+
+Distribution.pickOne(jarData, undefined, rng);
+// => 'green'
+
+Distribution.pickOne(jarData, ['white', 'green'], rng);
+// => 'blue'
+
+Distribution.pick(jarData, 5, undefined, undefined, rng);
+// => ['white', 'green', 'green', 'white', 'white']
+
+Distribution.pick(jarData, 5, ['white', 'green'], undefined, rng);
+// => ['blue', 'blue', 'blue', 'blue', 'blue']
+
+Distribution.pick(jarData, 5, undefined, true, rng);
+// => ['green', 'white', 'blue', 'purple']
+```

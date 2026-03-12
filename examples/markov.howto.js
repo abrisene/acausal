@@ -49,10 +49,10 @@ weatherData = weather.dto;
 */
 
 // Add a new sequence.
-weather.addSequence(['sunny', 'cloudy', 'cloudy', 'cloudy', 'cloudy', 'rainy', 'cloudy']);
+let w = weather.addSequence(['sunny', 'cloudy', 'cloudy', 'cloudy', 'cloudy', 'rainy', 'cloudy']);
 
 // Add multiple sequences.
-weather.addSequences([
+w = w.addSequences([
   ['cloudy', 'rainy', 'rainy', 'stormy', 'rainy', 'cloudy', 'cloudy'],
   ['cloudy', 'rainy', 'stormy', 'rainy', 'rainy', 'cloudy', 'sunny'],
 ]);
@@ -83,17 +83,17 @@ weather.addSequences([
 // Insert a sequence that lets 'stormy' days to be followed by 'cloudy' days.
 // Inserting 'middle' will make sure that we don't start on 'stormy', or affect
 // the likelihood of ending on 'cloudy'.
-weather.addSequence(['stormy', 'cloudy'], 'middle');
+w = w.addSequence(['stormy', 'cloudy'], 'middle');
 
 // Insert a sequence that lets us start on a 'rainy' day.
 // Inserting 'start' will allow us to start on 'rainy', but won't affect the likelihood
 // of ending on this state.
-weather.addSequence(['rainy'], 'start');
+w = w.addSequence(['rainy'], 'start');
 
 // Insert a sequence that lets us end on a 'stormy' day.
 // Insterting 'end' will allow us to end on 'stormy', but won't affect the likelihood
 // of starting on this state.
-weather.addSequence(['stormy'], 'end');
+w = w.addSequence(['stormy'], 'end');
 
 /*
   GENERATION
@@ -104,31 +104,31 @@ weather.addSequence(['stormy'], 'end');
 */
 
 // Pick a random next state from the start.
-const p1a = weather.pick();
+const p1a = w.pick();
 // => 'rainy'
 
 // Pick a random previous state from the end.
-const p1b = weather.pick(false, false);
+const p1b = w.pick(false, false);
 //    'cloudy' <=
 
 // Pick the next state starting from a 'cloudy' day.
-const p1c = weather.pick(['cloudy']);
+const p1c = w.pick(['cloudy']);
 // => 'sunny'
 
 // Pick the next state starting from a 'stormy' day, excluding 'cloudy'.
-const p1d = weather.pick(['stormy'], true, ['cloudy']);
+const p1d = w.pick(['stormy'], true, ['cloudy']);
 // => 'rainy'
 
 // Pick the next state after a two 'rainy' days in a row.
-const p1e = weather.pick(['rainy', 'rainy']);
+const p1e = w.pick(['rainy', 'rainy']);
 // => 'cloudy'
 
 // Alias for picking a next state after a stormy day.
-const p1f = weather.next(['stormy']);
+const p1f = w.next(['stormy']);
 // => 'cloudy'
 
 // Alias for picking a previous state prior to a stormy day.
-const p1g = weather.last(['stormy']);
+const p1g = w.last(['stormy']);
 //   'rainy' <=
 
 /*
@@ -136,21 +136,21 @@ const p1g = weather.last(['stormy']);
 */
 
 // Generate weather for at least 3 days
-const s1a = weather.generate({
+const s1a = w.generate({
   order: 1,
   min: 3,
 });
 // => [ 'cloudy', 'sunny', 'cloudy', 'sunny', 'sunny' ]
 
 // Generate weather for at most 5 days.
-const s1b = weather.generate({
+const s1b = w.generate({
   order: 1,
   max: 5,
 });
 // => [ 'sunny', 'cloudy', 'cloudy', 'sunny', 'sunny' ]
 
 // Generate weather for exactly 5 days starting on 'sunny'.
-const s1c = weather.generate({
+const s1c = w.generate({
   order: 1,
   min: 5,
   max: 5,
@@ -159,7 +159,7 @@ const s1c = weather.generate({
 // => ['sunny', 'cloudy', 'cloudy', 'sunny', 'sunny']
 
 // Generate weather for exactly 5 days, but don't allow 'sunny' or 'cloudy' weather.
-const s1d = weather.generate({
+const s1d = w.generate({
   order: 1,
   min: 5,
   max: 5,
@@ -168,7 +168,7 @@ const s1d = weather.generate({
 // => [ 'rainy', 'rainy', 'rainy', 'stormy', 'rainy' ]
 
 // Generate weather for the PREVIOUS 4 days if today's weather is 'stormy'
-const s1e = weather.generate({
+const s1e = w.generate({
   order: 1,
   min: 4,
   max: 4,

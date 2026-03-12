@@ -1,6 +1,6 @@
 {
   "name": "acausal",
-  "version": "2.0.3",
+  "version": "3.0.0-alpha.1",
   "description": "Markov Chain and Random Distribution Toolset",
   "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
   "homepage": "https://github.com/abrisene/acausal#readme",
@@ -23,37 +23,60 @@
     "name generator",
     "procedural generation"
   ],
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "packageManager": "pnpm@10.11.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
   "files": [
-    "/lib",
-    "/dist"
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
-    "test": "jest",
-    "coverage": "jest --coverage && cat ./coverage/lcov.info | coveralls",
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "gts lint",
-    "docs": "npx typedoc",
-    "clean": "gts clean",
-    "compile": "tsc",
-    "fix": "gts fix",
-    "preversion": "npm test",
-    "postversion": "npm run docs && npm run coverage",
-    "prepare": "npm run compile",
-    "pretest": "npm run compile",
-    "posttest": "npm run lint"
+    "lint:fix": "gts fix",
+    "docs": "pnpm --dir website run build",
+    "docs:dev": "pnpm --dir website run dev",
+    "docs:typedoc": "typedoc",
+    "clean": "rm -rf dist lib coverage .site website/dist website/.astro",
+    "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build"
   },
   "dependencies": {
-    "random-js": "2.1.0",
     "scalr": "1.1.4"
   },
   "devDependencies": {
-    "@types/jest": "26.0.24",
-    "@types/node": "14.14.37",
-    "coveralls": "3.1.0",
-    "gts": "3.1.1",
-    "jest": "26.6.3",
-    "ts-jest": "26.5.4",
-    "typescript": "4.0.3"
+    "@types/node": "^22.5.0",
+    "@vitest/coverage-v8": "^3.0.0",
+    "gts": "^5.3.1",
+    "tsup": "^8.2.4",
+    "typedoc": "^0.26.6",
+    "typescript": "^5.6.3",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }

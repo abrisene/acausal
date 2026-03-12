@@ -3,11 +3,13 @@
  # Distribution Class Test
  */
 
+import { describe, it, expect } from 'vitest';
+
 /**
  # Module Dependencies
  */
 
-import { Distribution, DistributionDTO, CONSTANTS, Random, WeightedDistribution } from '..';
+import { Distribution, ImmutableDistribution, DistributionDTO, CONSTANTS, Random, WeightedDistribution } from '..';
 
 /**
  # Utility Functions
@@ -28,11 +30,6 @@ function stripSource(dto: DistributionDTO) {
   return Distribution.clone(dto, true);
 }
 
-/* function stripNormals(dto: DistributionDTO) {
-  const { source } = Distribution.clone(dto, false)
-  return { source, normal: {} };
-} */
-
 /**
  # Constants
  */
@@ -47,12 +44,8 @@ const addAB1 = { a: 1, b: 1 };
 const addABC1 = { a: 1, b: 1, c: 1 };
 
 const addA10p = { a: 0.1 };
-// const addAB10p = { a: 0.10, b: 0.10 };
-// const addABC10p = { a: 0.10, b: 0.10, c: 0.10 };
 
-// const addA50p = { a: 0.5 };
 const addAB50p = { a: 0.5, b: 0.5 };
-// const addABC50p = { a: 0.5, b: 0.5, c: 0.5 };
 
 const swapAB10p = { a: -0.1, b: 0.1 };
 
@@ -84,8 +77,6 @@ const dtoU1AddB100pExpected = {
   source: { a: 0.5, b: 0.5 },
   normal: { a: 0.5, b: 0.5 },
 };
-// const dtoU1AddAB10pExpected = { source: { a: (1.1 / 1.2), b: (0.1 / 1.2) }, normal: { a: (1.1 / 1.2), b: (0.1 / 1.2) } };
-
 // Mixed DTO
 const sourceA1: WeightedDistribution = { a: 1, b: 2 };
 const sourceA2: WeightedDistribution = { a: 1, b: 3 };
@@ -139,7 +130,7 @@ const pickOneU3 = Distribution.pickOne(dtoU3, undefined, engine);
 
 Distribution.pickOne(dtoU1, undefined, engineB);
 Distribution.pickOne(dtoU2, undefined, engineB);
-const pickOneU3b = Distribution.pick(dtoU3, undefined, undefined, undefined, engineB);
+const pickOneU3b = Distribution.pick(dtoU3, { engine: engineB });
 
 const pickOneEnginelessU1 = Distribution.pickOne(dtoU1, undefined, undefined);
 const pickOneEnginelessU2 = Distribution.pickOne(dtoU2, undefined, undefined);
@@ -151,14 +142,14 @@ const pickOneMaskU3 = Distribution.pickOne(dtoU3, ['a', 'b'], engine);
 
 const pickDefaultU3 = Distribution.pick(dtoU3);
 
-const pickFiveMaskU3 = Distribution.pick(dtoU3, 5, ['a', 'b'], false, engine);
+const pickFiveMaskU3 = Distribution.pick(dtoU3, { count: 5, mask: ['a', 'b'], engine });
 
-const pickTwoU3 = Distribution.pick(dtoU3, 2);
-const pickFiveU3 = Distribution.pick(dtoU3, 5);
-const pickTwentyU3 = Distribution.pick(dtoU3, 20);
+const pickTwoU3 = Distribution.pick(dtoU3, { count: 2 });
+const pickFiveU3 = Distribution.pick(dtoU3, { count: 5 });
+const pickTwentyU3 = Distribution.pick(dtoU3, { count: 20 });
 
 const sampleCount = 50000;
-const sampleB3 = Distribution.pick(dtoB3, sampleCount, undefined, false, engine);
+const sampleB3 = Distribution.pick(dtoB3, { count: sampleCount, engine });
 const sampleB3Summary = sampleB3.reduce((l, k) => {
   const result = { ...l };
   if (result[k] === undefined) result[k] = 0;
@@ -311,8 +302,8 @@ describe('Distribution', () => {
       expect(pickFiveMaskU3).toEqual(['c', 'c', 'c', 'c', 'c']);
 
       // Multi Pick Exclusive + Masked
-      expect(Distribution.pick(dtoU3, 5, undefined, true).sort()).toEqual(['a', 'b', 'c']);
-      expect(Distribution.pick(dtoU3, 5, ['a'], true).sort()).toEqual(['b', 'c']);
+      expect(Distribution.pick(dtoU3, { count: 5, exclusive: true }).sort()).toEqual(['a', 'b', 'c']);
+      expect(Distribution.pick(dtoU3, { count: 5, mask: ['a'], exclusive: true }).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
       Object.keys(sampleB3Summary).forEach(k => {
@@ -331,8 +322,6 @@ describe('Distribution', () => {
       const distEmpty = new Distribution(dtoE);
       const distSource = new Distribution(dtoUs);
       const distNormal = new Distribution(dtoUn);
-      // const distU1 = new Distribution(dtoU1);
-      // const distA1 = new Distribution(dtoA1);
 
       // Empty
       expect(distEmpty.source).toEqual({});
@@ -412,60 +401,49 @@ describe('Distribution', () => {
       const distA1a = distA1.clone(false);
 
       // Multi-Value
-      distEmpty.addValues(addAB1);
-      expect(distEmpty.source).toEqual(dtoEmptyAddAB1Expected.source);
-      expect(distEmpty.normal).toEqual(dtoEmptyAddAB1Expected.normal);
+      const resEmpty = distEmpty.addValues(addAB1);
+      expect(resEmpty.source).toEqual(dtoEmptyAddAB1Expected.source);
+      expect(resEmpty.normal).toEqual(dtoEmptyAddAB1Expected.normal);
 
-      distA1.addValues(addA1);
-      expect(distA1.source).toEqual(dtoA1AddA1Expected.source);
-      expect(distA1.normal).toEqual(dtoA1AddA1Expected.normal);
+      const resA1 = distA1.addValues(addA1);
+      expect(resA1.source).toEqual(dtoA1AddA1Expected.source);
+      expect(resA1.normal).toEqual(dtoA1AddA1Expected.normal);
 
-      distA2.addValues(addAB1);
-      expect(distA2.source).toEqual(dtoA2AddAB1Expected.source);
-      expect(distA2.normal).toEqual(dtoA2AddAB1Expected.normal);
+      const resA2 = distA2.addValues(addAB1);
+      expect(resA2.source).toEqual(dtoA2AddAB1Expected.source);
+      expect(resA2.normal).toEqual(dtoA2AddAB1Expected.normal);
 
-      distA3.addValues(addABC1);
-      expect(distA3.source).toEqual(dtoA3AddABC1Expected.source);
-      expect(distA3.normal).toEqual(dtoA3AddABC1Expected.normal);
+      const resA3 = distA3.addValues(addABC1);
+      expect(resA3.source).toEqual(dtoA3AddABC1Expected.source);
+      expect(resA3.normal).toEqual(dtoA3AddABC1Expected.normal);
 
       // Single Value
-      distA1a.add('a', 1);
-      expect(distA1a.source).toEqual(dtoA1AddA1Expected.source);
-      expect(distA1a.normal).toEqual(dtoA1AddA1Expected.normal);
+      const resA1a = distA1a.add('a', 1);
+      expect(resA1a.source).toEqual(dtoA1AddA1Expected.source);
+      expect(resA1a.normal).toEqual(dtoA1AddA1Expected.normal);
     });
     it('can add one or more values to a normal distribution.', () => {
       // Setup
       const distU1 = new Distribution({ normal: dtoU1.normal });
       const distB1 = new Distribution({ normal: dtoB1.normal });
-      // const distB2 = new Distribution({ normal: dtoB2.normal });
-      // const distB3 = new Distribution({ normal: dtoB3.normal });
 
       // Multi-Value
       // This is not currently supported.
 
       // // Multi-Value (No Source)
-      distB1.addValues(swapAB10p);
-      expect(distB1.source).toBeUndefined();
-      expect(distB1.normal).toEqual(dtoB1SwapAB10pExpected.normal);
+      const resB1 = distB1.addValues(swapAB10p);
+      expect(resB1.source).toBeUndefined();
+      expect(resB1.normal).toEqual(dtoB1SwapAB10pExpected.normal);
 
-      // distB2.addValues(swapAB10p);
-      // expect(distB2.source).toBeUndefined();
-      // expect(distB2.normal).toEqual(dtoB2SwapAB10pExpected.normal);
-
-      // distB3.addValues(swapAB10p);
-      // expect(distB3.source).toBeUndefined();
-      // expect(distB3.normal).toEqual(dtoB3SwapAB10pExpected.normal);
-
-      // // Single Value
-      distU1.add('b', 1);
-      expect(distU1.source).toBeUndefined();
-      expect(distU1.normal).toEqual(dtoU1AddB100pExpected.normal);
+      // Single Value
+      const resU1 = distU1.add('b', 1);
+      expect(resU1.source).toBeUndefined();
+      expect(resU1.normal).toEqual(dtoU1AddB100pExpected.normal);
     });
     it('can remove one or more values from a distribution.', () => {
       // Setup
       const distU1a = new Distribution(dtoU1);
       const distU1b = new Distribution(dtoU1);
-      // const distU1c = distU1a.clone(true);
       const distU1d = distU1a.clone(true);
       const distU2a = new Distribution(dtoU2);
       const distU2b = new Distribution(dtoU2);
@@ -478,48 +456,48 @@ describe('Distribution', () => {
 
       // Multi-Value
 
-      distU2a.remove(['a', 'b']);
-      expect(distU2a.source).toEqual(dtoEmpty.source);
-      expect(distU2a.normal).toEqual(dtoEmpty.normal);
+      const resU2a = distU2a.remove(['a', 'b']);
+      expect(resU2a.source).toEqual(dtoEmpty.source);
+      expect(resU2a.normal).toEqual(dtoEmpty.normal);
 
-      distU3a.remove(['b', 'c']);
-      expect(distU3a.source).toEqual(dtoU1.source);
-      expect(distU3a.normal).toEqual(dtoU1.normal);
+      const resU3a = distU3a.remove(['b', 'c']);
+      expect(resU3a.source).toEqual(dtoU1.source);
+      expect(resU3a.normal).toEqual(dtoU1.normal);
 
       // Single Value
-      distU1b.remove('a');
-      expect(distU1b.source).toEqual(dtoEmpty.source);
-      expect(distU1b.normal).toEqual(dtoEmpty.normal);
+      const resU1b = distU1b.remove('a');
+      expect(resU1b.source).toEqual(dtoEmpty.source);
+      expect(resU1b.normal).toEqual(dtoEmpty.normal);
 
-      distU2b.remove('b');
-      expect(distU2b.source).toEqual(dtoU1.source);
-      expect(distU2b.normal).toEqual(dtoU1.normal);
+      const resU2b = distU2b.remove('b');
+      expect(resU2b.source).toEqual(dtoU1.source);
+      expect(resU2b.normal).toEqual(dtoU1.normal);
 
-      distU3b.remove('c');
-      expect(distU3b.source).toEqual(dtoU2.source);
-      expect(distU3b.normal).toEqual(dtoU2.normal);
+      const resU3b = distU3b.remove('c');
+      expect(resU3b.source).toEqual(dtoU2.source);
+      expect(resU3b.normal).toEqual(dtoU2.normal);
 
       // Multi-Value (No Source)
-      distU2c.remove(['a', 'b']);
-      expect(distU2c.source).toBeUndefined();
-      expect(distU2c.normal).toEqual(dtoEmpty.normal);
+      const resU2c = distU2c.remove(['a', 'b']);
+      expect(resU2c.source).toBeUndefined();
+      expect(resU2c.normal).toEqual(dtoEmpty.normal);
 
-      distU3c.remove(['b', 'c']);
-      expect(distU3c.source).toBeUndefined();
-      expect(distU3c.normal).toEqual(dtoU1.normal);
+      const resU3c = distU3c.remove(['b', 'c']);
+      expect(resU3c.source).toBeUndefined();
+      expect(resU3c.normal).toEqual(dtoU1.normal);
 
       // Single Value (No Source)
-      distU1d.remove('a');
-      expect(distU1d.source).toBeUndefined();
-      expect(distU1d.normal).toEqual(dtoEmpty.normal);
+      const resU1d = distU1d.remove('a');
+      expect(resU1d.source).toBeUndefined();
+      expect(resU1d.normal).toEqual(dtoEmpty.normal);
 
-      distU2d.remove('b');
-      expect(distU2d.source).toBeUndefined();
-      expect(distU2d.normal).toEqual(dtoU1.normal);
+      const resU2d = distU2d.remove('b');
+      expect(resU2d.source).toBeUndefined();
+      expect(resU2d.normal).toEqual(dtoU1.normal);
 
-      distU3d.remove('c');
-      expect(distU3d.source).toBeUndefined();
-      expect(distU3d.normal).toEqual(dtoU2.normal);
+      const resU3d = distU3d.remove('c');
+      expect(resU3d.source).toBeUndefined();
+      expect(resU3d.normal).toEqual(dtoU2.normal);
     });
     it('can pick one or more values from a distribution.', () => {
       // Setup
@@ -539,21 +517,129 @@ describe('Distribution', () => {
 
       // Multi Pick
       expect(distU3.pick().length).toBe(1);
-      expect(distU3.pick(2).length).toBe(2);
-      expect(distU3.pick(5).length).toBe(5);
-      expect(distU3.pick(20).length).toBe(20);
+      expect(distU3.pick({ count: 2 }).length).toBe(2);
+      expect(distU3.pick({ count: 5 }).length).toBe(5);
+      expect(distU3.pick({ count: 20 }).length).toBe(20);
 
       // Multi Pick Masked
-      expect(distU3.pick(5, ['a', 'b'])).toEqual(['c', 'c', 'c', 'c', 'c']);
+      expect(distU3.pick({ count: 5, mask: ['a', 'b'] })).toEqual(['c', 'c', 'c', 'c', 'c']);
 
       // Multi Pick Exclusive + Masked
-      expect(distU3.pick(5, undefined, true).sort()).toEqual(['a', 'b', 'c']);
-      expect(distU3.pick(5, ['a'], true).sort()).toEqual(['b', 'c']);
+      expect(distU3.pick({ count: 5, exclusive: true }).sort()).toEqual(['a', 'b', 'c']);
+      expect(distU3.pick({ count: 5, mask: ['a'], exclusive: true }).sort()).toEqual(['b', 'c']);
     });
     it('samples properly over many picks.', () => {
-      /* Object.keys(sampleB3Summary).forEach(k => {
-        expect(sampleB3Summary[k] / sampleCount).toBeCloseTo(dtoB3.normal[k]);
-      }); */
+      const dist = new Distribution({ source: { a: 1, b: 2, c: 3 } });
+      const counts: Record<string, number> = { a: 0, b: 0, c: 0 };
+      const sampleCount = 6000;
+
+      for (let i = 0; i < sampleCount; i++) {
+        const picked = dist.pick({ count: 1 })[0];
+        if (picked) counts[picked]++;
+      }
+
+      // Verify distribution is roughly proportional to weights
+      expect(counts.a! / sampleCount).toBeCloseTo(1 / 6, 1);
+      expect(counts.b! / sampleCount).toBeCloseTo(2 / 6, 1);
+      expect(counts.c! / sampleCount).toBeCloseTo(3 / 6, 1);
+    });
+  });
+
+  describe('ImmutableDistribution', () => {
+    it('add returns a new instance without mutating the original', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1, b: 2 } });
+      const original = dist.serialize();
+      const updated = dist.add('c', 3);
+      expect(updated).not.toBe(dist);
+      expect(updated).toBeInstanceOf(ImmutableDistribution);
+      expect(dist.serialize()).toEqual(original);
+      expect(updated.source).toHaveProperty('c');
+    });
+
+    it('addValues returns a new instance without mutating the original', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1 } });
+      const original = dist.serialize();
+      const updated = dist.addValues({ b: 2, c: 3 });
+      expect(updated).not.toBe(dist);
+      expect(updated).toBeInstanceOf(ImmutableDistribution);
+      expect(dist.serialize()).toEqual(original);
+      expect(updated.source).toHaveProperty('b');
+      expect(updated.source).toHaveProperty('c');
+    });
+
+    it('remove returns a new instance without mutating the original', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1, b: 2, c: 3 } });
+      const original = dist.serialize();
+      const updated = dist.remove('a');
+      expect(updated).not.toBe(dist);
+      expect(updated).toBeInstanceOf(ImmutableDistribution);
+      expect(dist.serialize()).toEqual(original);
+      expect(updated.source).not.toHaveProperty('a');
+    });
+
+    it('clone returns an ImmutableDistribution', () => {
+      const dist = new ImmutableDistribution({ source: { a: 1, b: 2 } });
+      const cloned = dist.clone();
+      expect(cloned).not.toBe(dist);
+      expect(cloned).toBeInstanceOf(ImmutableDistribution);
+      expect(cloned.source).toEqual(dist.source);
+      expect(cloned.normal).toEqual(dist.normal);
+    });
+
+    it('can pick values like a regular Distribution', () => {
+      const dist = new ImmutableDistribution({ seed: 42, source: { a: 1, b: 2, c: 3 } });
+      const pick = dist.pickOne();
+      expect(['a', 'b', 'c']).toContain(pick);
+      const picks = dist.pick({ count: 5 });
+      expect(picks.length).toBe(5);
+    });
+  });
+
+  describe('masking distribution proportional redistribution', () => {
+    it('picking with mask excludes masked key and redistributes proportionally', () => {
+      const dist = Distribution.new({ a: 30, b: 50, c: 20 });
+      const eng = new Random({ seed: 42 });
+      const sampleCount = 10_000;
+      const counts: Record<string, number> = { a: 0, b: 0, c: 0 };
+
+      for (let i = 0; i < sampleCount; i++) {
+        const pick = Distribution.pickOne(dist, ['b'], eng);
+        if (pick) counts[pick]++;
+      }
+
+      // 'b' should never appear
+      expect(counts.b).toBe(0);
+
+      // With 'b' masked out, remaining weights are a:30, c:20 (total 50).
+      // Expected: a ~ 60% (30/50), c ~ 40% (20/50)
+      const ratioA = counts.a! / sampleCount;
+      const ratioC = counts.c! / sampleCount;
+
+      expect(ratioA).toBeGreaterThan(0.55);
+      expect(ratioA).toBeLessThan(0.65);
+      expect(ratioC).toBeGreaterThan(0.35);
+      expect(ratioC).toBeLessThan(0.45);
+    });
+  });
+
+  describe('freeze / toMutable bridge', () => {
+    it('Distribution.freeze() returns an ImmutableDistribution with the same state', () => {
+      const dist = new Distribution({ seed: 10, source: { a: 1, b: 2 } });
+      const frozen = dist.freeze();
+      expect(frozen).toBeInstanceOf(ImmutableDistribution);
+      expect(frozen).not.toBe(dist);
+      expect(frozen.source).toEqual(dist.source);
+      expect(frozen.normal).toEqual(dist.normal);
+    });
+
+    it('ImmutableDistribution.toMutable() returns a Distribution with the same state', () => {
+      const immDist = new ImmutableDistribution({ seed: 10, source: { a: 1, b: 2 } });
+      const mutable = immDist.toMutable();
+      expect(mutable).toBeInstanceOf(Distribution);
+      expect(mutable).not.toBeInstanceOf(ImmutableDistribution);
+      expect(mutable).not.toBe(immDist);
+      expect(mutable.source).toEqual(immDist.source);
+      expect(mutable.normal).toEqual(immDist.normal);
     });
   });
 });

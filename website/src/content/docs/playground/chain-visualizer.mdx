@@ -1,0 +1,12 @@
+---
+title: Chain Visualizer
+description: Visualize Markov chain transition probabilities and gram structure
+---
+
+import ChainVisualizer from '../../../components/ChainVisualizer';
+
+Explore how acausal's `MarkovChain` builds n-gram models from training data. Edit the sequences below, toggle between word and character mode, and adjust the order to see how transition probabilities change across the gram structure.
+
+<ChainVisualizer client:load />
+
+The transition matrix shows probabilities for each source gram transitioning to each target state. Cell intensity reflects probability -- darker cells indicate more likely transitions. The bar charts below break down each gram's outgoing transitions individually. All models are built live in the browser using acausal's `MarkovChain` class.
