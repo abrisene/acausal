@@ -30,11 +30,6 @@ function stripSource(dto: DistributionDTO) {
   return Distribution.clone(dto, true);
 }
 
-/* function stripNormals(dto: DistributionDTO) {
-  const { source } = Distribution.clone(dto, false)
-  return { source, normal: {} };
-} */
-
 /**
  # Constants
  */
@@ -49,12 +44,8 @@ const addAB1 = { a: 1, b: 1 };
 const addABC1 = { a: 1, b: 1, c: 1 };
 
 const addA10p = { a: 0.1 };
-// const addAB10p = { a: 0.10, b: 0.10 };
-// const addABC10p = { a: 0.10, b: 0.10, c: 0.10 };
 
-// const addA50p = { a: 0.5 };
 const addAB50p = { a: 0.5, b: 0.5 };
-// const addABC50p = { a: 0.5, b: 0.5, c: 0.5 };
 
 const swapAB10p = { a: -0.1, b: 0.1 };
 
@@ -86,8 +77,6 @@ const dtoU1AddB100pExpected = {
   source: { a: 0.5, b: 0.5 },
   normal: { a: 0.5, b: 0.5 },
 };
-// const dtoU1AddAB10pExpected = { source: { a: (1.1 / 1.2), b: (0.1 / 1.2) }, normal: { a: (1.1 / 1.2), b: (0.1 / 1.2) } };
-
 // Mixed DTO
 const sourceA1: WeightedDistribution = { a: 1, b: 2 };
 const sourceA2: WeightedDistribution = { a: 1, b: 3 };
@@ -333,8 +322,6 @@ describe('Distribution', () => {
       const distEmpty = new Distribution(dtoE);
       const distSource = new Distribution(dtoUs);
       const distNormal = new Distribution(dtoUn);
-      // const distU1 = new Distribution(dtoU1);
-      // const distA1 = new Distribution(dtoA1);
 
       // Empty
       expect(distEmpty.source).toEqual({});
@@ -439,8 +426,6 @@ describe('Distribution', () => {
       // Setup
       const distU1 = new Distribution({ normal: dtoU1.normal });
       const distB1 = new Distribution({ normal: dtoB1.normal });
-      // const distB2 = new Distribution({ normal: dtoB2.normal });
-      // const distB3 = new Distribution({ normal: dtoB3.normal });
 
       // Multi-Value
       // This is not currently supported.
@@ -450,15 +435,7 @@ describe('Distribution', () => {
       expect(resB1.source).toBeUndefined();
       expect(resB1.normal).toEqual(dtoB1SwapAB10pExpected.normal);
 
-      // distB2.addValues(swapAB10p);
-      // expect(distB2.source).toBeUndefined();
-      // expect(distB2.normal).toEqual(dtoB2SwapAB10pExpected.normal);
-
-      // distB3.addValues(swapAB10p);
-      // expect(distB3.source).toBeUndefined();
-      // expect(distB3.normal).toEqual(dtoB3SwapAB10pExpected.normal);
-
-      // // Single Value
+      // Single Value
       const resU1 = distU1.add('b', 1);
       expect(resU1.source).toBeUndefined();
       expect(resU1.normal).toEqual(dtoU1AddB100pExpected.normal);
@@ -467,7 +444,6 @@ describe('Distribution', () => {
       // Setup
       const distU1a = new Distribution(dtoU1);
       const distU1b = new Distribution(dtoU1);
-      // const distU1c = distU1a.clone(true);
       const distU1d = distU1a.clone(true);
       const distU2a = new Distribution(dtoU2);
       const distU2b = new Distribution(dtoU2);
