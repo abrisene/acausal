@@ -88,6 +88,14 @@ function addObjects(...objects: WeightedDistribution[]): WeightedDistribution {
   return result;
 }
 
+function validateWeights(additions: WeightedDistribution): void {
+  for (const v of Object.values(additions)) {
+    if (v !== undefined && !Number.isFinite(v)) {
+      throw new RangeError('Distribution: weight must be a finite number');
+    }
+  }
+}
+
 /**
  # Class
  */
@@ -98,7 +106,6 @@ export class Distribution<T extends string = string> {
   protected _normal: WeightedDistribution;
 
   constructor({ engine, seed, uses, source, normal }: DistributionConstructor) {
-    // const { engine, source, normal, ...randomConfig } = config;
     this._engine = engine || new Random({ seed, uses });
 
     if (source !== undefined) {
@@ -283,9 +290,7 @@ export class Distribution<T extends string = string> {
    * @param additions   An object containing additions.
    */
   public static addSourceValues(model: DistributionSourceDTO, additions: WeightedDistribution): DistributionSourceDTO {
-    for (const v of Object.values(additions)) {
-      if (v !== undefined && !Number.isFinite(v)) throw new RangeError('Distribution: weight must be a finite number');
-    }
+    validateWeights(additions);
     // Create the new distribution and normalize.
     const src = addObjects(model.source, additions);
     const nrm = Object.keys(src).length > 0 ? normalizeObject(src) : {};
@@ -318,9 +323,7 @@ export class Distribution<T extends string = string> {
    * @param additions   An object containing additions.
    */
   public static addNormalValues(model: DistributionDTO, additions: WeightedDistribution): DistributionDTO {
-    for (const v of Object.values(additions)) {
-      if (v !== undefined && !Number.isFinite(v)) throw new RangeError('Distribution: weight must be a finite number');
-    }
+    validateWeights(additions);
     //  Add the values and then renormalize. We have to strip out the distribution because it'll no longer be valid.
     const { normal, source, ...dto } = model;
 
@@ -329,12 +332,6 @@ export class Distribution<T extends string = string> {
 
     // Calculate the normalized values.
     const nrm = normalizeObject(addObjects(normal, additions));
-    /* let nrm: WeightedDistribution = {};
-    if (normal !== undefined) {
-      nrm = normalizeObject(addObjects(normal, additions));
-    } else if (source !== undefined) {
-      nrm = addObjects(normalizeObject(source), additions);
-    } */
 
     // If we have sources, recalculate it from the normalized values.
     const src =

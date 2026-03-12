@@ -69,7 +69,7 @@ export class Random {
   }
 
   public bool(percentage = 0.5) {
-    return real(0, 1)(this._engine) < percentage;
+    return this.real(0, 1) < percentage;
   }
 
   public pick<T>(source: ArrayLike<T>, begin?: number, end?: number) {

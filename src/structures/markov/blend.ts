@@ -36,6 +36,10 @@ export interface BlendOptions {
   minWeight?: number;
 }
 
+function arithmeticMean(vals: { value: number; weight: number }[]): number {
+  return vals.reduce((sum, { value, weight }) => sum + value * weight, 0);
+}
+
 /**
  * Blend multiple distributions using the specified strategy.
  *
@@ -89,14 +93,14 @@ export function blendMultipleDistributions(
 
     switch (strategy) {
       case 'arithmetic':
-        blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+        blended[key] = arithmeticMean(values);
         break;
       case 'geometric': {
         const nonZeroValues = values.filter(v => v.value > 0);
         if (nonZeroValues.length === values.length) {
           blended[key] = nonZeroValues.reduce((prod, { value, weight }) => prod * Math.pow(value, weight), 1);
         } else {
-          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+          blended[key] = arithmeticMean(values);
         }
         break;
       }
@@ -106,7 +110,7 @@ export function blendMultipleDistributions(
           const sum = nonZeroValues.reduce((s, { value, weight }) => s + weight / value, 0);
           blended[key] = 1 / sum;
         } else {
-          blended[key] = values.reduce((sum, { value, weight }) => sum + value * weight, 0);
+          blended[key] = arithmeticMean(values);
         }
         break;
       }
