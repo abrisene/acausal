@@ -24,6 +24,20 @@ export default defineConfig({
           'https://github.com/abrisene/acausal/edit/master/website/',
       },
       customCss: ['./src/styles/custom.css'],
+      head: [
+        {
+          tag: 'script',
+          attrs: { type: 'module' },
+          content: `
+            import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+            mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+            await mermaid.run({ nodes: document.querySelectorAll('pre.mermaid') });
+            document.addEventListener('astro:after-swap', async () => {
+              await mermaid.run({ nodes: document.querySelectorAll('pre.mermaid') });
+            });
+          `,
+        },
+      ],
       plugins: [
         starlightTypeDoc({
           entryPoints: ['../src/index.ts'],
