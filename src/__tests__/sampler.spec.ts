@@ -13,6 +13,7 @@ describe('RandomSampler', () => {
       expect(sampler).toBeDefined();
       expect(sampler.seed).toBeDefined();
       expect(typeof sampler.uses).toBe('number');
+      expect(sampler.engine).toBeDefined();
     });
 
     it('should create with specific seed', () => {
@@ -296,6 +297,39 @@ describe('RandomSampler', () => {
 
       const bernoulli = sampler.sampleDistribution({ type: 'bernoulli', p: 0.5 });
       expect(bernoulli === 0 || bernoulli === 1).toBe(true);
+
+      const logNormal = sampler.sampleDistribution({ type: 'logNormal', mu: 0, sigma: 0.5 });
+      expect(logNormal).toBeGreaterThan(0);
+
+      const exponential = sampler.sampleDistribution({ type: 'exponential', lambda: 2 });
+      expect(exponential).toBeGreaterThan(0);
+
+      const binomial = sampler.sampleDistribution({ type: 'binomial', n: 10, p: 0.5 });
+      expect(Number.isInteger(binomial)).toBe(true);
+      expect(binomial).toBeGreaterThanOrEqual(0);
+      expect(binomial).toBeLessThanOrEqual(10);
+
+      const geometric = sampler.sampleDistribution({ type: 'geometric', p: 0.3 });
+      expect(Number.isInteger(geometric)).toBe(true);
+      expect(geometric).toBeGreaterThanOrEqual(1);
+
+      const beta = sampler.sampleDistribution({ type: 'beta', alpha: 2, beta: 5 });
+      expect(beta).toBeGreaterThanOrEqual(0);
+      expect(beta).toBeLessThanOrEqual(1);
+
+      const gamma = sampler.sampleDistribution({ type: 'gamma', k: 2, theta: 1 });
+      expect(gamma).toBeGreaterThan(0);
+
+      const weibull = sampler.sampleDistribution({ type: 'weibull', k: 1.5, a: 1, b: 0 });
+      expect(weibull).toBeGreaterThanOrEqual(0);
+
+      const cauchy = sampler.sampleDistribution({ type: 'cauchy', a: 0, b: 1 });
+      expect(typeof cauchy).toBe('number');
+      expect(isFinite(cauchy)).toBe(true);
+
+      const logistic = sampler.sampleDistribution({ type: 'logistic', a: 0, b: 1 });
+      expect(typeof logistic).toBe('number');
+      expect(isFinite(logistic)).toBe(true);
     });
   });
 
