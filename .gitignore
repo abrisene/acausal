@@ -3,8 +3,11 @@
 dist/
 lib/
 
-# Generated docs
-docs/
+# Generated site (typedoc)
+.site/
+
+# Local planning docs
+docs/.local/
 
 # Work in Progress
 wip/
