@@ -9,7 +9,8 @@ import { describe, it, test, expect } from 'vitest';
  # Module Dependencies
  */
 
-import { Random, CONSTANTS } from '@acausal/random';
+import { Random } from '@acausal/random';
+import { MC_CONSTANTS as CONSTANTS } from './constants';
 import { Distribution } from '@acausal/distributions';
 import {
   MarkovChain,
@@ -1542,7 +1543,7 @@ describe('Markov Chain', () => {
         internalChain: MarkovChain.new({
           sequences: [],
           maxOrder: 1,
-        }) as import('../structures/markov/types').MarkovChainDTO,
+        }) as MarkovChainDTO,
         stateStore: {},
         stateKeyName: 'nonexistent',
       };

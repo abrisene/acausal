@@ -25,7 +25,7 @@ chain.addSequences([
 chain.generate();  // ['the', 'cat', 'sat'] or similar
 
 // Generate with constraints
-chain.generate({ maxLength: 5, startWith: ['the'] });
+chain.generate({ max: 5, start: ['the'] });
 
 // Immutable variant
 const frozen = ImmutableMarkovChain.from(chain);

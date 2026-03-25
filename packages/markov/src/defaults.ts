@@ -2,7 +2,7 @@
  * Markov Chain Default Options
  */
 
-import { CONSTANTS } from '@acausal/random';
+import { MC_CONSTANTS as CONSTANTS } from './constants';
 import { MCDirectionOption, MarkovChainDTO } from './types';
 
 export const defaultOptions = {

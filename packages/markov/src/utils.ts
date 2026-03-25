@@ -7,7 +7,7 @@
  */
 
 import { Distribution } from '@acausal/distributions';
-import { CONSTANTS } from '@acausal/random';
+import { MC_CONSTANTS as CONSTANTS } from './constants';
 import { MCInsertOption, MCDelimitersShort, MCDirectionOption, GramDictionary, Gram, MarkovChainDTO } from './types';
 
 /**

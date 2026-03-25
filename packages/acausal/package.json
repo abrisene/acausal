@@ -31,6 +31,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@acausal/scalr": "workspace:*",
     "@acausal/random": "workspace:*",
     "@acausal/sampler": "workspace:*",
     "@acausal/distributions": "workspace:*",

@@ -12,6 +12,9 @@ export { MarkovChainBatch } from './batch';
 export { MultiDimMarkovChain } from './multi-dim-chain';
 export { ImmutableMultiDimMarkovChain } from './immutable-multi-dim-chain';
 
+// Constants
+export { MC_CONSTANTS } from './constants';
+
 // Functions
 export { registerStateKey, getStateKey, unregisterStateKey } from './multi-dim-chain';
 

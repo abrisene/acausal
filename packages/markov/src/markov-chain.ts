@@ -7,7 +7,8 @@
  */
 
 import { normalizeObject } from '@acausal/scalr';
-import { Random, CONSTANTS } from '@acausal/random';
+import { Random } from '@acausal/random';
+import { MC_CONSTANTS as CONSTANTS } from './constants';
 import { Distribution } from '@acausal/distributions';
 import {
   MCInsertOption,

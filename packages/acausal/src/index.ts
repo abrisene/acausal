@@ -5,6 +5,7 @@
  * Install individual packages for smaller bundle size,
  * or install `acausal` to get everything.
  */
+export * from '@acausal/scalr';
 export * from '@acausal/random';
 export * from '@acausal/sampler';
 export * from '@acausal/distributions';

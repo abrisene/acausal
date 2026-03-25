@@ -1,5 +1,0 @@
-{
-  "entryPoints": ["src/"],
-  "exclude": ["**/*+(index|.test|.spec|.e2e).ts"],
-  "includeVersion": true
-}

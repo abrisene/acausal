@@ -47,6 +47,9 @@ importers:
       '@acausal/sampler':
         specifier: workspace:*
         version: link:../sampler
+      '@acausal/scalr':
+        specifier: workspace:*
+        version: link:../scalr
     devDependencies:
       tsup:
         specifier: ^8.2.4
