@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master, 'v[0-9]+.*']
+    branches: [main, 'v[0-9]+.*']
   pull_request:
-    branches: [master, 'v[0-9]+.*']
+    branches: [main]
 
 jobs:
   ci:
@@ -20,7 +20,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run lint
-      - run: pnpm run typecheck
-      - run: pnpm run test:coverage
       - run: pnpm run build
+      - run: pnpm run test

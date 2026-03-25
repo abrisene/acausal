@@ -26,12 +26,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Install website dependencies
-        run: pnpm --dir website install --frozen-lockfile
+        run: pnpm --dir web install --frozen-lockfile
       - name: Build docs site
         run: pnpm run docs
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: website/dist
+          path: web/dist
 
   deploy:
     needs: build
