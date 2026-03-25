@@ -64,4 +64,11 @@ export class ImmutableMarkovChain<T extends string = string> extends MarkovChain
   public toMutable(): MarkovChain<T> {
     return new MarkovChain<T>(this.serialize());
   }
+
+  /**
+   * Create an immutable chain from a mutable chain's current state.
+   */
+  public static from<T extends string = string>(chain: MarkovChain<T>): ImmutableMarkovChain<T> {
+    return new ImmutableMarkovChain<T>(chain.serialize());
+  }
 }

@@ -1,0 +1,43 @@
+{
+  "name": "acausal",
+  "version": "3.0.0-alpha.1",
+  "description": "Procedural generation toolkit — seeded RNG, weighted distributions, Markov chains, statistical sampling",
+  "author": "David Robinson",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/abrisene/acausal",
+  "repository": { "type": "git", "url": "git+https://github.com/abrisene/acausal.git" },
+  "bugs": { "url": "https://github.com/abrisene/acausal/issues" },
+  "keywords": ["markov", "markov-chain", "random", "stochastic", "distribution", "procedural-generation", "name-generator", "seeded-random", "prng"],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@acausal/random": "workspace:*",
+    "@acausal/sampler": "workspace:*",
+    "@acausal/distributions": "workspace:*",
+    "@acausal/markov": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.2.4",
+    "typescript": "^5.6.3"
+  }
+}

@@ -2274,10 +2274,10 @@ describe('Markov Chain', () => {
     });
   });
 
-  describe('freeze / toMutable bridge', () => {
-    it('MarkovChain.freeze() returns an ImmutableMarkovChain with the same state', async () => {
+  describe('from / toMutable bridge', () => {
+    it('ImmutableMarkovChain.from() creates an immutable copy with the same state', () => {
       const chain = new MarkovChain({ seed: 1, sequences: sA3 });
-      const frozen = await chain.freeze();
+      const frozen = ImmutableMarkovChain.from(chain);
       expect(frozen).toBeInstanceOf(ImmutableMarkovChain);
       expect(frozen).not.toBe(chain);
       expect(frozen.serialize()).toEqual(chain.serialize());
@@ -2292,7 +2292,7 @@ describe('Markov Chain', () => {
       expect(mutable.serialize()).toEqual(chain.serialize());
     });
 
-    it('MultiDimMarkovChain.freeze() returns an ImmutableMultiDimMarkovChain', async () => {
+    it('ImmutableMultiDimMarkovChain.from() creates an immutable copy', () => {
       const chain = new MultiDimMarkovChain<{ value: string; index: number }>({
         seed: 1,
         maxOrder: 1,
@@ -2302,7 +2302,7 @@ describe('Markov Chain', () => {
         { value: 'a', index: 0 },
         { value: 'b', index: 1 },
       ]);
-      const frozen = await chain.freeze();
+      const frozen = ImmutableMultiDimMarkovChain.from(chain);
       expect(frozen).toBeInstanceOf(ImmutableMultiDimMarkovChain);
       expect(frozen).not.toBe(chain);
       expect(frozen.getStates().length).toBe(chain.getStates().length);

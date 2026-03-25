@@ -293,15 +293,6 @@ export class MarkovChain<T extends string = string> {
   }
 
   /**
-   * Returns a new {@link ImmutableMarkovChain} from the current state.
-   * Uses a dynamic import to avoid circular module dependencies.
-   */
-  public async freeze(): Promise<MarkovChain<T>> {
-    const { ImmutableMarkovChain } = await import('./immutable-markov-chain');
-    return new ImmutableMarkovChain<T>(this.serialize());
-  }
-
-  /**
    * Start a batch operation for efficient incremental updates.
    */
   public batch(): MarkovChainBatch<T> {

@@ -76,4 +76,27 @@ export class ImmutableMultiDimMarkovChain<T> extends MultiDimMarkovChain<T> {
       this._engine.clone()
     );
   }
+
+  /**
+   * Create an immutable multi-dim chain from a mutable chain's current state.
+   * Uses the chain's internal structure directly — no registry lookup needed.
+   */
+  public static from<T>(chain: MultiDimMarkovChain<T>): ImmutableMultiDimMarkovChain<T> {
+    // Access protected fields via the subclass relationship.
+    // This is safe because ImmutableMultiDimMarkovChain extends MultiDimMarkovChain.
+    const src = chain as unknown as {
+      internalChain: MarkovChain<string>;
+      stateStore: { [key: string]: T };
+      stateKeyFn: (state: T) => string;
+      stateKeyName: string;
+      _engine: { clone(): any };
+    };
+    return ImmutableMultiDimMarkovChain.fromParts(
+      src.internalChain.clone(),
+      { ...src.stateStore },
+      src.stateKeyFn,
+      src.stateKeyName,
+      src._engine.clone()
+    ) as ImmutableMultiDimMarkovChain<T>;
+  }
 }
