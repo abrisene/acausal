@@ -1,6 +1,6 @@
 {
   "name": "@acausal/distributions",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.3",
   "description": "Weighted random selection from discrete distributions — type-safe, serializable, with immutable and mutable APIs",
   "author": "David Robinson",
   "license": "Apache-2.0",

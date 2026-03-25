@@ -1,6 +1,6 @@
 {
   "name": "@acausal/sampler",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.3",
   "description": "Statistical distribution sampling (normal, exponential, Poisson, beta, gamma, etc.) with deterministic seeded RNG",
   "author": "David Robinson",
   "license": "Apache-2.0",

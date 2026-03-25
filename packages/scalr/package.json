@@ -1,6 +1,6 @@
 {
   "name": "@acausal/scalr",
-  "version": "1.1.4",
+  "version": "3.0.0-alpha.3",
   "description": "Lightweight scaling and normalization utilities for weighted objects and arrays",
   "author": "David Robinson",
   "license": "Apache-2.0",

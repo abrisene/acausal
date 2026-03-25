@@ -1,6 +1,6 @@
 {
   "name": "@acausal/markov",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.3",
   "description": "Markov chain text and sequence generation with blending, constraints, batch training, and multi-dimensional state spaces",
   "author": "David Robinson",
   "license": "Apache-2.0",

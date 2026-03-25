@@ -1,6 +1,6 @@
 {
   "name": "@acausal/random",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.3",
   "description": "Seeded PRNG (Mersenne Twister MT19937) with deterministic replay and zero dependencies",
   "author": "David Robinson",
   "license": "Apache-2.0",
