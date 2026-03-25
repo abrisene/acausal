@@ -1,0 +1,39 @@
+{
+  "name": "@acausal/markov",
+  "version": "3.0.0-alpha.1",
+  "description": "Markov chains with blending, multi-dimensional state spaces, immutable variants, and batch training",
+  "author": "David Robinson",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@acausal/random": "workspace:*",
+    "@acausal/distributions": "workspace:*",
+    "scalr": "1.1.4"
+  },
+  "devDependencies": {
+    "tsup": "^8.2.4",
+    "typescript": "^5.6.3"
+  }
+}

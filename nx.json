@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "cache": true
+    }
+  }
+}
