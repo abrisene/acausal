@@ -84,12 +84,14 @@ export class Random {
   public pickWeighted(object: WeightedDistribution, mask?: string[]): string | undefined {
     const keys = Object.keys(object);
 
+    const maskSet = mask ? new Set(mask) : null;
+
     // Compute sum of unmasked, positive weights
     let totalWeight = 0;
     for (const key of keys) {
       const weight = object[key];
       if (weight === undefined || weight <= 0) continue;
-      if (mask && mask.includes(key)) continue;
+      if (maskSet && maskSet.has(key)) continue;
       totalWeight += weight;
     }
     if (totalWeight <= 0) return undefined;
@@ -100,7 +102,7 @@ export class Random {
     for (const key of keys) {
       const weight = object[key];
       if (weight === undefined || weight <= 0) continue;
-      if (mask && mask.includes(key)) continue;
+      if (maskSet && maskSet.has(key)) continue;
       sum += weight;
       if (sum >= value) return key;
     }

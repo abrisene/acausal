@@ -1,9 +1,8 @@
 /**
- * Markov Chain Module - Controlled Barrel Export
+ * @acausal/markov — Markov chain text and sequence generation.
  *
- * Only public API types and classes are exported from here.
- * Internal types (GramDictionary, MCDelimitersShort) and utility
- * functions are NOT re-exported.
+ * All types are public API. GramDictionary and MCDelimitersShort
+ * are exported for advanced use cases (custom gram manipulation).
  */
 
 // Classes

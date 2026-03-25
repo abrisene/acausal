@@ -23,13 +23,13 @@ import { Random, RandomDTO, WeightedDistribution } from '@acausal/random';
  # Types
  */
 
-/** @internal */
+/** Distribution state with source weights and normalized probabilities. */
 export interface DistributionSourceDTO {
   source: WeightedDistribution;
   normal: WeightedDistribution;
 }
 
-/** @internal */
+/** Distribution state with only normalized probabilities (source stripped). */
 export interface DistributionNormalDTO {
   source?: WeightedDistribution;
   normal: WeightedDistribution;
