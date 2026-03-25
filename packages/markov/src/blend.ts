@@ -4,7 +4,7 @@
  * Functions and types for blending/interpolating multiple Markov chains.
  */
 
-import { normalizeObject } from 'scalr';
+import { normalizeObject } from '@acausal/scalr';
 import { DistributionSourceDTO } from '@acausal/distributions';
 import type { MarkovChain } from './markov-chain';
 

@@ -34,7 +34,7 @@
   "dependencies": {
     "@acausal/random": "workspace:*",
     "@acausal/distributions": "workspace:*",
-    "scalr": "1.1.4"
+    "@acausal/scalr": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.2.4",

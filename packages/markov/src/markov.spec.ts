@@ -2433,6 +2433,48 @@ describe('Markov Chain', () => {
     });
   });
 
+  describe('blend weighted mixture proportion', () => {
+    it('70/30 blend produces proportionally weighted output', () => {
+      // Chain A: always produces 'a' after 'x'
+      const chainA = new MarkovChain({ seed: 1, maxOrder: 1 });
+      for (let i = 0; i < 10; i++) chainA.addSequence(['x', 'a']);
+
+      // Chain B: always produces 'b' after 'x'
+      const chainB = new MarkovChain({ seed: 2, maxOrder: 1 });
+      for (let i = 0; i < 10; i++) chainB.addSequence(['x', 'b']);
+
+      const blended = MarkovChain.blend(
+        [
+          { chain: chainA, weight: 7 },
+          { chain: chainB, weight: 3 },
+        ],
+        { strategy: 'arithmetic' }
+      );
+
+      const eng = new Random({ seed: 42 });
+      const counts: Record<string, number> = { a: 0, b: 0 };
+      const sampleCount = 5000;
+
+      for (let i = 0; i < sampleCount; i++) {
+        const result = MarkovChain.generate({
+          model: blended.model,
+          start: ['x'],
+          max: 2,
+          strict: false,
+          trim: true,
+          engine: eng,
+        });
+        const last = result[result.length - 1];
+        if (last === 'a' || last === 'b') counts[last]++;
+      }
+
+      // 70/30 blend should produce ~70% 'a' and ~30% 'b'
+      const ratioA = counts.a! / sampleCount;
+      expect(ratioA).toBeGreaterThan(0.65);
+      expect(ratioA).toBeLessThan(0.75);
+    });
+  });
+
   describe('backward() alias', () => {
     it('backward() produces the same results as last() for both static and instance methods', () => {
       const eng1 = new Random({ seed: 99 });

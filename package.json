@@ -1,68 +1,22 @@
 {
-  "name": "acausal",
-  "version": "3.0.0-alpha.1",
-  "description": "Markov Chain and Random Distribution Toolset",
-  "author": "David Robinson <dr@monetise.io> (http://www.monetise.io)",
-  "homepage": "https://github.com/abrisene/acausal#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/abrisene/acausal.git"
-  },
-  "bugs": {
-    "url": "https://github.com/abrisene/acausal/issues"
-  },
+  "name": "acausal-monorepo",
+  "private": true,
+  "description": "Procedural generation toolkit — seeded RNG, weighted distributions, Markov chains, statistical sampling",
+  "author": "David Robinson <dr@monetise.io>",
   "license": "Apache-2.0",
-  "keywords": [
-    "markov",
-    "markov chain",
-    "markov-chain",
-    "random",
-    "stochastic",
-    "distribution",
-    "random distribution",
-    "name generator",
-    "procedural generation"
-  ],
   "packageManager": "pnpm@10.11.0",
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ],
   "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "build": "pnpm nx run-many --target=build --all",
+    "test": "pnpm nx run-many --target=test --all",
+    "typecheck": "pnpm nx run-many --target=typecheck --all",
+    "dev": "pnpm nx run-many --target=dev --all",
     "lint": "gts lint",
     "lint:fix": "gts fix",
-    "docs": "pnpm --dir website run build",
-    "docs:dev": "pnpm --dir website run dev",
-    "docs:typedoc": "typedoc",
-    "clean": "rm -rf dist lib coverage .site website/dist website/.astro",
-    "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build"
-  },
-  "dependencies": {
-    "scalr": "1.1.4"
+    "docs": "pnpm --dir web run build",
+    "docs:dev": "pnpm --dir web run dev",
+    "clean": "rm -rf packages/*/dist coverage .site web/dist web/.astro",
+    "publish:all": "pnpm nx run-many --target=build --all && pnpm -r publish --access public"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",
@@ -78,8 +32,6 @@
     "node": ">=18.0.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }

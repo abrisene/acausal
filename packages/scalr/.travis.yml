@@ -1,0 +1,6 @@
+sudo: false
+# os: osx
+language: node_js
+node_js:
+  - "12.18.2"
+after_success: npm run coverage

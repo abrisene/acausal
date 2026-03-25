@@ -1,13 +1,13 @@
 {
-  "name": "@acausal/distributions",
-  "version": "3.0.0-alpha.1",
-  "description": "Weighted random selection from discrete distributions — type-safe, serializable, with immutable and mutable APIs",
+  "name": "@acausal/scalr",
+  "version": "1.1.4",
+  "description": "Lightweight scaling and normalization utilities for weighted objects and arrays",
   "author": "David Robinson",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/abrisene/acausal/tree/main/packages/distributions",
-  "repository": { "type": "git", "url": "git+https://github.com/abrisene/acausal.git", "directory": "packages/distributions" },
+  "homepage": "https://github.com/abrisene/acausal/tree/main/packages/scalr",
+  "repository": { "type": "git", "url": "git+https://github.com/abrisene/acausal.git", "directory": "packages/scalr" },
   "bugs": { "url": "https://github.com/abrisene/acausal/issues" },
-  "keywords": ["distribution", "weighted-random", "probability", "immutable", "serializable", "procedural-generation"],
+  "keywords": ["scaling", "scale", "normalize", "normalization", "statistics", "weighted", "array", "object"],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,10 +30,6 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
-  },
-  "dependencies": {
-    "@acausal/random": "workspace:*",
-    "@acausal/scalr": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.2.4",

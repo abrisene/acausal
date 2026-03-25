@@ -6,7 +6,7 @@
  * Instance methods delegate to statics.
  */
 
-import { normalizeObject } from 'scalr';
+import { normalizeObject } from '@acausal/scalr';
 import { Random, CONSTANTS } from '@acausal/random';
 import { Distribution } from '@acausal/distributions';
 import {

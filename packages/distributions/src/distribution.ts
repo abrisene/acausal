@@ -16,7 +16,7 @@
  # Module Dependencies
  */
 
-import { normalizeObject, scaleNormalObject, sumObject } from 'scalr';
+import { normalizeObject, scaleNormalObject, sumObject } from '@acausal/scalr';
 import { Random, RandomDTO, WeightedDistribution } from '@acausal/random';
 
 /**

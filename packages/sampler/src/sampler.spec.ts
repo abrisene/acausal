@@ -536,4 +536,49 @@ describe('RandomSampler', () => {
       expect(variance).toBeLessThan(3.8);
     });
   });
+
+  describe('Poisson boundary at lambda=30', () => {
+    const N = 10_000;
+    function sampleStats(values: number[]) {
+      const mean = values.reduce((a, b) => a + b, 0) / values.length;
+      const variance = values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length;
+      return { mean, variance };
+    }
+
+    it('should produce correct mean/variance at lambda=29 (Knuth algorithm)', () => {
+      const sampler = new RandomSampler({ seed: 42 });
+      const values = Array.from({ length: N }, () => sampler.poisson(29));
+      const { mean, variance } = sampleStats(values);
+      expect(mean).toBeGreaterThan(27.5);
+      expect(mean).toBeLessThan(30.5);
+      expect(variance).toBeGreaterThan(25);
+      expect(variance).toBeLessThan(33);
+    });
+
+    it('should produce correct mean/variance at lambda=30 (normal approximation)', () => {
+      const sampler = new RandomSampler({ seed: 42 });
+      const values = Array.from({ length: N }, () => sampler.poisson(30));
+      const { mean, variance } = sampleStats(values);
+      expect(mean).toBeGreaterThan(28.5);
+      expect(mean).toBeLessThan(31.5);
+      expect(variance).toBeGreaterThan(26);
+      expect(variance).toBeLessThan(34);
+    });
+  });
+
+  describe('normal distribution shape validation', () => {
+    const N = 10_000;
+
+    it('should have approximately 68% of values within 1 sigma (68-95-99.7 rule)', () => {
+      const sampler = new RandomSampler({ seed: 42 });
+      const mu = 100, sigma = 10;
+      const values = Array.from({ length: N }, () => sampler.normal(mu, sigma));
+      const within1sigma = values.filter(v => Math.abs(v - mu) <= sigma).length / N;
+      const within2sigma = values.filter(v => Math.abs(v - mu) <= 2 * sigma).length / N;
+      expect(within1sigma).toBeGreaterThan(0.64);
+      expect(within1sigma).toBeLessThan(0.72);
+      expect(within2sigma).toBeGreaterThan(0.93);
+      expect(within2sigma).toBeLessThan(0.97);
+    });
+  });
 });
