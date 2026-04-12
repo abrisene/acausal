@@ -97,3 +97,5 @@ typings/
 # Data
 /data/
 .nx/
+.omc/
+.npmrc.local
