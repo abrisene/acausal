@@ -3,6 +3,8 @@
  # Scalr Statistical Operations Tests
  */
 
+import { expect, test } from 'vitest';
+
 /**
  # Module Dependencies
  */

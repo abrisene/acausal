@@ -3,6 +3,8 @@
  # Scalr Merge Function Tests
  */
 
+import { expect, test } from 'vitest';
+
 /**
  # Module Dependencies
  */

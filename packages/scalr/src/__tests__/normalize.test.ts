@@ -3,6 +3,8 @@
  # Scalr Index Test
  */
 
+import { expect, test } from 'vitest';
+
 /**
  # Module Dependencies
  */

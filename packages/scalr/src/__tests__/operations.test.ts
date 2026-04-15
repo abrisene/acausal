@@ -3,6 +3,8 @@
  # Scalr Mathematical Operations Tests
  */
 
+import { expect, test } from 'vitest';
+
 /**
  # Module Dependencies
  */
