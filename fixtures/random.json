@@ -1,0 +1,2212 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "name": "int-d6-x16",
+      "seed": 42,
+      "steps": [
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2001
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 2,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 4,
+          "state": {
+            "seed": 42,
+            "uses": 2003
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 6,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 2,
+          "state": {
+            "seed": 42,
+            "uses": 2005
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 1,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 6,
+          "state": {
+            "seed": 42,
+            "uses": 2007
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 1,
+          "state": {
+            "seed": 42,
+            "uses": 2009
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2011
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 1,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 4,
+          "state": {
+            "seed": 42,
+            "uses": 2013
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 4,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 6,
+          "state": {
+            "seed": 42,
+            "uses": 2015
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 4,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        }
+      ]
+    },
+    {
+      "name": "int-wide-ranges",
+      "seed": 42,
+      "steps": [
+        {
+          "op": "int",
+          "args": [
+            0,
+            0
+          ],
+          "value": 0,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            -5,
+            5
+          ],
+          "value": -3,
+          "state": {
+            "seed": 42,
+            "uses": 2001
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            255
+          ],
+          "value": 11,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            65535
+          ],
+          "value": 1341,
+          "state": {
+            "seed": 42,
+            "uses": 2003
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            2147483647
+          ],
+          "value": 1967828559,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1000000,
+            2000000
+          ],
+          "value": 1270066,
+          "state": {
+            "seed": 42,
+            "uses": 2005
+          }
+        }
+      ]
+    },
+    {
+      "name": "real-half-open-and-inclusive",
+      "seed": 7,
+      "steps": [
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.08378587007198324,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.526152908756173,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.38173460826591166,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.8182954760580945,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.2839720705188804,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.3996656833159823,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            true
+          ],
+          "value": 0.11999873910905325,
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            true
+          ],
+          "value": 0.5028709299268487,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            true
+          ],
+          "value": 0.9550215718185228,
+          "state": {
+            "seed": 7,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            true
+          ],
+          "value": 0.26589687332879447,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            true
+          ],
+          "value": 0.7908316312385735,
+          "state": {
+            "seed": 7,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            true
+          ],
+          "value": 0.16395611410327862,
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            -10,
+            10,
+            false
+          ],
+          "value": 7.718058794477486,
+          "state": {
+            "seed": 7,
+            "uses": 2026
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            -10,
+            10,
+            false
+          ],
+          "value": 0.25266370471003086,
+          "state": {
+            "seed": 7,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            -10,
+            10,
+            false
+          ],
+          "value": -7.48383670097593,
+          "state": {
+            "seed": 7,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            -10,
+            10,
+            false
+          ],
+          "value": 5.653932722363393,
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        }
+      ]
+    },
+    {
+      "name": "float-alias-matches-real",
+      "seed": 7,
+      "steps": [
+        {
+          "op": "float",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.08378587007198324,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "float",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.526152908756173,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "float",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.38173460826591166,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "float",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.8182954760580945,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "float",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.2839720705188804,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "float",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.3996656833159823,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "bool-thresholds",
+      "seed": 99,
+      "steps": [
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2026
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.9
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2034
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2038
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0
+          ],
+          "value": false,
+          "state": {
+            "seed": 99,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            1
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2042
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            1
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2044
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            1
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2046
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            1
+          ],
+          "value": true,
+          "state": {
+            "seed": 99,
+            "uses": 2048
+          }
+        }
+      ]
+    },
+    {
+      "name": "pick-array-and-slice",
+      "seed": 250,
+      "steps": [
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "f",
+          "state": {
+            "seed": 250,
+            "uses": 2001
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "c",
+          "state": {
+            "seed": 250,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "f",
+          "state": {
+            "seed": 250,
+            "uses": 2003
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "f",
+          "state": {
+            "seed": 250,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "b",
+          "state": {
+            "seed": 250,
+            "uses": 2005
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "b",
+          "state": {
+            "seed": 250,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "e",
+          "state": {
+            "seed": 250,
+            "uses": 2007
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ]
+          ],
+          "value": "c",
+          "state": {
+            "seed": 250,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            2,
+            5
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2009
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            2,
+            5
+          ],
+          "value": "c",
+          "state": {
+            "seed": 250,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            2,
+            5
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2011
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            2,
+            5
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            2,
+            5
+          ],
+          "value": "e",
+          "state": {
+            "seed": 250,
+            "uses": 2013
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            2,
+            5
+          ],
+          "value": "c",
+          "state": {
+            "seed": 250,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            3,
+            4
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            3,
+            4
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            3,
+            4
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            3,
+            4
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2014
+          }
+        }
+      ]
+    },
+    {
+      "name": "pick-weighted-with-and-without-mask",
+      "seed": 250,
+      "steps": [
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "auburn",
+          "state": {
+            "seed": 250,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "auburn",
+          "state": {
+            "seed": 250,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            }
+          ],
+          "value": "red",
+          "state": {
+            "seed": 250,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            },
+            [
+              "red"
+            ]
+          ],
+          "value": "auburn",
+          "state": {
+            "seed": 250,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            },
+            [
+              "red"
+            ]
+          ],
+          "value": "auburn",
+          "state": {
+            "seed": 250,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            },
+            [
+              "red"
+            ]
+          ],
+          "value": "strawberry",
+          "state": {
+            "seed": 250,
+            "uses": 2026
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            },
+            [
+              "red"
+            ]
+          ],
+          "value": "auburn",
+          "state": {
+            "seed": 250,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            },
+            [
+              "red"
+            ]
+          ],
+          "value": "auburn",
+          "state": {
+            "seed": 250,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            },
+            [
+              "red"
+            ]
+          ],
+          "value": "auburn",
+          "state": {
+            "seed": 250,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "red": 55,
+              "auburn": 25,
+              "strawberry": 20
+            },
+            [
+              "red",
+              "auburn",
+              "strawberry"
+            ]
+          ],
+          "value": null,
+          "state": {
+            "seed": 250,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "a": 1,
+              "b": 0,
+              "c": -3,
+              "d": 2
+            }
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2034
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "a": 1,
+              "b": 0,
+              "c": -3,
+              "d": 2
+            }
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "a": 1,
+              "b": 0,
+              "c": -3,
+              "d": 2
+            }
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2038
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "a": 1,
+              "b": 0,
+              "c": -3,
+              "d": 2
+            }
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "a": 1,
+              "b": 0,
+              "c": -3,
+              "d": 2
+            }
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2042
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "a": 1,
+              "b": 0,
+              "c": -3,
+              "d": 2
+            }
+          ],
+          "value": "d",
+          "state": {
+            "seed": 250,
+            "uses": 2044
+          }
+        }
+      ]
+    },
+    {
+      "name": "explicit-uses-skips-prewarm",
+      "seed": 250,
+      "uses": 100,
+      "steps": [
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 182,
+          "state": {
+            "seed": 250,
+            "uses": 101
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 763,
+          "state": {
+            "seed": 250,
+            "uses": 102
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 481,
+          "state": {
+            "seed": 250,
+            "uses": 103
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 467,
+          "state": {
+            "seed": 250,
+            "uses": 104
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 991,
+          "state": {
+            "seed": 250,
+            "uses": 105
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 758,
+          "state": {
+            "seed": 250,
+            "uses": 106
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 19,
+          "state": {
+            "seed": 250,
+            "uses": 107
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 334,
+          "state": {
+            "seed": 250,
+            "uses": 108
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 278,
+          "state": {
+            "seed": 250,
+            "uses": 109
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 990,
+          "state": {
+            "seed": 250,
+            "uses": 110
+          }
+        }
+      ]
+    },
+    {
+      "name": "explicit-uses-deep",
+      "seed": 250,
+      "uses": 5000,
+      "steps": [
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 754,
+          "state": {
+            "seed": 250,
+            "uses": 5001
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 174,
+          "state": {
+            "seed": 250,
+            "uses": 5002
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 291,
+          "state": {
+            "seed": 250,
+            "uses": 5003
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 202,
+          "state": {
+            "seed": 250,
+            "uses": 5004
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 83,
+          "state": {
+            "seed": 250,
+            "uses": 5005
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 888,
+          "state": {
+            "seed": 250,
+            "uses": 5006
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 226,
+          "state": {
+            "seed": 250,
+            "uses": 5007
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 979,
+          "state": {
+            "seed": 250,
+            "uses": 5008
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 32,
+          "state": {
+            "seed": 250,
+            "uses": 5009
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            1000
+          ],
+          "value": 622,
+          "state": {
+            "seed": 250,
+            "uses": 5010
+          }
+        }
+      ]
+    },
+    {
+      "name": "array-seed",
+      "seed": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "steps": [
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 79,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2001
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 308,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2002
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 437,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2003
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 327,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2004
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 480,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2005
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 385,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2006
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 257,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2007
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            999
+          ],
+          "value": 123,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2008
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.18209697408146575,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2010
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.12201762192097954,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2012
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.8875062977552655,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2014
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.8953029569298521,
+          "state": {
+            "seed": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "uses": 2016
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-stream-resume-at-6",
+      "seed": 31337,
+      "resumeAt": 6,
+      "steps": [
+        {
+          "op": "int",
+          "args": [
+            1,
+            20
+          ],
+          "value": 10,
+          "state": {
+            "seed": 31337,
+            "uses": 2001
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            false
+          ],
+          "value": 0.5417505704097665,
+          "state": {
+            "seed": 31337,
+            "uses": 2003
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.5
+          ],
+          "value": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2005
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "x",
+              "y",
+              "z"
+            ]
+          ],
+          "value": "z",
+          "state": {
+            "seed": 31337,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pickWeighted",
+          "args": [
+            {
+              "a": 3,
+              "b": 1
+            }
+          ],
+          "value": "a",
+          "state": {
+            "seed": 31337,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            0,
+            100
+          ],
+          "value": 7,
+          "state": {
+            "seed": 31337,
+            "uses": 2009
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            -1,
+            1,
+            false
+          ],
+          "value": 0.7820989100100277,
+          "state": {
+            "seed": 31337,
+            "uses": 2011
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            6
+          ],
+          "value": 1,
+          "state": {
+            "seed": 31337,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.25
+          ],
+          "value": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pick",
+          "args": [
+            [
+              "x",
+              "y",
+              "z"
+            ]
+          ],
+          "value": "z",
+          "state": {
+            "seed": 31337,
+            "uses": 2015
+          }
+        },
+        {
+          "op": "real",
+          "args": [
+            0,
+            1,
+            true
+          ],
+          "value": 0.6783603367725766,
+          "state": {
+            "seed": 31337,
+            "uses": 2017
+          }
+        },
+        {
+          "op": "int",
+          "args": [
+            1,
+            20
+          ],
+          "value": 12,
+          "state": {
+            "seed": 31337,
+            "uses": 2018
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "acausalVersion": "3.0.0-alpha.3",
+  "node": "v24.14.0",
+  "v8": "13.6.233.17-node.41",
+  "note": "Provenance for the recorded run. Not part of the replay contract — see README.md."
+}

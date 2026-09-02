@@ -10,6 +10,7 @@
     "build": "pnpm nx run-many --target=build --all",
     "test": "pnpm nx run-many --target=test --all",
     "typecheck": "pnpm nx run-many --target=typecheck --all",
+    "gen:fixtures": "tsx scripts/gen-fixtures.ts",
     "dev": "pnpm nx run-many --target=dev --all",
     "lint": "gts lint",
     "lint:fix": "gts fix",
@@ -28,6 +29,7 @@
     "gts": "^5.3.1",
     "nx": "^22.6.1",
     "tsup": "^8.2.4",
+    "tsx": "^4.23.13",
     "typedoc": "^0.26.6",
     "typescript": "^5.6.3",
     "vitest": "^3.2.4"

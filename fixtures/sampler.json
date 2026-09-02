@@ -1,0 +1,5438 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "name": "normal-standard",
+      "seed": 42,
+      "method": "normal",
+      "args": [],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "normal",
+          "args": [],
+          "value": -0.6178428360784718,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": -0.22639590106258037,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": -0.9829205686258309,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": 0.8961305666981447,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": -0.7562714318963775,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": 0.7050036905923467,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": 2.3281328184767713,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": 1.3944599027646725,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": -0.5744711360691862,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": 2.1726272184450974,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": -0.45325108812865933,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2044
+          }
+        },
+        {
+          "op": "normal",
+          "args": [],
+          "value": 2.2350819499670114,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2048
+          }
+        }
+      ]
+    },
+    {
+      "name": "normal-mu170-sigma7",
+      "seed": 42,
+      "method": "normal",
+      "args": [
+        170,
+        7
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 165.6751001474507,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 168.41522869256193,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 163.11955601961918,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 176.27291396688702,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 164.70609997672537,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 174.93502583414642,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 186.2969297293374,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 179.7612193193527,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 165.9787020475157,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 185.2083905291157,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 166.8272423830994,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2044
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            170,
+            7
+          ],
+          "value": 185.6455736497691,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2048
+          }
+        }
+      ]
+    },
+    {
+      "name": "normal-sigma-zero-consumes-nothing",
+      "seed": 42,
+      "method": "normal",
+      "args": [
+        5,
+        0
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "normal",
+          "args": [
+            5,
+            0
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            5,
+            0
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            5,
+            0
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            5,
+            0
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        }
+      ]
+    },
+    {
+      "name": "clampedNormal-tight-window",
+      "seed": 42,
+      "method": "clampedNormal",
+      "args": [
+        0,
+        1,
+        -0.5,
+        0.5
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": -0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": -0.22639590106258037,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": -0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": 0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": -0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": 0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": 0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": 0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": -0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": 0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": -0.45325108812865933,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2044
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            0,
+            1,
+            -0.5,
+            0.5
+          ],
+          "value": 0.5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2048
+          }
+        }
+      ]
+    },
+    {
+      "name": "clampedNormal-wide-window",
+      "seed": 7,
+      "method": "clampedNormal",
+      "args": [
+        170,
+        7,
+        150,
+        190
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 167.11105105358612,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 172.856096392564,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 165.37828542130072,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 166.46115073886375,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 168.26150597943126,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 176.37310070160854,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 155.46068614492816,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 170.74050149681466,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 178.96551121896908,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "clampedNormal",
+          "args": [
+            170,
+            7,
+            150,
+            190
+          ],
+          "value": 169.96947851122238,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2040
+          }
+        }
+      ]
+    },
+    {
+      "name": "logNormal-standard",
+      "seed": 42,
+      "method": "logNormal",
+      "args": [],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 0.5391061244512495,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 0.7974023467295668,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 0.3742165761235353,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 2.4501042304637752,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 0.4694134079776414,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 2.023854154129217,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 10.258768655707586,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 4.0327958824261465,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 0.5630025418230835,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [],
+          "value": 8.781324218657799,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2040
+          }
+        }
+      ]
+    },
+    {
+      "name": "logNormal-mu1-sigma05",
+      "seed": 7,
+      "method": "logNormal",
+      "args": [
+        1,
+        0.5
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 2.21144578685071,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 3.333446938126559,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 1.953998000027932,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 2.111133596560795,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 2.4008476336160975,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 4.285432492462387,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 0.9622101334601253,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 2.8659301697639545,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 5.157199288013762,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "logNormal",
+          "args": [
+            1,
+            0.5
+          ],
+          "value": 2.7123621401271514,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2040
+          }
+        }
+      ]
+    },
+    {
+      "name": "exponential-lambda1",
+      "seed": 42,
+      "method": "exponential",
+      "args": [],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 0.20473028191346582,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 0.7806698461517365,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 2.0631417942820587,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 1.3176077791304737,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 1.6427938260737573,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 1.075237715170403,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 1.1785538361415322,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 1.8917719880502795,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 0.2872395155401201,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 0.6722176661712413,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 0.25001312910612233,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [],
+          "value": 4.395558417405329,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "exponential-lambda025",
+      "seed": 7,
+      "method": "exponential",
+      "args": [
+        0.25
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 0.35002070132051444,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 2.98748240657502,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 1.9233499089718729,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 6.821493624103465,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 1.336144420508301,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 2.0410743378713168,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 0.5113277547211603,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 2.795622353059853,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 12.406289111572367,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "exponential",
+          "args": [
+            0.25
+          ],
+          "value": 1.2364230427388316,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "uniform-default",
+      "seed": 42,
+      "method": "uniform",
+      "args": [],
+      "draws": [
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.18513292883861965,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.5419009473783581,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.8729458358764083,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.7322248864095612,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.8065611478614497,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.6587833667107174,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.6922765645178525,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [],
+          "value": 0.8491956515653193,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        }
+      ]
+    },
+    {
+      "name": "uniform-range",
+      "seed": 7,
+      "method": "uniform",
+      "args": [
+        -3,
+        11
+      ],
+      "draws": [
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": -1.8269978189922347,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": 4.366140722586422,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": 2.344284515722763,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": 8.456136664813323,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": 0.9756089872643257,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": 2.5953195664237523,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": -1.3200176524732548,
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "uniform",
+          "args": [
+            -3,
+            11
+          ],
+          "value": 4.04019301897588,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        }
+      ]
+    },
+    {
+      "name": "beta-2-5",
+      "seed": 42,
+      "method": "beta",
+      "args": [
+        2,
+        5
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.14164598185696659,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.3774800920558258,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.4917934319556471,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.49474737078222175,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.1640079633804832,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2066
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.34675586069202463,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2078
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.18739043903269864,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2090
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.15123163480709836,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2102
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.7118059409423999,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2114
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            2,
+            5
+          ],
+          "value": 0.06024888437482613,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2126
+          }
+        }
+      ]
+    },
+    {
+      "name": "beta-05-05-subunit-shapes",
+      "seed": 7,
+      "method": "beta",
+      "args": [
+        0.5,
+        0.5
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.7770605372384187,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.42744071792069827,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.39666396948507404,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.14263416034757473,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2064
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.06380175506802807,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2080
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.8372238252638878,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2096
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.2970472091129335,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2112
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.5117740524710156,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2128
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.07949309973859875,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2144
+          }
+        },
+        {
+          "op": "beta",
+          "args": [
+            0.5,
+            0.5
+          ],
+          "value": 0.9583007265952043,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2160
+          }
+        }
+      ]
+    },
+    {
+      "name": "gamma-shape-ge-1",
+      "seed": 42,
+      "method": "gamma",
+      "args": [
+        2.5
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 1.3785355284836907,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 3.1089714799888593,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 3.7715257909434885,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 2.4884617743810837,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 7.717833939093746,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 3.9141669821122456,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 7.196168912776292,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2042
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 3.4629009507681396,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 1.1780902096556183,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2060
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            2.5
+          ],
+          "value": 1.8508721440003209,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2066
+          }
+        }
+      ]
+    },
+    {
+      "name": "gamma-shape-lt-1-recursive-branch",
+      "seed": 7,
+      "method": "gamma",
+      "args": [
+        0.3
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.3152046509074066,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.045706598773440084,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.0017910309868866881,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.011057389889167012,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.028594472916933605,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.060768462073279524,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.006669741270614979,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2056
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.06359767674315289,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2064
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.006815163120400564,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2072
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            0.3
+          ],
+          "value": 0.5649012917785279,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2080
+          }
+        }
+      ]
+    },
+    {
+      "name": "gamma-with-scale",
+      "seed": 99,
+      "method": "gamma",
+      "args": [
+        3,
+        2
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 4.675917646434565,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 2.6339438030579707,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 7.663869062198115,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 7.5710197097338,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 5.5293508180851605,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 10.755785820765661,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 3.8998566653910296,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2042
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 5.075391043502323,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 6.890737952989372,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2054
+          }
+        },
+        {
+          "op": "gamma",
+          "args": [
+            3,
+            2
+          ],
+          "value": 10.822152477331288,
+          "transcendental": true,
+          "state": {
+            "seed": 99,
+            "uses": 2060
+          }
+        }
+      ]
+    },
+    {
+      "name": "weibull-k15",
+      "seed": 42,
+      "method": "weibull",
+      "args": [
+        1.5
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 0.34736659878206755,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 0.8478355119072791,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 1.6206381247835444,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 1.2018698302161073,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 1.3922654352085335,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 1.0495496614909041,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 1.1157484286374135,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 1.5296046445653853,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 0.43534088625115863,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            1.5
+          ],
+          "value": 0.7673731766878455,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "weibull-scaled-and-located",
+      "seed": 7,
+      "method": "weibull",
+      "args": [
+        2,
+        3,
+        10
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 10.887438210790563,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 12.592650268507844,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 12.080273370301777,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 13.91769838734847,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 11.733875700891986,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 12.14299259453001,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 11.07260777925699,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 12.50801720376569,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 15.283384379452041,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "weibull",
+          "args": [
+            2,
+            3,
+            10
+          ],
+          "value": 11.667918417118287,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "cauchy-standard",
+      "seed": 42,
+      "method": "cauchy",
+      "args": [],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": -1.5209699452241836,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": 0.13240134173113624,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": 2.370822768917991,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": 0.8941182520467716,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": 1.437794168154056,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": 0.5447877246059508,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": 0.6901057888953046,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": 1.9504106981858895,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": -1.0020881405059676,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [],
+          "value": -0.033234684820782484,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "cauchy-located",
+      "seed": 7,
+      "method": "cauchy",
+      "args": [
+        5,
+        2
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": -2.421879172854852,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 5.164694331863952,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 4.220724324049703,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 8.114505319597063,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 3.387066191132682,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 4.3478374767504055,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": -0.05148184069302619,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 5.018039073882301,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 19.059562822835176,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "cauchy",
+          "args": [
+            5,
+            2
+          ],
+          "value": 3.190414738306711,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "logistic-standard",
+      "seed": 42,
+      "method": "logistic",
+      "args": [],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "logistic",
+          "args": [],
+          "value": 1.4819508957496899,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": -0.16799779799324577,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": -1.9272600255451005,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": -1.005940188797658,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": -1.4278182605818537,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": -0.6578771863143624,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": -0.8107840926422756,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": -1.7283063182592147,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": 1.100383692669363,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [],
+          "value": 0.042306454433135535,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "logistic-scaled",
+      "seed": 7,
+      "method": "logistic",
+      "args": [
+        1,
+        3
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 8.175957175821585,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 0.6858784173660231,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 2.4465765320127186,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": -3.5145248482940303,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 3.7745298513197456,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 2.220574865754991,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 6.977326314998683,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 0.9655484622640942,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": -8.166652782284661,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "logistic",
+          "args": [
+            1,
+            3
+          ],
+          "value": 4.046622936823688,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "poisson-lambda3-knuth",
+      "seed": 42,
+      "method": "poisson",
+      "args": [
+        3
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 4,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 2,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 8,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2058
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2062
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 2,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2068
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 2,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2074
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2078
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 3,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2086
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 4,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2096
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            3
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2100
+          }
+        }
+      ]
+    },
+    {
+      "name": "poisson-lambda-zero",
+      "seed": 7,
+      "method": "poisson",
+      "args": [
+        0
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "poisson",
+          "args": [
+            0
+          ],
+          "value": 0,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            0
+          ],
+          "value": 0,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            0
+          ],
+          "value": 0,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            0
+          ],
+          "value": 0,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        }
+      ]
+    },
+    {
+      "name": "poisson-lambda40-normal-approximation",
+      "seed": 7,
+      "method": "poisson",
+      "args": [
+        40
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 37,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 43,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 36,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 37,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 38,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 46,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 27,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 41,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 48,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "poisson",
+          "args": [
+            40
+          ],
+          "value": 40,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2040
+          }
+        }
+      ]
+    },
+    {
+      "name": "binomial-10-05",
+      "seed": 42,
+      "method": "binomial",
+      "args": [
+        10,
+        0.5
+      ],
+      "draws": [
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 4,
+          "state": {
+            "seed": 42,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2060
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 7,
+          "state": {
+            "seed": 42,
+            "uses": 2080
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 4,
+          "state": {
+            "seed": 42,
+            "uses": 2100
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2120
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 6,
+          "state": {
+            "seed": 42,
+            "uses": 2140
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 7,
+          "state": {
+            "seed": 42,
+            "uses": 2160
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 5,
+          "state": {
+            "seed": 42,
+            "uses": 2180
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            10,
+            0.5
+          ],
+          "value": 5,
+          "state": {
+            "seed": 42,
+            "uses": 2200
+          }
+        }
+      ]
+    },
+    {
+      "name": "binomial-n-zero",
+      "seed": 7,
+      "method": "binomial",
+      "args": [
+        0,
+        0.5
+      ],
+      "draws": [
+        {
+          "op": "binomial",
+          "args": [
+            0,
+            0.5
+          ],
+          "value": 0,
+          "state": {
+            "seed": 7,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            0,
+            0.5
+          ],
+          "value": 0,
+          "state": {
+            "seed": 7,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            0,
+            0.5
+          ],
+          "value": 0,
+          "state": {
+            "seed": 7,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            0,
+            0.5
+          ],
+          "value": 0,
+          "state": {
+            "seed": 7,
+            "uses": 2000
+          }
+        }
+      ]
+    },
+    {
+      "name": "binomial-100-01",
+      "seed": 99,
+      "method": "binomial",
+      "args": [
+        100,
+        0.1
+      ],
+      "draws": [
+        {
+          "op": "binomial",
+          "args": [
+            100,
+            0.1
+          ],
+          "value": 10,
+          "state": {
+            "seed": 99,
+            "uses": 2200
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            100,
+            0.1
+          ],
+          "value": 11,
+          "state": {
+            "seed": 99,
+            "uses": 2400
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            100,
+            0.1
+          ],
+          "value": 10,
+          "state": {
+            "seed": 99,
+            "uses": 2600
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            100,
+            0.1
+          ],
+          "value": 12,
+          "state": {
+            "seed": 99,
+            "uses": 2800
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            100,
+            0.1
+          ],
+          "value": 9,
+          "state": {
+            "seed": 99,
+            "uses": 3000
+          }
+        },
+        {
+          "op": "binomial",
+          "args": [
+            100,
+            0.1
+          ],
+          "value": 10,
+          "state": {
+            "seed": 99,
+            "uses": 3200
+          }
+        }
+      ]
+    },
+    {
+      "name": "geometric-p025",
+      "seed": 42,
+      "method": "geometric",
+      "args": [
+        0.25
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 3,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 8,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 6,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 4,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 7,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 3,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            0.25
+          ],
+          "value": 16,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "geometric-p1-always-first-trial",
+      "seed": 7,
+      "method": "geometric",
+      "args": [
+        1
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "geometric",
+          "args": [
+            1
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            1
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            1
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            1
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            1
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "geometric",
+          "args": [
+            1
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "bernoulli-p03",
+      "seed": 42,
+      "method": "bool",
+      "args": [
+        0.3
+      ],
+      "draws": [
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": true,
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "bool",
+          "args": [
+            0.3
+          ],
+          "value": false,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-uniform",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "uniform",
+          "min": 1,
+          "max": 10
+        }
+      ],
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "uniform",
+              "min": 1,
+              "max": 10
+            }
+          ],
+          "value": 2.666196359547577,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "uniform",
+              "min": 1,
+              "max": 10
+            }
+          ],
+          "value": 5.877108526405223,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "uniform",
+              "min": 1,
+              "max": 10
+            }
+          ],
+          "value": 8.856512522887675,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "uniform",
+              "min": 1,
+              "max": 10
+            }
+          ],
+          "value": 7.590023977686051,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "uniform",
+              "min": 1,
+              "max": 10
+            }
+          ],
+          "value": 8.259050330753048,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "uniform",
+              "min": 1,
+              "max": 10
+            }
+          ],
+          "value": 6.929050300396456,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-normal",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "normal",
+          "mu": 170,
+          "sigma": 7
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "normal",
+              "mu": 170,
+              "sigma": 7
+            }
+          ],
+          "value": 165.6751001474507,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "normal",
+              "mu": 170,
+              "sigma": 7
+            }
+          ],
+          "value": 168.41522869256193,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "normal",
+              "mu": 170,
+              "sigma": 7
+            }
+          ],
+          "value": 163.11955601961918,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "normal",
+              "mu": 170,
+              "sigma": 7
+            }
+          ],
+          "value": 176.27291396688702,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "normal",
+              "mu": 170,
+              "sigma": 7
+            }
+          ],
+          "value": 164.70609997672537,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "normal",
+              "mu": 170,
+              "sigma": 7
+            }
+          ],
+          "value": 174.93502583414642,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-logNormal",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "logNormal",
+          "mu": 0,
+          "sigma": 1
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logNormal",
+              "mu": 0,
+              "sigma": 1
+            }
+          ],
+          "value": 0.5391061244512495,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logNormal",
+              "mu": 0,
+              "sigma": 1
+            }
+          ],
+          "value": 0.7974023467295668,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logNormal",
+              "mu": 0,
+              "sigma": 1
+            }
+          ],
+          "value": 0.3742165761235353,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logNormal",
+              "mu": 0,
+              "sigma": 1
+            }
+          ],
+          "value": 2.4501042304637752,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logNormal",
+              "mu": 0,
+              "sigma": 1
+            }
+          ],
+          "value": 0.4694134079776414,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logNormal",
+              "mu": 0,
+              "sigma": 1
+            }
+          ],
+          "value": 2.023854154129217,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-exponential",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "exponential",
+          "lambda": 2
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "exponential",
+              "lambda": 2
+            }
+          ],
+          "value": 0.10236514095673291,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "exponential",
+              "lambda": 2
+            }
+          ],
+          "value": 0.39033492307586826,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "exponential",
+              "lambda": 2
+            }
+          ],
+          "value": 1.0315708971410293,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "exponential",
+              "lambda": 2
+            }
+          ],
+          "value": 0.6588038895652368,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "exponential",
+              "lambda": 2
+            }
+          ],
+          "value": 0.8213969130368787,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "exponential",
+              "lambda": 2
+            }
+          ],
+          "value": 0.5376188575852014,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-poisson",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "poisson",
+          "lambda": 4
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "poisson",
+              "lambda": 4
+            }
+          ],
+          "value": 8,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "poisson",
+              "lambda": 4
+            }
+          ],
+          "value": 4,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "poisson",
+              "lambda": 4
+            }
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "poisson",
+              "lambda": 4
+            }
+          ],
+          "value": 9,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2060
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "poisson",
+              "lambda": 4
+            }
+          ],
+          "value": 2,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2066
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "poisson",
+              "lambda": 4
+            }
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2070
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-binomial",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "binomial",
+          "n": 12,
+          "p": 0.4
+        }
+      ],
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "binomial",
+              "n": 12,
+              "p": 0.4
+            }
+          ],
+          "value": 3,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "binomial",
+              "n": 12,
+              "p": 0.4
+            }
+          ],
+          "value": 4,
+          "state": {
+            "seed": 42,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "binomial",
+              "n": 12,
+              "p": 0.4
+            }
+          ],
+          "value": 5,
+          "state": {
+            "seed": 42,
+            "uses": 2072
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "binomial",
+              "n": 12,
+              "p": 0.4
+            }
+          ],
+          "value": 6,
+          "state": {
+            "seed": 42,
+            "uses": 2096
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "binomial",
+              "n": 12,
+              "p": 0.4
+            }
+          ],
+          "value": 2,
+          "state": {
+            "seed": 42,
+            "uses": 2120
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "binomial",
+              "n": 12,
+              "p": 0.4
+            }
+          ],
+          "value": 6,
+          "state": {
+            "seed": 42,
+            "uses": 2144
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-geometric",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "geometric",
+          "p": 0.3
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "geometric",
+              "p": 0.3
+            }
+          ],
+          "value": 1,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "geometric",
+              "p": 0.3
+            }
+          ],
+          "value": 3,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "geometric",
+              "p": 0.3
+            }
+          ],
+          "value": 6,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "geometric",
+              "p": 0.3
+            }
+          ],
+          "value": 4,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "geometric",
+              "p": 0.3
+            }
+          ],
+          "value": 5,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "geometric",
+              "p": 0.3
+            }
+          ],
+          "value": 4,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-beta",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "beta",
+          "alpha": 2,
+          "beta": 3
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "beta",
+              "alpha": 2,
+              "beta": 3
+            }
+          ],
+          "value": 0.21102862847029036,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "beta",
+              "alpha": 2,
+              "beta": 3
+            }
+          ],
+          "value": 0.5073250993081635,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "beta",
+              "alpha": 2,
+              "beta": 3
+            }
+          ],
+          "value": 0.5996724782628505,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "beta",
+              "alpha": 2,
+              "beta": 3
+            }
+          ],
+          "value": 0.6082872205204648,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "beta",
+              "alpha": 2,
+              "beta": 3
+            }
+          ],
+          "value": 0.2623287221843659,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2066
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "beta",
+              "alpha": 2,
+              "beta": 3
+            }
+          ],
+          "value": 0.4870933365650799,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2078
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-gamma",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "gamma",
+          "k": 2,
+          "theta": 1.5
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "gamma",
+              "k": 2,
+              "theta": 1.5
+            }
+          ],
+          "value": 1.484268052540434,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "gamma",
+              "k": 2,
+              "theta": 1.5
+            }
+          ],
+          "value": 3.7610855770139406,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "gamma",
+              "k": 2,
+              "theta": 1.5
+            }
+          ],
+          "value": 4.667842650200205,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "gamma",
+              "k": 2,
+              "theta": 1.5
+            }
+          ],
+          "value": 2.926114643741515,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "gamma",
+              "k": 2,
+              "theta": 1.5
+            }
+          ],
+          "value": 10.261544222689752,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "gamma",
+              "k": 2,
+              "theta": 1.5
+            }
+          ],
+          "value": 4.864757386547381,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2036
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-bernoulli",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "bernoulli",
+          "p": 0.7
+        }
+      ],
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "bernoulli",
+              "p": 0.7
+            }
+          ],
+          "value": 1,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "bernoulli",
+              "p": 0.7
+            }
+          ],
+          "value": 1,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "bernoulli",
+              "p": 0.7
+            }
+          ],
+          "value": 0,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "bernoulli",
+              "p": 0.7
+            }
+          ],
+          "value": 0,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "bernoulli",
+              "p": 0.7
+            }
+          ],
+          "value": 0,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "bernoulli",
+              "p": 0.7
+            }
+          ],
+          "value": 1,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-weibull",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "weibull",
+          "k": 1.5,
+          "a": 2,
+          "b": 1
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "weibull",
+              "k": 1.5,
+              "a": 2,
+              "b": 1
+            }
+          ],
+          "value": 1.694733197564135,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "weibull",
+              "k": 1.5,
+              "a": 2,
+              "b": 1
+            }
+          ],
+          "value": 2.6956710238145583,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "weibull",
+              "k": 1.5,
+              "a": 2,
+              "b": 1
+            }
+          ],
+          "value": 4.241276249567089,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "weibull",
+              "k": 1.5,
+              "a": 2,
+              "b": 1
+            }
+          ],
+          "value": 3.4037396604322145,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "weibull",
+              "k": 1.5,
+              "a": 2,
+              "b": 1
+            }
+          ],
+          "value": 3.784530870417067,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "weibull",
+              "k": 1.5,
+              "a": 2,
+              "b": 1
+            }
+          ],
+          "value": 3.0990993229818082,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-cauchy",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "cauchy",
+          "a": 0,
+          "b": 1
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "cauchy",
+              "a": 0,
+              "b": 1
+            }
+          ],
+          "value": -1.5209699452241836,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "cauchy",
+              "a": 0,
+              "b": 1
+            }
+          ],
+          "value": 0.13240134173113624,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "cauchy",
+              "a": 0,
+              "b": 1
+            }
+          ],
+          "value": 2.370822768917991,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "cauchy",
+              "a": 0,
+              "b": 1
+            }
+          ],
+          "value": 0.8941182520467716,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "cauchy",
+              "a": 0,
+              "b": 1
+            }
+          ],
+          "value": 1.437794168154056,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "cauchy",
+              "a": 0,
+              "b": 1
+            }
+          ],
+          "value": 0.5447877246059508,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "sampleDistribution-logistic",
+      "seed": 42,
+      "method": "sampleDistribution",
+      "args": [
+        {
+          "type": "logistic",
+          "a": 0,
+          "b": 2
+        }
+      ],
+      "transcendental": true,
+      "draws": [
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logistic",
+              "a": 0,
+              "b": 2
+            }
+          ],
+          "value": 2.9639017914993797,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logistic",
+              "a": 0,
+              "b": 2
+            }
+          ],
+          "value": -0.33599559598649154,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logistic",
+              "a": 0,
+              "b": 2
+            }
+          ],
+          "value": -3.854520051090201,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logistic",
+              "a": 0,
+              "b": 2
+            }
+          ],
+          "value": -2.011880377595316,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logistic",
+              "a": 0,
+              "b": 2
+            }
+          ],
+          "value": -2.8556365211637074,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "sampleDistribution",
+          "args": [
+            {
+              "type": "logistic",
+              "a": 0,
+              "b": 2
+            }
+          ],
+          "value": -1.3157543726287249,
+          "transcendental": true,
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        }
+      ]
+    },
+    {
+      "name": "normal-resume-at-4",
+      "seed": 31337,
+      "method": "normal",
+      "args": [
+        10,
+        2
+      ],
+      "transcendental": true,
+      "resumeAt": 4,
+      "draws": [
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 8.908719990489882,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 9.05469075606446,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 8.929620506260386,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 10.22263033000578,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 9.80755861479468,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 7.9805808706837125,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 13.765676749110098,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 10.487439392960964,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 11.33058764165267,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "normal",
+          "args": [
+            10,
+            2
+          ],
+          "value": 10.11747625869392,
+          "transcendental": true,
+          "state": {
+            "seed": 31337,
+            "uses": 2040
+          }
+        }
+      ]
+    }
+  ]
+}

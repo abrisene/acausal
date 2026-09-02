@@ -1,0 +1,1008 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "name": "pickOne-unmasked",
+      "seed": 42,
+      "immutable": false,
+      "source": {
+        "common": 60,
+        "uncommon": 25,
+        "rare": 12,
+        "legendary": 3
+      },
+      "normalized": {
+        "common": 0.6,
+        "uncommon": 0.25,
+        "rare": 0.12,
+        "legendary": 0.03
+      },
+      "ops": [
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "legendary",
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2026
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2032
+          }
+        }
+      ]
+    },
+    {
+      "name": "pickOne-masked",
+      "seed": 42,
+      "immutable": false,
+      "source": {
+        "common": 60,
+        "uncommon": 25,
+        "rare": 12,
+        "legendary": 3
+      },
+      "normalized": {
+        "common": 0.6,
+        "uncommon": 0.25,
+        "rare": 0.12,
+        "legendary": 0.03
+      },
+      "ops": [
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common"
+          ],
+          "value": "legendary",
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "pickOne-fully-masked-returns-null",
+      "seed": 42,
+      "immutable": false,
+      "source": {
+        "common": 60,
+        "uncommon": 25,
+        "rare": 12,
+        "legendary": 3
+      },
+      "normalized": {
+        "common": 0.6,
+        "uncommon": 0.25,
+        "rare": 0.12,
+        "legendary": 0.03
+      },
+      "ops": [
+        {
+          "op": "pickOne",
+          "mask": [
+            "common",
+            "uncommon",
+            "rare",
+            "legendary"
+          ],
+          "value": null,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common",
+            "uncommon",
+            "rare",
+            "legendary"
+          ],
+          "value": null,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        },
+        {
+          "op": "pickOne",
+          "mask": [
+            "common",
+            "uncommon",
+            "rare",
+            "legendary"
+          ],
+          "value": null,
+          "state": {
+            "seed": 42,
+            "uses": 2000
+          }
+        }
+      ]
+    },
+    {
+      "name": "pick-count-non-exclusive",
+      "seed": 7,
+      "immutable": false,
+      "source": {
+        "common": 60,
+        "uncommon": 25,
+        "rare": 12,
+        "legendary": 3
+      },
+      "normalized": {
+        "common": 0.6,
+        "uncommon": 0.25,
+        "rare": 0.12,
+        "legendary": 0.03
+      },
+      "ops": [
+        {
+          "op": "pick",
+          "options": {
+            "count": 4
+          },
+          "value": [
+            "common",
+            "common",
+            "common",
+            "uncommon"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4
+          },
+          "value": [
+            "common",
+            "common",
+            "common",
+            "common"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4
+          },
+          "value": [
+            "rare",
+            "common",
+            "uncommon",
+            "common"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4
+          },
+          "value": [
+            "rare",
+            "common",
+            "common",
+            "uncommon"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4
+          },
+          "value": [
+            "rare",
+            "common",
+            "common",
+            "common"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4
+          },
+          "value": [
+            "common",
+            "rare",
+            "rare",
+            "common"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2048
+          }
+        }
+      ]
+    },
+    {
+      "name": "pick-exclusive-drains-the-table",
+      "seed": 7,
+      "immutable": false,
+      "source": {
+        "n": 1,
+        "e": 1,
+        "s": 1,
+        "w": 1
+      },
+      "normalized": {
+        "n": 0.25,
+        "e": 0.25,
+        "s": 0.25,
+        "w": 0.25
+      },
+      "ops": [
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "n",
+            "s",
+            "e",
+            "w"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "e",
+            "s",
+            "n",
+            "w"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "w",
+            "n",
+            "s",
+            "e"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "w",
+            "e",
+            "n",
+            "s"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        }
+      ]
+    },
+    {
+      "name": "pick-masked-and-exclusive",
+      "seed": 7,
+      "immutable": false,
+      "source": {
+        "common": 60,
+        "uncommon": 25,
+        "rare": 12,
+        "legendary": 3
+      },
+      "normalized": {
+        "common": 0.6,
+        "uncommon": 0.25,
+        "rare": 0.12,
+        "legendary": 0.03
+      },
+      "ops": [
+        {
+          "op": "pick",
+          "options": {
+            "count": 3,
+            "mask": [
+              "common"
+            ],
+            "exclusive": true
+          },
+          "value": [
+            "uncommon",
+            "rare",
+            "legendary"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 3,
+            "mask": [
+              "common"
+            ],
+            "exclusive": true
+          },
+          "value": [
+            "rare",
+            "uncommon",
+            "legendary"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 3,
+            "mask": [
+              "common"
+            ],
+            "exclusive": true
+          },
+          "value": [
+            "uncommon",
+            "rare",
+            "legendary"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 3,
+            "mask": [
+              "common"
+            ],
+            "exclusive": true
+          },
+          "value": [
+            "uncommon",
+            "rare",
+            "legendary"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "normal-only-input",
+      "seed": 99,
+      "immutable": false,
+      "normal": {
+        "a": 0.5,
+        "b": 0.3,
+        "c": 0.2
+      },
+      "normalized": {
+        "a": 0.5,
+        "b": 0.3,
+        "c": 0.2
+      },
+      "ops": [
+        {
+          "op": "pickOne",
+          "value": "b",
+          "state": {
+            "seed": 99,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "a",
+          "state": {
+            "seed": 99,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "b",
+          "state": {
+            "seed": 99,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "c",
+          "state": {
+            "seed": 99,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "b",
+          "state": {
+            "seed": 99,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "c",
+          "state": {
+            "seed": 99,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "a",
+          "state": {
+            "seed": 99,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "c",
+          "state": {
+            "seed": 99,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "b",
+          "state": {
+            "seed": 99,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "c",
+          "state": {
+            "seed": 99,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "a",
+          "state": {
+            "seed": 99,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "b",
+          "state": {
+            "seed": 99,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "immutable-pickOne-unmasked",
+      "seed": 42,
+      "immutable": true,
+      "source": {
+        "common": 60,
+        "uncommon": 25,
+        "rare": 12,
+        "legendary": 3
+      },
+      "normalized": {
+        "common": 0.6,
+        "uncommon": 0.25,
+        "rare": 0.12,
+        "legendary": 0.03
+      },
+      "ops": [
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "legendary",
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2026
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "common",
+          "state": {
+            "seed": 42,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "uncommon",
+          "state": {
+            "seed": 42,
+            "uses": 2030
+          }
+        },
+        {
+          "op": "pickOne",
+          "value": "rare",
+          "state": {
+            "seed": 42,
+            "uses": 2032
+          }
+        }
+      ]
+    },
+    {
+      "name": "immutable-pick-exclusive",
+      "seed": 7,
+      "immutable": true,
+      "source": {
+        "n": 1,
+        "e": 1,
+        "s": 1,
+        "w": 1
+      },
+      "normalized": {
+        "n": 0.25,
+        "e": 0.25,
+        "s": 0.25,
+        "w": 0.25
+      },
+      "ops": [
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "n",
+            "s",
+            "e",
+            "w"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "e",
+            "s",
+            "n",
+            "w"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "w",
+            "n",
+            "s",
+            "e"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "pick",
+          "options": {
+            "count": 4,
+            "exclusive": true
+          },
+          "value": [
+            "w",
+            "e",
+            "n",
+            "s"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2032
+          }
+        }
+      ]
+    }
+  ]
+}

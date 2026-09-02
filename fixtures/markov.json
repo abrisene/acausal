@@ -1,0 +1,1605 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "name": "next-from-start-order2",
+      "seed": 42,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "next",
+          "value": "the",
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "next",
+          "value": "the",
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "next",
+          "value": "the",
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "next",
+          "value": "the",
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "next-from-gram",
+      "seed": 42,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "cat",
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "fish",
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "fish",
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "cat",
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "mat",
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "cat",
+          "state": {
+            "seed": 42,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2024
+          }
+        }
+      ]
+    },
+    {
+      "name": "next-with-mask",
+      "seed": 42,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "mat",
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "mat",
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "the"
+          ],
+          "mask": [
+            "cat"
+          ],
+          "value": "fish",
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "backward-from-end",
+      "seed": 42,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "backward",
+          "value": "mat",
+          "state": {
+            "seed": 42,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "backward",
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "backward",
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "backward",
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "backward",
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "backward",
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "backward",
+          "value": "log",
+          "state": {
+            "seed": 42,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "backward",
+          "value": "bone",
+          "state": {
+            "seed": 42,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "backward",
+          "value": "mat",
+          "state": {
+            "seed": 42,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "backward",
+          "value": "fish",
+          "state": {
+            "seed": 42,
+            "uses": 2020
+          }
+        }
+      ]
+    },
+    {
+      "name": "generate-default-trimmed",
+      "seed": 7,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "sat",
+            "on",
+            "the",
+            "log"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2052
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2064
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "sat",
+            "on",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2078
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "ate",
+            "the",
+            "bone"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2090
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2102
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2114
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2126
+          }
+        }
+      ]
+    },
+    {
+      "name": "generate-untrimmed-keeps-delimiters",
+      "seed": 7,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "trim": false
+          },
+          "value": [
+            "○",
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "mat",
+            "◍"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "trim": false
+          },
+          "value": [
+            "○",
+            "a",
+            "dog",
+            "sat",
+            "on",
+            "the",
+            "log",
+            "◍"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "trim": false
+          },
+          "value": [
+            "○",
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish",
+            "◍"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2040
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "trim": false
+          },
+          "value": [
+            "○",
+            "a",
+            "dog",
+            "ate",
+            "the",
+            "fish",
+            "◍"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2052
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "trim": false
+          },
+          "value": [
+            "○",
+            "a",
+            "dog",
+            "ate",
+            "the",
+            "fish",
+            "◍"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2064
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "trim": false
+          },
+          "value": [
+            "○",
+            "a",
+            "dog",
+            "sat",
+            "on",
+            "the",
+            "mat",
+            "◍"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2078
+          }
+        }
+      ]
+    },
+    {
+      "name": "generate-backward",
+      "seed": 7,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "direction": "last"
+          },
+          "value": [
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "direction": "last"
+          },
+          "value": [
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "log"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2028
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "direction": "last"
+          },
+          "value": [
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2042
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "direction": "last"
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "bone"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2054
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "direction": "last"
+          },
+          "value": [
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2068
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12,
+            "direction": "last"
+          },
+          "value": [
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2082
+          }
+        }
+      ]
+    },
+    {
+      "name": "generate-order1",
+      "seed": 7,
+      "maxOrder": 1,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "sat",
+            "on",
+            "the",
+            "bone"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "ate",
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "bone"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2044
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "sat",
+            "on",
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2068
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "log"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2086
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "dog",
+            "sat",
+            "on",
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2108
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2114
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "cat",
+            "sat",
+            "on",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 7,
+            "uses": 2134
+          }
+        }
+      ]
+    },
+    {
+      "name": "addSequence-mid-stream",
+      "seed": 99,
+      "maxOrder": 2,
+      "sequences": [
+        [
+          "the",
+          "cat",
+          "sat",
+          "on",
+          "the",
+          "mat"
+        ],
+        [
+          "the",
+          "cat",
+          "ate",
+          "the",
+          "fish"
+        ],
+        [
+          "a",
+          "dog",
+          "sat",
+          "on",
+          "the",
+          "log"
+        ],
+        [
+          "a",
+          "dog",
+          "ate",
+          "the",
+          "bone"
+        ]
+      ],
+      "ops": [
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 99,
+            "uses": 2002
+          }
+        },
+        {
+          "op": "next",
+          "value": "the",
+          "state": {
+            "seed": 99,
+            "uses": 2004
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 99,
+            "uses": 2006
+          }
+        },
+        {
+          "op": "next",
+          "value": "a",
+          "state": {
+            "seed": 99,
+            "uses": 2008
+          }
+        },
+        {
+          "op": "addSequence",
+          "sequence": [
+            "a",
+            "bird",
+            "flew",
+            "over",
+            "the",
+            "mat"
+          ],
+          "gramCount": 39
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "dog",
+          "state": {
+            "seed": 99,
+            "uses": 2010
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "bird",
+          "state": {
+            "seed": 99,
+            "uses": 2012
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "dog",
+          "state": {
+            "seed": 99,
+            "uses": 2014
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "bird",
+          "state": {
+            "seed": 99,
+            "uses": 2016
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "bird",
+          "state": {
+            "seed": 99,
+            "uses": 2018
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "bird",
+          "state": {
+            "seed": 99,
+            "uses": 2020
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "dog",
+          "state": {
+            "seed": 99,
+            "uses": 2022
+          }
+        },
+        {
+          "op": "next",
+          "gram": [
+            "a"
+          ],
+          "value": "dog",
+          "state": {
+            "seed": 99,
+            "uses": 2024
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 99,
+            "uses": 2036
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 99,
+            "uses": 2048
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "the",
+            "cat",
+            "ate",
+            "the",
+            "fish"
+          ],
+          "state": {
+            "seed": 99,
+            "uses": 2060
+          }
+        },
+        {
+          "op": "generate",
+          "options": {
+            "min": 2,
+            "max": 12
+          },
+          "value": [
+            "a",
+            "bird",
+            "flew",
+            "over",
+            "the",
+            "mat"
+          ],
+          "state": {
+            "seed": 99,
+            "uses": 2074
+          }
+        }
+      ]
+    }
+  ]
+}
