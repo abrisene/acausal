@@ -599,8 +599,30 @@ last-bit disagreement there changes the *number of draws consumed*, and every
 subsequent value diverges. For those two, a tolerance on the value is not
 enough — the draw counts have to agree too.
 
-Within this repository, on a single Node build, every fixture is asserted with
-exact equality (\`toBe\`), transcendental or not.
+### One constant these fixtures deliberately do not lock
+
+\`gamma()\` contains a squeeze test, \`u < 1 - 0.0331 * x^4\`. Perturbing
+that constant does NOT change any fixture, and that is correct: in
+Marsaglia and Tsang's method the squeeze is a fast sufficient condition
+subordinate to the logarithmic test that follows it. Over 200,000 iterations at
+k = 2.5, \`u\` landed between the 0.0331 and 0.0332 thresholds 40 times, and
+the log test accepted on all 40 — same returned value, same draw count. The
+constant is a performance knob, not semantics. A port may choose a different
+one. Every constant that IS semantic (the MT19937 pre-warm discard, \`d = k -
+1/3\`, the tempering masks) turns fixtures red when touched.
+
+### What is measured, and what is not
+
+Every fixture in this directory replays bit-identically on Node 18.20.8,
+20.20.2, 22.23.2 and 24.14.0 — V8 10.2 through 13.6 — on arm64 macOS. So the
+replay suite asserts exact equality (\`toBe\`) for every value, transcendental
+or not, and CI runs it on the whole Node matrix.
+
+That measurement covers one CPU architecture and one engine family. It says
+nothing about x86-64, and nothing about a non-V8 runtime. It is evidence that
+V8's fdlibm port is stable across versions, not evidence that Rust's
+\`f64::ln\` agrees with it. The question above stays open until someone runs
+the replay under the other implementation and reads the output.
 `;
 
 /**

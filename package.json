@@ -11,6 +11,7 @@
     "test": "pnpm nx run-many --target=test --all",
     "typecheck": "pnpm nx run-many --target=typecheck --all",
     "gen:fixtures": "tsx scripts/gen-fixtures.ts",
+    "fixtures:current": "pnpm build && rm -rf fixtures && pnpm gen:fixtures && node scripts/check-fixture-drift.mjs",
     "dev": "pnpm nx run-many --target=dev --all",
     "lint": "gts lint",
     "lint:fix": "gts fix",
