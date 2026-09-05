@@ -1,0 +1,17 @@
+{
+  "id": "soldier-gender",
+  "revision": "1",
+  "variables": [
+    {"id": "gender", "domain": ["female", "male"]},
+    {"id": "profession", "domain": ["baker", "soldier"]}
+  ],
+  "tables": [
+    {"target": "gender", "parents": [], "rows": [
+      {"given": {}, "weights": {"female": 1, "male": 1}}
+    ]},
+    {"target": "profession", "parents": ["gender"], "rows": [
+      {"given": {"gender": "female"}, "weights": {"baker": 1, "soldier": 1}},
+      {"given": {"gender": "male"}, "weights": {"baker": 1, "soldier": 1.5}}
+    ]}
+  ]
+}

@@ -1,0 +1,16 @@
+[package]
+name = "acausal"
+version = "4.0.0-alpha.1"
+edition = "2024"
+license = "Apache-2.0"
+description = "Seeded generation, weighted choices, Markov models, and finite conditioning"
+readme = "rust/README.md"
+include = ["rust/**", "Cargo.toml", "Cargo.lock", "LICENSE", "examples/*.rs", "tests/*.rs"]
+
+[lib]
+path = "rust/lib.rs"
+crate-type = ["rlib", "cdylib"]
+
+[profile.release]
+lto = true
+codegen-units = 1

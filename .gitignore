@@ -100,3 +100,17 @@ typings/
 .omc/
 .npmrc.local
 .pi/
+
+# Rust rewrite build outputs
+/target/
+/bindings/javascript/acausal.wasm
+/bindings/python/acausal/_native/
+/bindings/python/build/
+/bindings/python/dist/
+/bindings/python/*.egg-info/
+/artifacts/
+
+# Python caches and local source-preservation patch
+__pycache__/
+*.py[cod]
+/reference/main-working-tree.patch
