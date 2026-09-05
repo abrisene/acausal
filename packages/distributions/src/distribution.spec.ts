@@ -587,6 +587,17 @@ describe('Distribution', () => {
       expect(cloned.normal).toEqual(dist.normal);
     });
 
+    it('clone preserves the current pick sequence', () => {
+      const dist = new ImmutableDistribution({ seed: 42, source: { a: 1, b: 2, c: 3 } });
+      dist.pick({ count: 3 });
+
+      const cloned = dist.clone();
+      const picksA = dist.pick({ count: 6 });
+      const picksB = cloned.pick({ count: 6 });
+
+      expect(picksB).toEqual(picksA);
+    });
+
     it('can pick values like a regular Distribution', () => {
       const dist = new ImmutableDistribution({ seed: 42, source: { a: 1, b: 2, c: 3 } });
       const pick = dist.pickOne();
@@ -641,6 +652,15 @@ describe('Distribution', () => {
       expect(mutable).not.toBe(immDist);
       expect(mutable.source).toEqual(immDist.source);
       expect(mutable.normal).toEqual(immDist.normal);
+    });
+
+    it('ImmutableDistribution.toMutable() preserves the current replay point', () => {
+      const immDist = new ImmutableDistribution({ seed: 21, source: { a: 2, b: 1, c: 4 } });
+      immDist.pick({ count: 2 });
+
+      const mutable = immDist.toMutable();
+
+      expect(mutable.pick({ count: 5 })).toEqual(immDist.pick({ count: 5 }));
     });
   });
 });

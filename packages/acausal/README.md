@@ -40,6 +40,20 @@ chain.addSequences([['the', 'cat', 'sat'], ['the', 'dog', 'ran']]);
 chain.generate();
 ```
 
+## Deterministic replay across the stack
+
+Seeded generators can branch from their current replay point with `clone()`, and the mutable/immutable bridge APIs preserve that same deterministic state across package boundaries.
+
+```typescript
+const rng = new Random({ seed: 42 });
+rng.int(1, 6);
+
+const restored = new Random(rng.serialize());
+restored.int(1, 100) === rng.int(1, 100); // true
+```
+
+That same replay model carries through `RandomSampler`, `Distribution`, `ImmutableDistribution`, `MarkovChain`, `ImmutableMarkovChain`, and the meta-package re-exports.
+
 ## Packages
 
 | Package | Description |

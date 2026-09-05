@@ -27,4 +27,18 @@ sampler.sampleDistribution({ type: 'normal', mu: 170, sigma: 7 });
 
 All methods are deterministic given the same seed. Built on [@acausal/random](https://github.com/abrisene/acausal/tree/main/packages/random).
 
+## Replay and fork
+
+```typescript
+const sampler = new RandomSampler({ seed: 42 });
+sampler.normal(170, 7);
+sampler.poisson(4);
+
+const fork = sampler.clone();
+
+sampler.beta(2, 5) === fork.beta(2, 5); // true
+```
+
+`clone()` copies the sampler's current PRNG state, so downstream sampling stays reproducible after the fork. `serialize()` and `new RandomSampler(dto)` provide the same resume behavior for persistence.
+
 Part of the [acausal](https://github.com/abrisene/acausal) procedural generation toolkit.

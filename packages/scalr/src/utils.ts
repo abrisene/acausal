@@ -8,8 +8,5 @@ export function arrayToObject<T, K extends string | number = string>(
   array: Array<T>,
   getId: (v: T, i: number) => string | number = (v, i) => i.toString()
 ): Record<K, T> {
-  return array.reduce(
-    (l, value, i) => ({ ...l, [getId(value, i)]: value }),
-    {} as Record<K, T>
-  );
+  return array.reduce((l, value, i) => ({ ...l, [getId(value, i)]: value }), {} as Record<K, T>);
 }

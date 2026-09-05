@@ -2198,6 +2198,15 @@ describe('Markov Chain', () => {
       expect(cloned.dto).toEqual(chain.dto);
     });
 
+    it('clone preserves the current generation sequence', () => {
+      const chain = new ImmutableMarkovChain({ seed: 1, maxOrder: 2, sequences: sA3 });
+      chain.generate({ order: 1, min: 2, max: 4 });
+
+      const cloned = chain.clone();
+
+      expect(cloned.generate({ order: 1, min: 2, max: 4 })).toEqual(chain.generate({ order: 1, min: 2, max: 4 }));
+    });
+
     it('can generate and pick like a regular chain', () => {
       const chain = new ImmutableMarkovChain({ seed: 1, maxOrder: 2, sequences: sA3 });
       const result = chain.generate({ order: 1, min: 1, max: 10 });
@@ -2291,6 +2300,15 @@ describe('Markov Chain', () => {
       expect(mutable).not.toBeInstanceOf(ImmutableMarkovChain);
       expect(mutable).not.toBe(chain);
       expect(mutable.serialize()).toEqual(chain.serialize());
+    });
+
+    it('ImmutableMarkovChain.toMutable() preserves the current replay point', () => {
+      const chain = new ImmutableMarkovChain({ seed: 3, maxOrder: 2, sequences: sA3 });
+      chain.generate({ order: 1, min: 1, max: 4 });
+
+      const mutable = chain.toMutable();
+
+      expect(mutable.generate({ order: 1, min: 1, max: 4 })).toEqual(chain.generate({ order: 1, min: 1, max: 4 }));
     });
 
     it('ImmutableMultiDimMarkovChain.from() creates an immutable copy', () => {

@@ -99,3 +99,4 @@ typings/
 .nx/
 .omc/
 .npmrc.local
+.pi/

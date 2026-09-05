@@ -9,11 +9,7 @@ import { isScaledNormalArray } from './normalize';
  *                      Defaults to Number.EPSILON.
  */
 
-export function isScaledNormalObject(
-  object: ScalableObject,
-  scale = 1,
-  tolerance = Number.EPSILON
-): boolean {
+export function isScaledNormalObject(object: ScalableObject, scale = 1, tolerance = Number.EPSILON): boolean {
   return isScaledNormalArray(Object.values(object), scale, tolerance);
 }
 /**
@@ -23,10 +19,7 @@ export function isScaledNormalObject(
  *                      Defaults to Number.EPSILON.
  */
 
-export function isNormalizedObject(
-  object: ScalableObject,
-  tolerance = Number.EPSILON
-): boolean {
+export function isNormalizedObject(object: ScalableObject, tolerance = Number.EPSILON): boolean {
   return isScaledNormalArray(Object.values(object), 1, tolerance);
 }
 
@@ -37,11 +30,7 @@ export function isNormalizedObject(
  * @param tolerance     The tolerable variablity in comparison to account for floating point math.
  *                      Defaults to Number.EPSILON.
  */
-export function isScaled(
-  collection: ScalableCollection,
-  scale = 1,
-  tolerance = Number.EPSILON
-) {
+export function isScaled(collection: ScalableCollection, scale = 1, tolerance = Number.EPSILON) {
   return Array.isArray(collection)
     ? isScaledNormalArray(collection, scale, tolerance)
     : isScaledNormalObject(collection, scale, tolerance);
@@ -53,10 +42,7 @@ export function isScaled(
  * @param tolerance     The tolerable variablity in comparison to account for floating point math.
  *                      Defaults to Number.EPSILON.
  */
-export function isNormalized(
-  collection: ScalableCollection,
-  tolerance = Number.EPSILON
-) {
+export function isNormalized(collection: ScalableCollection, tolerance = Number.EPSILON) {
   return Array.isArray(collection)
     ? isScaledNormalArray(collection, 1, tolerance)
     : isScaledNormalObject(collection, 1, tolerance);

@@ -82,6 +82,23 @@ Run:
 npm install -s acausal
 ```
 
+## Maintainer Notes
+
+### Local publish testing
+
+To test publishing against a local registry without committing machine-specific settings:
+
+1. Copy `.npmrc.local.example` to `.npmrc.local`
+2. Update the registry URL if needed
+3. Use the local config explicitly when publishing
+
+```bash
+cp .npmrc.local.example .npmrc.local
+NPM_CONFIG_USERCONFIG=.npmrc.local pnpm publish
+```
+
+This keeps package manifests and CI pointed at the public npm registry by default.
+
 ### Gocausal
 
 *acausal* is also implemented in Golang. You can find the module here:

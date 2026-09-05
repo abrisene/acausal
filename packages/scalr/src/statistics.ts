@@ -35,9 +35,7 @@ export function averageObject(object: ScalableObject) {
  * @param collection An object or an array containing only number values.
  */
 export function average(collection: ScalableCollection) {
-  return Array.isArray(collection)
-    ? averageArray(collection)
-    : averageObject(collection);
+  return Array.isArray(collection) ? averageArray(collection) : averageObject(collection);
 }
 
 /**
@@ -73,9 +71,7 @@ export function standardDeviationObject(object: ScalableObject) {
  * @param collection An object or an array containing only number values.
  */
 export function standardDeviation(collection: ScalableCollection) {
-  return Array.isArray(collection)
-    ? standardDeviationArray(collection)
-    : standardDeviationObject(collection);
+  return Array.isArray(collection) ? standardDeviationArray(collection) : standardDeviationObject(collection);
 }
 
 /**

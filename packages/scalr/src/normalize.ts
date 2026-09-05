@@ -49,15 +49,9 @@ export function normalizeArray(array: number[]) {
  * @param tolerance     The tolerable variablity in comparison to account for floating point math.
  *                      Defaults to Number.EPSILON.
  */
-export function isScaledNormalArray(
-  array: number[],
-  scale = 1,
-  tolerance = Number.EPSILON
-): boolean {
+export function isScaledNormalArray(array: number[], scale = 1, tolerance = Number.EPSILON): boolean {
   const sum = sumArray(array);
-  return sum === scale
-    ? true
-    : Math.abs(Math.fround(scale) - Math.fround(sum)) < tolerance;
+  return sum === scale ? true : Math.abs(Math.fround(scale) - Math.fround(sum)) < tolerance;
 }
 
 /**
@@ -66,10 +60,7 @@ export function isScaledNormalArray(
  * @param tolerance     The tolerable variablity in comparison to account for floating point math.
  *                      Defaults to Number.EPSILON.
  */
-export function isNormalizedArray(
-  array: number[],
-  tolerance = Number.EPSILON
-): boolean {
+export function isNormalizedArray(array: number[], tolerance = Number.EPSILON): boolean {
   return isScaledNormalArray(array, 1, tolerance);
 }
 
@@ -84,10 +75,7 @@ export function isNormalizedArray(
  */
 export function scaleNormalObject(object: Record<string, number>, scale = 1) {
   const sum = sumObject(object);
-  return Object.keys(object).reduce(
-    (a, b) => ({ ...a, [b]: (object[b] / sum) * scale }),
-    {} as Record<string, number>
-  );
+  return Object.keys(object).reduce((a, b) => ({ ...a, [b]: (object[b] / sum) * scale }), {} as Record<string, number>);
 }
 
 /**

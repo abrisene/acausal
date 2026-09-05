@@ -106,15 +106,9 @@ test('Generic scaling works with arbitrary arrays and objects.', () => {
 test('Validation functions detect scaled structures properly.', () => {
   // Arrays
   expect(isScaledNormalArray(scaleNormalArray(arrayA, 6), 6)).toEqual(true);
-  expect(isScaledNormalArray(scaleNormalArray(arrayB, 25.33), 25.33)).toEqual(
-    true
-  );
-  expect(isScaledNormalArray(scaleNormalArray(arrayA, 600.5), 600.5)).toEqual(
-    true
-  );
-  expect(isScaledNormalArray(scaleNormalArray(arrayB, 0.3355), 0.3355)).toEqual(
-    true
-  );
+  expect(isScaledNormalArray(scaleNormalArray(arrayB, 25.33), 25.33)).toEqual(true);
+  expect(isScaledNormalArray(scaleNormalArray(arrayA, 600.5), 600.5)).toEqual(true);
+  expect(isScaledNormalArray(scaleNormalArray(arrayB, 0.3355), 0.3355)).toEqual(true);
 
   expect(isScaled(scale(arrayA, 6), 6)).toEqual(true);
   expect(isScaled(scale(arrayB, 25.33), 25.33)).toEqual(true);
@@ -123,15 +117,9 @@ test('Validation functions detect scaled structures properly.', () => {
 
   // Objects
   expect(isScaledNormalObject(scaleNormalObject(objA, 6), 6)).toEqual(true);
-  expect(isScaledNormalObject(scaleNormalObject(objB, 25.33), 25.33)).toEqual(
-    true
-  );
-  expect(isScaledNormalObject(scaleNormalObject(objA, 600.5), 600.5)).toEqual(
-    true
-  );
-  expect(isScaledNormalObject(scaleNormalObject(objB, 0.3355), 0.3355)).toEqual(
-    true
-  );
+  expect(isScaledNormalObject(scaleNormalObject(objB, 25.33), 25.33)).toEqual(true);
+  expect(isScaledNormalObject(scaleNormalObject(objA, 600.5), 600.5)).toEqual(true);
+  expect(isScaledNormalObject(scaleNormalObject(objB, 0.3355), 0.3355)).toEqual(true);
 
   expect(isScaled(scale(objA, 6), 6)).toEqual(true);
   expect(isScaled(scale(objB, 25.33), 25.33)).toEqual(true);

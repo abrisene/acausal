@@ -5,9 +5,26 @@
   "author": "David Robinson",
   "license": "Apache-2.0",
   "homepage": "https://github.com/abrisene/acausal/tree/main/packages/sampler",
-  "repository": { "type": "git", "url": "git+https://github.com/abrisene/acausal.git", "directory": "packages/sampler" },
-  "bugs": { "url": "https://github.com/abrisene/acausal/issues" },
-  "keywords": ["sampling", "distribution", "normal", "gaussian", "poisson", "beta", "gamma", "statistics", "random", "procedural-generation"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abrisene/acausal.git",
+    "directory": "packages/sampler"
+  },
+  "bugs": {
+    "url": "https://github.com/abrisene/acausal/issues"
+  },
+  "keywords": [
+    "sampling",
+    "distribution",
+    "normal",
+    "gaussian",
+    "poisson",
+    "beta",
+    "gamma",
+    "statistics",
+    "random",
+    "procedural-generation"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -24,7 +41,9 @@
       }
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -36,6 +55,7 @@
   },
   "devDependencies": {
     "tsup": "^8.2.4",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.4"
   }
 }

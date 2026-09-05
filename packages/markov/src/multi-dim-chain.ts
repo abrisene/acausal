@@ -258,5 +258,4 @@ export class MultiDimMarkovChain<T> {
       this._engine.clone()
     );
   }
-
 }

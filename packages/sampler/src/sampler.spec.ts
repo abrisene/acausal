@@ -356,6 +356,34 @@ describe('RandomSampler', () => {
       expect(typeof serialized.uses).toBe('number');
     });
 
+    it('should clone from the current replay point', () => {
+      const original = new RandomSampler({ seed: 42 });
+      original.normal(170, 7);
+      original.poisson(4);
+      original.uniform(0, 1);
+
+      const cloned = original.clone();
+
+      const seqA = [original.next(), original.normal(10, 2), original.beta(2, 5)];
+      const seqB = [cloned.next(), cloned.normal(10, 2), cloned.beta(2, 5)];
+
+      expect(seqA).toEqual(seqB);
+    });
+
+    it('should restore from serialized state at the same replay point', () => {
+      const original = new RandomSampler({ seed: 7 });
+      original.exponential(1.5);
+      original.binomial(12, 0.3);
+      original.logistic(0, 1);
+
+      const restored = new RandomSampler(original.serialize());
+
+      expect(restored.serialize()).toEqual(original.serialize());
+      expect(restored.gamma(3, 2)).toBe(original.gamma(3, 2));
+      expect(restored.uniform(-1, 1)).toBe(original.uniform(-1, 1));
+      expect(restored.geometric(0.25)).toBe(original.geometric(0.25));
+    });
+
     it('should create via static method', () => {
       const sampler = RandomSampler.create(42);
       expect(sampler.seed).toBe(42);
@@ -571,7 +599,8 @@ describe('RandomSampler', () => {
 
     it('should have approximately 68% of values within 1 sigma (68-95-99.7 rule)', () => {
       const sampler = new RandomSampler({ seed: 42 });
-      const mu = 100, sigma = 10;
+      const mu = 100,
+        sigma = 10;
       const values = Array.from({ length: N }, () => sampler.normal(mu, sigma));
       const within1sigma = values.filter(v => Math.abs(v - mu) <= sigma).length / N;
       const within2sigma = values.filter(v => Math.abs(v - mu) <= 2 * sigma).length / N;

@@ -34,9 +34,7 @@ export function sumObject(object: ScalableObject) {
  * @param collection An object or an array containing only number values.
  */
 export function sum(collection: ScalableCollection) {
-  return Array.isArray(collection)
-    ? sumArray(collection)
-    : sumObject(collection);
+  return Array.isArray(collection) ? sumArray(collection) : sumObject(collection);
 }
 
 /**
@@ -66,9 +64,7 @@ export function differenceObject(object: ScalableObject) {
  * @param collection An object or an array containing only number values.
  */
 export function difference(collection: ScalableCollection) {
-  return Array.isArray(collection)
-    ? differenceArray(collection)
-    : differenceObject(collection);
+  return Array.isArray(collection) ? differenceArray(collection) : differenceObject(collection);
 }
 
 /**
@@ -92,9 +88,7 @@ export function productObject(object: ScalableObject) {
  * @param collection An object or an array containing only number values.
  */
 export function product(collection: ScalableCollection) {
-  return Array.isArray(collection)
-    ? productArray(collection)
-    : productObject(collection);
+  return Array.isArray(collection) ? productArray(collection) : productObject(collection);
 }
 
 /**
@@ -124,7 +118,5 @@ export function quotientObject(object: ScalableObject) {
  * @param collection An object or an array containing only number values.
  */
 export function quotient(collection: ScalableCollection) {
-  return Array.isArray(collection)
-    ? quotientArray(collection)
-    : quotientObject(collection);
+  return Array.isArray(collection) ? quotientArray(collection) : quotientObject(collection);
 }

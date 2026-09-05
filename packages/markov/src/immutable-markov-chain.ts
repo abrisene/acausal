@@ -5,6 +5,7 @@
  * return new instances instead of modifying internal state.
  */
 
+import { Random } from '@acausal/random';
 import { MarkovChain } from './markov-chain';
 import { MCInsertOption } from './types';
 import type { BlendOptions } from './blend';
@@ -55,20 +56,34 @@ export class ImmutableMarkovChain<T extends string = string> extends MarkovChain
   }
 
   public override clone(stripSequences = false) {
-    return new ImmutableMarkovChain<T>(this.serialize(stripSequences));
+    return new ImmutableMarkovChain<T>({
+      ...MarkovChain.clone(this._model, stripSequences),
+      engine: this._engine.clone(),
+    });
   }
 
   /**
    * Returns a new mutable {@link MarkovChain} from the current state.
    */
   public toMutable(): MarkovChain<T> {
-    return new MarkovChain<T>(this.serialize());
+    return new MarkovChain<T>({
+      ...MarkovChain.clone(this._model),
+      engine: this._engine.clone(),
+    });
   }
 
   /**
    * Create an immutable chain from a mutable chain's current state.
    */
   public static from<T extends string = string>(chain: MarkovChain<T>): ImmutableMarkovChain<T> {
-    return new ImmutableMarkovChain<T>(chain.serialize());
+    const src = chain as MarkovChain<T> & {
+      _model: ReturnType<typeof MarkovChain.clone>;
+      _engine: Random;
+    };
+
+    return new ImmutableMarkovChain<T>({
+      ...MarkovChain.clone(src._model),
+      engine: src._engine.clone(),
+    });
   }
 }

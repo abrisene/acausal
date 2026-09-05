@@ -96,6 +96,34 @@ describe('Random engine class', () => {
     const engA = new Random(dto);
     expect(engA.serialize()).toEqual(dto);
   });
+
+  it('clone preserves the current replay point', () => {
+    const original = new Random({ seed: 42 });
+    original.int(1, 6);
+    original.float(0, 1);
+    original.bool();
+
+    const cloned = original.clone();
+
+    const seqA = Array.from({ length: 8 }, () => original.float(0, 1));
+    const seqB = Array.from({ length: 8 }, () => cloned.float(0, 1));
+
+    expect(seqA).toEqual(seqB);
+  });
+
+  it('serialize can restore an engine at its current replay point', () => {
+    const original = new Random({ seed: 99 });
+    original.int(1, 20);
+    original.pick(['a', 'b', 'c']);
+    original.float(0, 1);
+
+    const restored = new Random(original.serialize());
+
+    expect(restored.serialize()).toEqual(original.serialize());
+    expect(restored.int(1, 100)).toEqual(original.int(1, 100));
+    expect(restored.float(0, 1)).toEqual(original.float(0, 1));
+    expect(restored.pick(['x', 'y', 'z'])).toEqual(original.pick(['x', 'y', 'z']));
+  });
   it('can generate random integers', () => {
     const engA = new Random({ seed: 250, uses: 100 });
     const engB = new Random({ seed: 250, uses: 100 });

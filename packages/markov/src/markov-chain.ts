@@ -283,14 +283,27 @@ export class MarkovChain<T extends string = string> {
    * Serializes a Markov Chain instance into a DTO.
    */
   public serialize(stripSequences = false): MarkovChainDTO {
-    return MarkovChain.clone(this._model, stripSequences);
+    const dto = MarkovChain.clone(this._model, stripSequences);
+
+    if (this._model.seed !== undefined) {
+      dto.seed = this.seed;
+    }
+
+    if (this._model.seed !== undefined || this._model.uses !== undefined) {
+      dto.uses = this.uses;
+    }
+
+    return dto;
   }
 
   /**
    * Creates a clone of the Markov Chain.
    */
   public clone(stripSequences = false) {
-    return new MarkovChain(this.serialize(stripSequences));
+    return new MarkovChain({
+      ...MarkovChain.clone(this._model, stripSequences),
+      engine: this._engine.clone(),
+    });
   }
 
   /**

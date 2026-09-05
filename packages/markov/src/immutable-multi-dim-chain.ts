@@ -5,6 +5,7 @@
  * return new instances instead of modifying internal state.
  */
 
+import { Random } from '@acausal/random';
 import { MarkovChain } from './markov-chain';
 import { MultiDimMarkovChain } from './multi-dim-chain';
 
@@ -89,7 +90,7 @@ export class ImmutableMultiDimMarkovChain<T> extends MultiDimMarkovChain<T> {
       stateStore: { [key: string]: T };
       stateKeyFn: (state: T) => string;
       stateKeyName: string;
-      _engine: { clone(): any };
+      _engine: Random;
     };
     return ImmutableMultiDimMarkovChain.fromParts(
       src.internalChain.clone(),
