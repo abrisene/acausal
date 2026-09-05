@@ -1,0 +1,49 @@
+{
+  "name": "acausal",
+  "version": "4.0.0-alpha.1",
+  "description": "Rust-backed seeded generation, weighted choices, Markov models, and finite conditioning",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "David Robinson",
+  "homepage": "https://github.com/abrisene/acausal",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abrisene/acausal.git",
+    "directory": "bindings/javascript"
+  },
+  "bugs": {
+    "url": "https://github.com/abrisene/acausal/issues"
+  },
+  "keywords": [
+    "random",
+    "prng",
+    "weighted-random",
+    "markov",
+    "procedural-generation",
+    "wasm",
+    "rust"
+  ],
+  "files": [
+    "index.mjs",
+    "index.d.ts",
+    "acausal.wasm",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "default": "./index.mjs"
+    },
+    "./acausal.wasm": "./acausal.wasm"
+  },
+  "types": "./index.d.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

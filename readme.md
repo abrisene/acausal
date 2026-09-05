@@ -1,251 +1,38 @@
-# acausal
+# acausal 4 — Rust rewrite
 
-[![npm version](https://badge.fury.io/js/acausal.svg)](https://badge.fury.io/js/acausal) [![GitHub version](https://badge.fury.io/gh/abrisene%2Facausal.svg)](https://badge.fury.io/gh/abrisene%2Facausal) [![stability-stable](https://img.shields.io/badge/stability-stable-green.svg)](https://github.com/emersion/stability-badges#stable)
+Seeded generation, weighted choices, Markov models, and finite conditioning through one Rust core.
 
-*acausal* is a Typescript module that makes it easy to create, edit and generate pseudo random data from **Weighted Random Distributions** and **Markov Chains**.
+The public concepts are **Rng**, **Weighted**, **Markov**, and **Model**. Models hold reusable data; callers supply random state explicitly.
 
+The core has no third-party dependencies. Statistical sampling, weighted selection, and conditioning use the same random stream. Bulk model edits use ordinary operations.
 
-**Design Philosophy**
-- **Clone-on-write:** all classes use a clone-then-mutate pattern that preserves the integrity of existing models while supporting fluent chaining.
-- **Portable:** all classes are easily serializable and deserializable into data transfer objects, making them easy to store, transfer, and rebuild regardless of whether it's on the client or the server.
-- **Easy to Use:** all APIs are written to prioritize developer usability, making it easy to rapidly prototype and implement new models.
-- **Minimal Dependencies**: _acausal_ only depends on [scalr](https://www.npmjs.com/package/scalr). The PRNG is an internal MT19937 implementation.
+This is an isolated v4 alpha implementation. Existing TypeScript packages remain as migration references; deployed consumers and registries are unchanged.
 
-## What's New in v3.0
+- [Rust API and examples](rust/README.md)
+- [JavaScript/TypeScript binding](bindings/javascript/README.md)
+- [Python binding](bindings/python/README.md)
+- [API audit and migration direction](docs/specs/rust-api.md)
+- [Implementation plan](docs/specs/rust-implementation.md)
+- [Previous JavaScript overview](docs/legacy-javascript.md)
 
-Version 3.0 is a major restructuring release:
+## Run the real path
 
-- **Modular architecture**: The monolithic `markov.ts` is now split into focused modules (`markov-chain.ts`, `batch.ts`, `blend.ts`, `multi-dim-chain.ts`)
-- **Efficient batch operations**: `MarkovChainBatch` for bulk sequence/edge additions
-- **Chain blending**: Merge multiple chains with arithmetic, geometric, harmonic, max, or min strategies
-- **MultiDimMarkovChain**: Structured state spaces with named-function registry for serializable state keys
-- **Sequence scoring**: Log probability and perplexity via `score()` (instance + static dual-API)
-- **Constraint-based generation**: Length, content, pattern, and custom validator constraints
-- **Static dual-API**: `MarkovChain.blendDTOs()`, `MarkovChain.score()`, `MarkovChain.getStats()` operate on DTOs directly
-- **Generic types** for `MarkovChain<T>` and `Distribution<T>` with full type safety
-- **Proper ESM/CJS dual output** with package exports
-- **95%+ test coverage** enforced
-
-**Basic Examples:**
-```typescript
-import { MarkovChain, Distribution, Random } from 'acausal';
-
-// Random Rarity Distribution
-const dist = new Distribution({ seed: 1 });
-dist.add('Green', 10);    // Common
-dist.add('Blue', 5);      // Uncommon
-dist.add('Purple', 1);    // Rare
-
-dist.pick(10);
-
-/* Results in:
-[
-  'Green',  'Green',  'Green',  'Blue',  'Green',
-  'Blue',  'Purple', 'Green',  'Green',  'Green'
-]
-*/
-
-// Markov Chain Name Generator
-const mc = new MarkovChain({ seed: 1 });
-mc.addSequence('alice'.split(''));
-mc.addSequence('bob'.split(''));
-mc.addSequence('erwin'.split(''));
-
-console.log(mc.generate({ order: 1 }));
-
-/* Results in:
-
-[ 'a', 'l', 'i', 'n' ]
-
-*/
-
-// Random Numbers
-const rand = new Random({ seed: 1 });
-
-rand.integer(1, 6); // Roll 1d6
-
-// Results in: 6
-
+```sh
+cargo run --offline --example decision_loop
 ```
 
-## Quick Links
+The example draws a reward, generates a sequence from the existing corpus, answers a reverse conditioning query, and samples with non-root evidence.
 
-- [_acausal_ Home](https://github.com/abrisene/acausal/#readme)
-- [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/docs/distribution.md#acausal-)
-- [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/docs/markov.md#acausal-)
+## Build and check
 
-## Installation
-
-Run:
-
-```bash
-npm install -s acausal
+```sh
+python3 scripts/build-rust-bindings.py
+cargo test --offline
+cargo clippy --offline --all-targets -- -D warnings
+node scripts/smoke-bindings.mjs
+PYTHONPATH=bindings/python python3.11 scripts/smoke-bindings.py
 ```
 
-## Maintainer Notes
+The build requires the installed Rust `wasm32-unknown-unknown` target. Python requires 3.11 or later for the binding.
 
-### Local publish testing
-
-To test publishing against a local registry without committing machine-specific settings:
-
-1. Copy `.npmrc.local.example` to `.npmrc.local`
-2. Update the registry URL if needed
-3. Use the local config explicitly when publishing
-
-```bash
-cp .npmrc.local.example .npmrc.local
-NPM_CONFIG_USERCONFIG=.npmrc.local pnpm publish
-```
-
-This keeps package manifests and CI pointed at the public npm registry by default.
-
-### Gocausal
-
-*acausal* is also implemented in Golang. You can find the module here:
-* [Gocausal](https://github.com/abrisene/gocausal)
-
-## Random Distributions
-A **Random Distribution** is a simple model which can simulate picks from a weighted distribution of items.
-
-Distributions can be used to model random draws from a discrete collection of items, where each item has a different probability of appearing.
-
-**Example Use Cases:**
-
-- Simulating drawing a hand from a standard deck of cards (see below).
-- Simulating the outcome of a game of roulette (or nearly any casino game).
-- Generating eye or hair color for a fictional person.
-- Generating the spectral class of fictional stars.
-- Modeling how many McDonalds meals you'd need to buy to win Monopoly.
-- Modeling any pseudo-random system through observation.
-
-**Distribution Quickstart Example - Card Deck:**
-```typescript
-import { Distribution } from 'acausal';
-
-// Create a Deck of Cards
-const suits = ['♣️', '♦️', '♥️', '♠️'];
-const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
-// Combine the Suits and Ranks
-const cards = suits.reduce((last, suit) => {
-  return [...last, ...ranks.map(rank => `${rank}${suit}`)];
-}, []);
-
-/* Should result in:
-[
-  'A♣️',  '2♣️',  '3♣️',  '4♣️', '5♣️', '6♣️', '7♣️',
-  '8♣️',  '9♣️',  '10♣️', 'J♣️', 'Q♣️', 'K♣️', 'A♦️',
-  '2♦️',  '3♦️',  '4♦️',  '5♦️', '6♦️', '7♦️', '8♦️',
-  '9♦️',  '10♦️', 'J♦️',  'Q♦️', 'K♦️', 'A♥️', '2♥️',
-  '3♥️',  '4♥️',  '5♥️',  '6♥️', '7♥️', '8♥️', '9♥️',
-  '10♥️', 'J♥️',  'Q♥️',  'K♥️', 'A♠️', '2♠️', '3♠️',
-  '4♠️',  '5♠️',  '6♠️',  '7♠️', '8♠️', '9♠️', '10♠️',
-  'J♠️',  'Q♠️',  'K♠️'
-]
-*/
-
-// Create weighted source data for the Distribution
-const src = cards.reduce((last, card) => ({ ...last, [card]: 1 }), {});
-
-/* Should result in:
-{
-  'A♣️': 1,
-  '2♣️': 1,
-  '3♣️': 1,
-  ...
-  'J♠️': 1,
-  'Q♠️': 1,
-  'K♠️': 1,
-}
-*/
-
-// Create the Distribution from the deck.
-const deck = new Distribution({
-  seed: 23,       // Random Seed - if this is empty it will be generated.
-  source: src,    // The weighted source to generate the normalized Distribution from.
-});
-
-// Add in 2 Jokers
-deck.add('🃏', 2);
-
-// Generate 4 picks from the deck without replacement.
-const picks = deck.pick(4, undefined, true);
-console.log(picks);
-
-/* Should print:
-
-[ 'J♣️', '10♠️', '3♦️', '9♣️' ]
-
-*/
-```
-
-You can learn more about how to use Random Distributions with _acausal_ in the [Random Distribution Quickstart](https://github.com/abrisene/acausal/blob/master/docs/distribution.md#acausal-).
-
-## Markov Chains
-
-A **Markov Chain** is a mathematical model of a system in which the future state of the system depends only on its present state.
-
-Markov Chains are usually generated by building a statistical model off of sample data, such as a list of names, which can then be used to output sequences which resemble the sampled data. A useful property of this process is that sample data can be "mixed" together like paint to achieve a desired result.
-
-For example, if you wanted to generate names which sounded like a mix of Irish and Japanese, you could generate a Markov Chain from a sample of Irish and Japanese names and the resulting model would be able to output names that mixed the two.
-
-**Markov Chain Quickstart Example - Name Generator:**
-```typescript
-import { MarkovChain } from 'acausal';
-
-// Sample Data
-const jpNames = ['honoka', 'akari', 'himari', 'mei', 'ema'];
-const ieNames = ['grace', 'fiadh', 'emily', 'sophie', 'ava'];
-const names = [...jpNames, ...ieNames];
-
-// Prepare Data Source - the class expects an array of arrays.
-const src = names.map(name => name.split(''));
-
-/* Should result in:
-[
-  [ 'h', 'o', 'n', 'o', 'k', 'a' ],
-  [ 'a', 'k', 'a', 'r', 'i' ],
-  [ 'h', 'i', 'm', 'a', 'r', 'i' ],
-  [ 'm', 'e', 'i' ],
-  [ 'e', 'm', 'a' ],
-  [ 'g', 'r', 'a', 'c', 'e' ],
-  [ 'f', 'i', 'a', 'd', 'h' ],
-  [ 'e', 'm', 'i', 'l', 'y' ],
-  [ 's', 'o', 'p', 'h', 'i', 'e' ],
-  [ 'a', 'v', 'a' ]
-]
-*/
-
-// Create the Markov Chain from the source data.
-const chain = new MarkovChain({
-  seed: 33,       // Random Seed - if this is empty it will be generated.
-  maxOrder: 2,    // Maximum Order - Chain will generate orders up to this value.
-  sequences: src, // Source data, expects an array of arrays.
-});
-
-// Generate 5 picks.
-for (let i = 0; i < 3; i += 1) {
-  const pick = chain.generate({
-    min: 4,       // Min Picks - This will force the model to pick at least 4 times.
-    max: 10,      // Max Picks - Stops generation after 10 picks if no end has been reached.
-    order: 2,     // Order - The largest gram size used to calculate the next pick.
-    strict: false // Strict Order - Dynamically adjusts order up or down each pick if false.
-  });
-  console.log(pick.join(''));
-}
-
-/* Should print:
-
-    sophimari
-    emari
-    hie
-
-*/
-```
-
-You can learn more about how to use Markov Chains with _acausal_ in the [Markov Chain Quickstart](https://github.com/abrisene/acausal/blob/master/docs/markov.md#acausal-)
-
-
-## Extended API Documentation
-
-For documentation of underlying classes and functions, please see the [API documentation](https://abrisene.github.io/acausal/modules.html).
+Performance numbers are investigation targets. Correctness, reproducible state, explicit failures, and usable consumer paths determine the implementation work.

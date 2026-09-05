@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel>=0.42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acausal"
+version = "4.0.0a1"
+description = "Rust-backed seeded generation, weighted choices, Markov models, and finite conditioning"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "David Robinson" }]
+keywords = ["random", "prng", "weighted-random", "markov", "procedural-generation", "rust"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries",
+  "Typing :: Typed"
+]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/abrisene/acausal"
+Issues = "https://github.com/abrisene/acausal/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["acausal*"]
+
+[tool.setuptools.package-data]
+acausal = ["_native/*.dylib", "_native/*.so", "_native/*.dll", "py.typed"]
