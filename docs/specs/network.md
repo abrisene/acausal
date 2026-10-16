@@ -94,6 +94,9 @@ arc consistency: a label b of node j survives only if, for every edge (j -> i, r
 start: a node with no candidates -> refuse "unsatisfiable" naming the lowest-index such node.
        Otherwise every node is enqueued in index order and propagated; contradiction -> refuse "unsatisfiable".
 
+count rules (below) are revised after the nodes, in the same worklist discipline: a queue of rules with a queued flag,
+  a rule enqueued whenever a node it lists loses a label, and every rule enqueued at the start in index order.
+
 loop:
   pick the node with more than one label and the smallest domain; ties by smaller word(seed, [node, 0, 2]), then smaller index.
   none left -> solved: each domain holds one label.
@@ -111,13 +114,30 @@ loop:
 
 A refusal reports the reason, the node whose domain emptied last (or none), the decisions and the backtracks.
 
+### Count rules
+
+A count rule lists `nodes`, `labels`, `min` and `max`: between `min` and `max` of the nodes must hold a label of the set. It reaches only its nodes. For one rule, with `definite` the nodes whose whole domain lies in the set and `possible` the nodes whose domain meets it:
+
+```
+definite > max, or possible < min  -> contradiction
+possible == definite               -> nothing to do
+definite == max                    -> remove the set's labels from every node that is possible but not definite
+possible == min                    -> remove every label outside the set from every node that is possible but not definite
+```
+
+A node that lost labels is enqueued with its neighbours. `sample` ignores count rules. `violations` adds one for each rule whose number of nodes holding a set label is outside `min..=max`. Rules are validated by `with_counts`: nodes and labels ascending and in range, `min <= max <= nodes`.
+
 ## Violations
 
 `violations(labels)` counts the edges `(i, j)` with `i < j` for which `tables[r][a][b]` is zero, where `r` is the relation of `i`'s edge to `j`, `a` the label of `i` and `b` the label of `j`. (The reverse edge's table is the transpose, so one direction decides.) `sample` treats zero as forbidden: a node whose candidates all have weight zero keeps its current label, so a sample can finish with violations. Use `repair` to mend them locally, or `solve` for hard constraints over the whole network.
 
+## Region solve
+
+`solve_region(free, fixed, seed, max_decisions, max_backtracks)` labels the `free` nodes (ascending, distinct) with the nodes in `fixed` (ascending by node, a candidate label each, disjoint from `free`) held fixed. The sub-network has the free and fixed nodes, the edges that touch a free node and whose other end is in the region, a fixed node's single candidate, and each count rule that lists a free node, restricted to its free nodes with the number of fixed nodes that hold a set label taken off `min` (to zero at least) and `max` (a rule that is already over its `max` refuses `unsatisfiable`, with no node). The search is `solve`'s, with every node hashed by its number in the whole network, so a node's draws depend only on the seed, its number and the region's contents, never on what other regions are solved or in what order. Members of a rule that are in neither list do not count.
+
 ## Repair
 
-`repair(labels, seed, budget)` mends the violations of a labelling locally. It frees a neighbourhood around one cluster of violations at a time, pins the nodes just outside it to their current labels, and solves the neighbourhood with the `solve` search. Nodes outside the solved neighbourhoods keep their labels.
+`repair(labels, seed, budget)` mends the violations of a labelling locally. A violated count rule is a violation whose cluster is its nodes, and its nodes count as neighbours of each other when the region grows (one hop). A region solve includes every count rule that lists a freed node, as in `solve_region`; a solved region satisfies them. It frees a neighbourhood around one cluster of violations at a time, pins the nodes just outside it to their current labels, and solves the neighbourhood with the `solve` search. Nodes outside the solved neighbourhoods keep their labels.
 
 `budget` is `max_radius` (1 to 16), `max_decisions` and `max_backtracks` (the limits of each neighbourhood search) and `max_rounds` (at most 100000). A budget out of range, a labelling whose length is not the node count, or a label that is not one of its node's candidates (a unary label with non-zero weight) is an invalid-parameter error. Everything else returns an outcome.
 
@@ -178,5 +198,5 @@ Integer division throughout. A relation with no observations gives 33 everywhere
 ## Notes a porter needs
 
 * **Validation `Network::new` enforces.** At most 4096 labels and at most 2^31 - 1 nodes; one unary list per node, with labels below `labels` in strictly ascending order (weights of zero are dropped); one table per relation an edge uses, each with `labels * labels` entries; no self edge and no repeated neighbour in a node's list; every edge has a reverse edge, and the two relations' tables are transposes of each other. `violations(labels)` also needs one label per node, each below `labels`, and refuses otherwise.
-* **Key allocation.** Draws use these key shapes under one seed: sampling `[node, round, 0]` and ICM tie-breaks `[node, round, 1]`; `solve` value draws `[id, serial, 0]` and decision tie-breaks `[id, serial, 1]`; `repair` seeds a fresh counter per neighbourhood from `word(seed, [0x52455041, v0, radius])`. The shapes coincide across `sample` and `solve` on one seed, so the draws are correlated; callers that use both on the same network give each a different seed.
-* **Cost.** `solve` scans every undecided node on each decision and hashes each tie, so a solve is quadratic in the node count (a 128 by 128 grid with four labels takes about one second, 192 by 192 about seven). `repair` solves only neighbourhoods and does not pay this on the whole network. `sample` does `rounds * nodes` work, and the 100000-round cap is not a work cap.
+* **Key allocation.** Under one seed: `sample` draws with `[node, round, 0]` and breaks ICM ties with `[node, round, 1]`; `solve` breaks ties between equal domains with `[id, 0, 2]` (fixed per node) and draws a value with `[id, serial, 1]`; `repair` seeds a fresh counter per neighbourhood from `word(seed, [0x52455041, v0, radius])`. The `[x, y, 1]` shapes coincide across `sample` and `solve`, so callers that use both on one network give each a different seed.
+* **Cost.** `solve` picks the next node from a priority queue keyed by `(domain size, tie word, node)` and propagates with a worklist, so it is close to linear in the nodes it visits (a 192 by 192 grid of the mosaic rules takes about a quarter of a second). `sample` does `rounds * nodes` work, and the 100000-round cap is not a work cap.

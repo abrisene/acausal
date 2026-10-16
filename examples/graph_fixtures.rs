@@ -9,8 +9,8 @@
 //! diff.
 
 use acausal::{
-    Budget, Counter, Edge, Network, Outcome, PairStats, PairTable, RepairBudget, RepairOutcome,
-    Schedule,
+    Budget, Count, Counter, Edge, Network, Outcome, PairStats, PairTable, RegionOutcome,
+    RepairBudget, RepairOutcome, Schedule,
 };
 use std::fmt::Write as _;
 
@@ -80,6 +80,7 @@ fn all_labels(nodes: usize, labels: u32, weights: &[u32]) -> Vec<Vec<(u32, u32)>
 }
 
 struct Case {
+    counts: Vec<Count>,
     name: &'static str,
     labels: u32,
     edges: Vec<Vec<Edge>>,
@@ -108,12 +109,26 @@ fn network_json(case: &Case) -> String {
         .iter()
         .map(|node| list(node.iter().map(|(l, w)| format!("[{l},{w}]"))))
         .collect::<Vec<_>>();
+    let counts = case
+        .counts
+        .iter()
+        .map(|c| {
+            format!(
+                "{{\"nodes\":{},\"labels\":{},\"min\":{},\"max\":{}}}",
+                list(c.nodes.iter()),
+                list(c.labels.iter()),
+                c.min,
+                c.max
+            )
+        })
+        .collect::<Vec<_>>();
     format!(
-        "{{\"labels\":{},\"edges\":{},\"tables\":{},\"unary\":{}}}",
+        "{{\"labels\":{},\"edges\":{},\"tables\":{},\"unary\":{},\"counts\":{}}}",
         case.labels,
         list(edges),
         list(tables),
-        list(unary)
+        list(unary),
+        list(counts)
     )
 }
 
@@ -146,6 +161,59 @@ fn run_solve(net: &Network, seed: u32, max_decisions: u32, max_backtracks: u32) 
             list(labels)
         ),
         Outcome::Refused {
+            reason,
+            node,
+            stats,
+        } => format!(
+            "{head}\"status\":\"refused\",\"reason\":\"{}\",\"node\":{},\"decisions\":{},\"backtracks\":{}}}",
+            reason.name(),
+            node.map_or("null".to_owned(), |n| n.to_string()),
+            stats.decisions,
+            stats.backtracks
+        ),
+    }
+}
+
+/// Solve `free` with the rest of the network held to what `solve(base)` found,
+/// pinning only the nodes that share an edge or a count rule with a free node.
+fn run_region(net: &Network, base: u32, free: &[u32], seed: u32, edges: &[Vec<Edge>]) -> String {
+    let budget = Budget {
+        max_decisions: 100_000,
+        max_backtracks: 1_000,
+    };
+    let Outcome::Solved { labels: whole, .. } = net.solve(&Counter::new(base), budget) else {
+        panic!("the base solve of a region case must succeed");
+    };
+    let mut touching: std::collections::BTreeSet<u32> = std::collections::BTreeSet::new();
+    for &node in free {
+        touching.extend(edges[node as usize].iter().map(|e| e.to));
+    }
+    for rule in net.counts() {
+        if rule.nodes.iter().any(|n| free.contains(n)) {
+            touching.extend(rule.nodes.iter().copied());
+        }
+    }
+    let fixed: Vec<(u32, u32)> = touching
+        .into_iter()
+        .filter(|n| !free.contains(n))
+        .map(|n| (n, whole[n as usize]))
+        .collect();
+    let head = format!(
+        "{{\"op\":\"region\",\"seed\":{seed},\"maxDecisions\":100000,\"maxBacktracks\":1000,\"free\":{},\"fixed\":{},",
+        list(free.iter()),
+        list(fixed.iter().map(|(n, l)| format!("[{n},{l}]")))
+    );
+    match net
+        .solve_region(free, &fixed, &Counter::new(seed), budget)
+        .unwrap()
+    {
+        RegionOutcome::Solved { labels, stats } => format!(
+            "{head}\"status\":\"solved\",\"decisions\":{},\"backtracks\":{},\"labels\":{}}}",
+            stats.decisions,
+            stats.backtracks,
+            list(labels)
+        ),
+        RegionOutcome::Refused {
             reason,
             node,
             stats,
@@ -269,6 +337,7 @@ fn main() {
     let mut cases: Vec<Case> = Vec::new();
     let same = table(2, &[&[9, 1], &[1, 9]]);
     cases.push(Case {
+        counts: vec![],
         name: "grid-attract-2",
         labels: 2,
         edges: grid(8, 6),
@@ -278,6 +347,7 @@ fn main() {
     let differ3 = table(3, &[&[1, 8, 8], &[8, 1, 8], &[8, 8, 1]]);
     let like3 = table(3, &[&[8, 1, 1], &[1, 8, 1], &[1, 1, 8]]);
     cases.push(Case {
+        counts: vec![],
         name: "grid-stripes-3",
         labels: 3,
         edges: grid(10, 6),
@@ -286,6 +356,7 @@ fn main() {
     });
     let neutral = table(3, &[&[1, 1, 1], &[1, 1, 1], &[1, 1, 1]]);
     cases.push(Case {
+        counts: vec![],
         name: "grid-skewed-unary",
         labels: 3,
         edges: grid(6, 6),
@@ -295,6 +366,7 @@ fn main() {
     // Big weights stress the renormalisation: 250^4 overflows 32 bits.
     let heavy = table(2, &[&[250, 3], &[3, 250]]);
     cases.push(Case {
+        counts: vec![],
         name: "grid-heavy-weights",
         labels: 2,
         edges: grid(7, 7),
@@ -339,6 +411,7 @@ fn main() {
             ],
         );
         cases.push(Case {
+            counts: vec![],
             name: "grid-king-moves-huge-weights",
             labels: 3,
             edges: king.clone(),
@@ -360,6 +433,7 @@ fn main() {
             });
         }
         cases.push(Case {
+            counts: vec![],
             name: "grid-frustrated-k4-three-labels",
             labels: 3,
             edges: triangle,
@@ -370,6 +444,7 @@ fn main() {
     // More labels than a 40-bit total allows at full weight, so the draw
     // has to renormalise the total.
     cases.push(Case {
+        counts: vec![],
         name: "grid-three-hundred-labels",
         labels: 300,
         edges: vec![Vec::new(); 40],
@@ -378,6 +453,7 @@ fn main() {
     });
     let differ2 = table(2, &[&[0, 1], &[1, 0]]);
     cases.push(Case {
+        counts: vec![],
         name: "wfc-checkerboard-2",
         labels: 2,
         edges: grid(7, 5),
@@ -386,6 +462,7 @@ fn main() {
     });
     let differ_all = table(3, &[&[0, 1, 1], &[1, 0, 1], &[1, 1, 0]]);
     cases.push(Case {
+        counts: vec![],
         name: "wfc-three-colouring",
         labels: 3,
         edges: grid(8, 6),
@@ -396,6 +473,7 @@ fn main() {
     let mut pinned = all_labels(35, 2, &[1, 1]);
     pinned[0] = vec![(1, 1)];
     cases.push(Case {
+        counts: vec![],
         name: "wfc-pinned-corner",
         labels: 2,
         edges: grid(7, 5),
@@ -420,6 +498,7 @@ fn main() {
         });
     }
     cases.push(Case {
+        counts: vec![],
         name: "wfc-odd-cycle",
         labels: 2,
         edges: ring,
@@ -443,6 +522,7 @@ fn main() {
         &[&[0, 1, 1, 1], &[1, 0, 1, 1], &[1, 1, 0, 1], &[1, 1, 1, 0]],
     );
     cases.push(Case {
+        counts: vec![],
         name: "wfc-k5-four-colours",
         labels: 4,
         edges: k5,
@@ -468,6 +548,7 @@ fn main() {
             }
         }
         cases.push(Case {
+            counts: vec![],
             name,
             labels: 3,
             edges: random,
@@ -477,6 +558,7 @@ fn main() {
     }
     let free = table(4, &[&[1; 4], &[1; 4], &[1; 4], &[1; 4]]);
     cases.push(Case {
+        counts: vec![],
         name: "wfc-unconstrained-path",
         labels: 4,
         edges: grid(20, 1),
@@ -485,6 +567,7 @@ fn main() {
     });
     // Repair: a sample of a hard 3-colouring leaves violations behind.
     cases.push(Case {
+        counts: vec![],
         name: "grid-repair-three-colours",
         labels: 3,
         edges: grid(12, 12),
@@ -509,6 +592,7 @@ fn main() {
             .map(|l| (l, if l == 5 || l == 10 { 1 } else { 4 }))
             .collect();
         cases.push(Case {
+            counts: vec![],
             name: "grid-repair-open-sides",
             labels: 16,
             edges: grid(9, 7),
@@ -521,6 +605,56 @@ fn main() {
         });
     }
 
+    // A little town: five houses of six rooms, each house a path of rooms.
+    // Labels: 0 hall, 1 bathroom, 2 kitchen, 3 bedroom. A bathroom may not
+    // share a wall with a kitchen. Every house has exactly one bathroom and at
+    // most one kitchen, and no rule reaches past its own house.
+    {
+        let (houses, rooms) = (5usize, 6usize);
+        let mut edges = vec![Vec::new(); houses * rooms];
+        for h in 0..houses {
+            for r in 0..rooms - 1 {
+                let (a, b) = (h * rooms + r, h * rooms + r + 1);
+                edges[a].push(Edge {
+                    to: b as u32,
+                    relation: 0,
+                });
+                edges[b].push(Edge {
+                    to: a as u32,
+                    relation: 1,
+                });
+            }
+        }
+        let next_to = table(
+            4,
+            &[&[1, 1, 1, 1], &[1, 1, 0, 1], &[1, 0, 1, 1], &[1, 1, 1, 1]],
+        );
+        let mut counts = Vec::new();
+        for h in 0..houses as u32 {
+            let nodes: Vec<u32> = (0..rooms as u32).map(|r| h * rooms as u32 + r).collect();
+            counts.push(Count {
+                nodes: nodes.clone(),
+                labels: vec![1],
+                min: 1,
+                max: 1,
+            });
+            counts.push(Count {
+                nodes,
+                labels: vec![2],
+                min: 0,
+                max: 1,
+            });
+        }
+        cases.push(Case {
+            counts,
+            name: "counts-town",
+            labels: 4,
+            edges,
+            tables: vec![next_to.clone(), transpose(4, &next_to)],
+            unary: all_labels(houses * rooms, 4, &[4, 1, 1, 3]),
+        });
+    }
+
     let mut rendered = Vec::new();
     for case in &cases {
         let net = Network::new(
@@ -529,6 +663,8 @@ fn main() {
             case.tables.clone(),
             case.unary.clone(),
         )
+        .unwrap()
+        .with_counts(case.counts.clone())
         .unwrap();
         let mut runs = Vec::new();
         if case.name.starts_with("grid") {
@@ -540,9 +676,41 @@ fn main() {
             for (start, seed, budget) in repairs(case.name) {
                 runs.push(run_repair(&net, start, seed, budget));
             }
+        } else if case.name == "counts-town" {
+            for seed in [1u32, 2, 3] {
+                runs.push(run_solve(&net, seed, 100_000, 1_000));
+            }
+            // A sample ignores the rules; repair mends the houses it breaks.
+            let budget = RepairBudget {
+                max_radius: 4,
+                max_decisions: 100_000,
+                max_backtracks: 1_000,
+                max_rounds: 1_000,
+            };
+            for sample_seed in [1u32, 2, 3] {
+                runs.push(run_repair(&net, (sample_seed, 4, 0), sample_seed, budget));
+            }
+            // One house at a time, the others held as they are.
+            runs.push(run_region(&net, 1, &[6, 7, 8, 9, 10, 11], 5, &case.edges));
+            runs.push(run_region(&net, 1, &[12, 13, 14], 6, &case.edges));
+            runs.push(run_region(
+                &net,
+                2,
+                &[18, 19, 20, 21, 22, 23],
+                7,
+                &case.edges,
+            ));
         } else {
             for seed in [1u32, 2, 3] {
                 runs.push(run_solve(&net, seed, 100_000, 1_000));
+            }
+            if case.name == "wfc-three-colouring" {
+                // A block of the grid, its border held to a full solution.
+                let free: Vec<u32> = (0..4)
+                    .flat_map(|y| (1..5).map(move |x| y * 8 + x))
+                    .collect();
+                runs.push(run_region(&net, 1, &free, 9, &case.edges));
+                runs.push(run_region(&net, 2, &free, 10, &case.edges));
             }
             if case.name == "wfc-k5-four-colours" {
                 runs.push(run_solve(&net, 1, 100_000, 2));

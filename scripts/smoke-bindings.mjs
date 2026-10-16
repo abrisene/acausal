@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const modulePath = process.env.ACAUSAL_JS_MODULE ?? '../bindings/javascript/index.mjs';
-const { init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkRepair, networkViolations } = await import(modulePath);
+const { init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkRepair, networkSolveRegion, networkViolations } = await import(modulePath);
 await init();
 const resources = [];
 const keep = value => (resources.push(value), value);
@@ -92,6 +92,13 @@ try {
         assert.deepEqual([got.rounds, got.decisions, got.backtracks, got.changed], [run.rounds, run.decisions, run.backtracks, run.changed], item.name);
         if (run.status === 'repaired') assert.equal(networkViolations(spec, got.labels), 0, item.name);
         else assert.deepEqual([got.reason, got.node, got.remaining], [run.reason, run.node, run.remaining], item.name);
+      } else if (run.op === 'region') {
+        const got = networkSolveRegion(spec, run.free, run.fixed, run.seed, {maxDecisions: run.maxDecisions, maxBacktracks: run.maxBacktracks});
+        assert.equal(got.status, run.status, item.name);
+        assert.equal(got.decisions, run.decisions);
+        assert.equal(got.backtracks, run.backtracks);
+        if (run.status === 'solved') assert.deepEqual(got.labels, run.labels, item.name);
+        else { assert.equal(got.reason, run.reason); assert.equal(got.node, run.node); }
       } else {
         assert.equal(run.op, 'solve');
         const got = networkSolve(spec, run.seed, {maxDecisions: run.maxDecisions, maxBacktracks: run.maxBacktracks});

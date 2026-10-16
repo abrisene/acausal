@@ -884,6 +884,9 @@ class NetworkSpec(TypedDict):
     edges: Sequence[Sequence[tuple[int, int]]]
     tables: Sequence[Sequence[int]]
     unary: Sequence[Sequence[tuple[int, int]]]
+    # Optional cardinality rules: each is {"nodes": [...], "labels": [...], "min": m, "max": M},
+    # nodes and labels ascending: between m and M of the nodes must hold one of the labels.
+    counts: Sequence[dict[str, Any]]
 
 
 def _network_payload(spec: NetworkSpec) -> _Writer:
@@ -903,6 +906,16 @@ def _network_payload(spec: NetworkSpec) -> _Writer:
         writer.u32(len(node), "unary count")
         for label, weight in node:
             writer.u32(label, "label").u32(weight, "weight")
+    counts = spec.get("counts", [])
+    writer.u32(len(counts), "count rule count")
+    for rule in counts:
+        writer.u32(len(rule["nodes"]), "count rule nodes")
+        for node in rule["nodes"]:
+            writer.u32(node, "count rule node")
+        writer.u32(len(rule["labels"]), "count rule labels")
+        for label in rule["labels"]:
+            writer.u32(label, "count rule label")
+        writer.u32(rule["min"], "count rule min").u32(rule["max"], "count rule max")
     return writer
 
 
@@ -957,6 +970,46 @@ def network_solve(spec: NetworkSpec, seed: int, max_decisions: int = 1_000_000, 
         "decisions": decisions,
         "backtracks": backtracks,
     }
+
+
+def network_solve_region(
+    spec: NetworkSpec,
+    free: Sequence[int],
+    fixed: Sequence[tuple[int, int]],
+    seed: int,
+    max_decisions: int = 1_000_000,
+    max_backtracks: int = 2_000,
+) -> dict[str, Any]:
+    """Solve part of the network with the rest held fixed. ``free`` are the nodes
+    to label (ascending); ``fixed`` pairs ``(node, label)`` pin other nodes
+    (ascending by node). Edges to nodes in neither list are ignored. Returns
+    ``{"status": "solved", "labels"}`` (one per free node, in order) or a refusal as
+    ``network_solve``."""
+    writer = (
+        _network_payload(spec)
+        .u32(_u32(seed, "seed"))
+        .u32(max_decisions, "max_decisions")
+        .u32(max_backtracks, "max_backtracks")
+        .u32(len(free), "free count")
+    )
+    for node in free:
+        writer.u32(node, "free node")
+    writer.u32(len(fixed), "fixed count")
+    for node, label in fixed:
+        writer.u32(node, "fixed node").u32(label, "fixed label")
+    reader = _Reader(_runtime().call(81, writer.finish()))
+    solved = reader.u8() == 1
+    decisions = reader.u32()
+    backtracks = reader.u32()
+    if solved:
+        labels = [reader.u32() for _ in range(reader.u32())]
+        reader.finish()
+        return {"status": "solved", "labels": labels, "decisions": decisions, "backtracks": backtracks}
+    reason = reader.text()
+    has_node = reader.u8() == 1
+    node = reader.u32()
+    reader.finish()
+    return {"status": "refused", "reason": reason, "node": node if has_node else None, "decisions": decisions, "backtracks": backtracks}
 
 
 def network_repair(
@@ -1069,6 +1122,7 @@ __all__ = [
     "counter_word",
     "init",
     "network_repair",
+    "network_solve_region",
     "network_sample",
     "network_solve",
     "network_violations",

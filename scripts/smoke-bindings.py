@@ -3,7 +3,7 @@ from contextlib import ExitStack
 import json
 import math
 from pathlib import Path
-from acausal import Rng, Weighted, Markov, Model, PairStats, AcausalError, counter_word, counter_unit, network_sample, network_solve, network_repair, network_violations
+from acausal import Rng, Weighted, Markov, Model, PairStats, AcausalError, counter_word, counter_unit, network_sample, network_solve, network_repair, network_solve_region, network_violations
 
 root = Path(__file__).resolve().parents[1]
 
@@ -95,6 +95,14 @@ with ExitStack() as stack:
                     assert network_violations(spec, got["labels"]) == 0, item["name"]
                 else:
                     assert [got[k] for k in ("reason", "node", "remaining")] == [run[k] for k in ("reason", "node", "remaining")], item["name"]
+            elif run["op"] == "region":
+                got = network_solve_region(spec, run["free"], [tuple(p) for p in run["fixed"]], run["seed"], run["maxDecisions"], run["maxBacktracks"])
+                assert got["status"] == run["status"], item["name"]
+                assert (got["decisions"], got["backtracks"]) == (run["decisions"], run["backtracks"])
+                if run["status"] == "solved":
+                    assert got["labels"] == run["labels"], item["name"]
+                else:
+                    assert (got["reason"], got["node"]) == (run["reason"], run["node"])
             else:
                 assert run["op"] == "solve"
                 got = network_solve(spec, run["seed"], run["maxDecisions"], run["maxBacktracks"])

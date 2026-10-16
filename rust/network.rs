@@ -22,6 +22,9 @@ use std::collections::BTreeSet;
 /// `labels * labels` weights, so this bounds memory at 64 MiB per table.
 pub const MAX_LABELS: u32 = 4096;
 
+/// Most count rules a network may have.
+pub const MAX_COUNTS: usize = 1 << 24;
+
 /// Largest `gibbs + icm` a sample may run.
 pub const MAX_ROUNDS: u32 = 100_000;
 
@@ -200,6 +203,39 @@ pub enum RepairOutcome {
     },
 }
 
+/// A cardinality rule: between `min` and `max` of the listed `nodes` must hold
+/// one of the listed `labels`. It reaches only those nodes, so a rule about one
+/// house, one room or one level never sees the rest of the network.
+///
+/// `solve` and `repair` enforce it (as does [`Network::solve_region`]);
+/// `sample` ignores it. [`Network::violations`] counts it as one violation
+/// when it does not hold.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Count {
+    /// Ascending, distinct.
+    pub nodes: Vec<u32>,
+    /// Ascending, distinct.
+    pub labels: Vec<u32>,
+    pub min: u32,
+    pub max: u32,
+}
+
+/// The answer of [`Network::solve_region`].
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RegionOutcome {
+    Solved {
+        /// One label per free node, in the order the free nodes were given.
+        labels: Vec<u32>,
+        stats: SolveStats,
+    },
+    Refused {
+        reason: RefusalReason,
+        /// The node (in the whole network) whose domain emptied last.
+        node: Option<u32>,
+        stats: SolveStats,
+    },
+}
+
 #[derive(Clone, Debug)]
 pub struct Network {
     labels: u32,
@@ -208,6 +244,9 @@ pub struct Network {
     unary: Vec<Vec<(u32, u32)>>,
     colours: Vec<u32>,
     colour_count: u32,
+    counts: Vec<Count>,
+    /// For each node, the counts that list it.
+    node_counts: Vec<Vec<u32>>,
 }
 
 fn bad(message: &str) -> Error {
@@ -317,7 +356,46 @@ impl Network {
             unary: cleaned,
             colours,
             colour_count,
+            counts: Vec::new(),
+            node_counts: vec![Vec::new(); n],
         })
+    }
+
+    /// The network with cardinality rules (replacing any it had).
+    pub fn with_counts(mut self, counts: Vec<Count>) -> Result<Self, Error> {
+        let n = self.nodes();
+        if counts.len() > MAX_COUNTS {
+            return Err(bad("too many count rules"));
+        }
+        let mut node_counts = vec![Vec::new(); n];
+        for (c, count) in counts.iter().enumerate() {
+            let ascending = |v: &[u32]| v.windows(2).all(|w| w[0] < w[1]);
+            if !ascending(&count.nodes) || !ascending(&count.labels) {
+                return Err(bad(
+                    "a count rule lists nodes and labels in ascending order",
+                ));
+            }
+            if count.nodes.last().is_some_and(|&v| v as usize >= n)
+                || count.labels.last().is_some_and(|&l| l >= self.labels)
+            {
+                return Err(bad(
+                    "a count rule names a node or label that does not exist",
+                ));
+            }
+            if count.min > count.max || count.max as usize > count.nodes.len() {
+                return Err(bad("a count rule needs min <= max <= its number of nodes"));
+            }
+            for &node in &count.nodes {
+                node_counts[node as usize].push(c as u32);
+            }
+        }
+        self.counts = counts;
+        self.node_counts = node_counts;
+        Ok(self)
+    }
+
+    pub fn counts(&self) -> &[Count] {
+        &self.counts
     }
 
     pub fn nodes(&self) -> usize {
@@ -446,7 +524,9 @@ impl Network {
                 self.labels
             )));
         }
-        let mut count = 0;
+        let mut count = (0..self.counts.len())
+            .filter(|&c| !self.count_holds(labels, c))
+            .count();
         for (node, list) in self.edges.iter().enumerate() {
             for edge in list {
                 if (edge.to as usize) > node {
@@ -469,18 +549,22 @@ impl Network {
             edges: &self.edges,
             unary: &self.unary,
             ids: None,
+            counts: &self.counts,
         };
         Search::new(problem, &rows, counter, budget).run()
     }
 
     /// Repair the violations of `labels` locally.
     ///
-    /// Each round takes the lowest node with a violating edge and its cluster
-    /// (the nodes reached from it over violating edges), frees every node
-    /// within `radius` hops of the cluster, pins the nodes just outside to
-    /// their current labels, and solves that region with the `solve` search.
-    /// The radius grows from 1 until a region is solved. Nodes outside the
-    /// solved regions keep their labels.
+    /// Each round takes the lowest node with a violation (a violating edge, or
+    /// a count rule that does not hold) and its cluster (the nodes reached
+    /// from it over violating edges; for a count rule, the nodes it lists),
+    /// frees every node within `radius` hops of the cluster, pins the nodes
+    /// just outside to their current labels, and solves that region with the
+    /// `solve` search. Count rules that touch the region are part of it, with
+    /// the pinned nodes' contribution taken off their limits. The radius grows
+    /// from 1 until a region is solved. Nodes outside the solved regions keep
+    /// their labels.
     ///
     /// `Err` only for invalid input: a labelling of the wrong length, a label
     /// that is not one of the node's candidates, or a budget out of range.
@@ -515,7 +599,8 @@ impl Network {
         }
         let mut state = labels.to_vec();
         let mut stats = RepairStats::default();
-        // Violating edges as (lower node, higher node), in ascending order.
+        // Violating edges as (lower node, higher node), in ascending order,
+        // and violated count rules by index.
         let mut bad: BTreeSet<(u32, u32)> = BTreeSet::new();
         for (node, list) in self.edges.iter().enumerate() {
             for edge in list {
@@ -524,24 +609,35 @@ impl Network {
                 }
             }
         }
+        let mut bad_counts: BTreeSet<u32> = (0..self.counts.len() as u32)
+            .filter(|&c| !self.count_holds(&state, c as usize))
+            .collect();
         let mut rows: Option<Vec<Vec<u64>>> = None;
         // Scratch indexed by node, reset after each use: hop distance from the
-        // cluster (u32::MAX = unreached), and index in the current region.
+        // cluster (u32::MAX = unreached).
         let mut dist = vec![u32::MAX; n];
-        let mut local = vec![u32::MAX; n];
         loop {
-            let Some(&(v0, _)) = bad.first() else {
+            // The lowest node with a violation; an edge comes before a count
+            // rule that starts at the same node.
+            let edge_start = bad.first().map(|&(v, _)| (v, 0u32, 0u32));
+            let count_start = bad_counts
+                .iter()
+                .map(|&c| (self.counts[c as usize].nodes[0], 1u32, c))
+                .min();
+            let Some(start) = [edge_start, count_start].into_iter().flatten().min() else {
                 stats.changed = changed(labels, &state);
                 return Ok(RepairOutcome::Repaired {
                     labels: state,
                     stats,
                 });
             };
+            let v0 = start.0;
+            let remaining = bad.len() + bad_counts.len();
             if stats.rounds == budget.max_rounds {
                 return Ok(self.repair_refused(
                     RepairRefusal::RoundLimit,
                     v0,
-                    bad.len(),
+                    remaining,
                     labels,
                     state,
                     stats,
@@ -550,7 +646,16 @@ impl Network {
             let rows = rows.get_or_insert_with(|| support_rows(self.labels, &self.tables));
             // layers[d] holds the nodes at hop distance d from the cluster,
             // each in ascending order. Layer 0 is the cluster.
-            let mut layers: Vec<Vec<u32>> = vec![self.cluster(&state, v0, &mut dist)];
+            let first = if start.1 == 0 {
+                self.cluster(&state, v0, &mut dist)
+            } else {
+                let members = self.counts[start.2 as usize].nodes.clone();
+                for &m in &members {
+                    dist[m as usize] = 0;
+                }
+                members
+            };
+            let mut layers: Vec<Vec<u32>> = vec![first];
             let mut solved = false;
             for radius in 1..=budget.max_radius {
                 while layers.len() <= radius as usize + 1 {
@@ -567,39 +672,17 @@ impl Network {
                     .copied()
                     .collect();
                 order.sort_unstable();
-                for (k, &node) in order.iter().enumerate() {
-                    local[node as usize] = k as u32;
-                }
                 let free = |node: u32| dist[node as usize] <= radius;
-                let mut edges = Vec::with_capacity(order.len());
-                let mut unary = Vec::with_capacity(order.len());
-                for &node in &order {
-                    let node_free = free(node);
-                    edges.push(
-                        self.edges[node as usize]
-                            .iter()
-                            .filter(|e| {
-                                local[e.to as usize] != u32::MAX && (node_free || free(e.to))
-                            })
-                            .map(|e| Edge {
-                                to: local[e.to as usize],
-                                relation: e.relation,
-                            })
-                            .collect::<Vec<_>>(),
-                    );
-                    unary.push(if node_free {
-                        self.unary[node as usize].clone()
-                    } else {
-                        let label = state[node as usize];
-                        let weight = self.unary_weight(node as usize, label).expect("candidate");
-                        vec![(label, weight)]
-                    });
+                let region = self.build_region(&order, &free, &|node| Some(state[node as usize]));
+                if !region.feasible {
+                    continue;
                 }
                 let problem = Problem {
                     labels: self.labels,
-                    edges: &edges,
-                    unary: &unary,
+                    edges: &region.edges,
+                    unary: &region.unary,
                     ids: Some(&order),
+                    counts: &region.counts,
                 };
                 let search_counter = Counter::new(counter.word(&[REPAIR_KEY, v0, radius]));
                 let outcome = Search::new(
@@ -612,9 +695,6 @@ impl Network {
                     },
                 )
                 .run();
-                for &node in &order {
-                    local[node as usize] = u32::MAX;
-                }
                 let search = match &outcome {
                     Outcome::Solved { stats, .. } | Outcome::Refused { stats, .. } => *stats,
                 };
@@ -627,6 +707,9 @@ impl Network {
                             for edge in &self.edges[node as usize] {
                                 let pair = (node.min(edge.to), node.max(edge.to));
                                 bad.remove(&pair);
+                            }
+                            for c in &self.node_counts[node as usize] {
+                                bad_counts.remove(c);
                             }
                         }
                     }
@@ -642,13 +725,184 @@ impl Network {
                 return Ok(self.repair_refused(
                     RepairRefusal::Unrepairable,
                     v0,
-                    bad.len(),
+                    remaining,
                     labels,
                     state,
                     stats,
                 ));
             }
         }
+    }
+
+    /// Whether count rule `c` holds under `state`.
+    fn count_holds(&self, state: &[u32], c: usize) -> bool {
+        let count = &self.counts[c];
+        let held = count
+            .nodes
+            .iter()
+            .filter(|&&node| count.labels.binary_search(&state[node as usize]).is_ok())
+            .count() as u32;
+        (count.min..=count.max).contains(&held)
+    }
+
+    /// The sub-problem on the nodes `order` (ascending): the nodes `free`
+    /// says are free keep their candidates, the rest are pinned to the label
+    /// `label_of` gives. An edge is kept when one end is free. A count rule
+    /// that lists a free node is kept over its free nodes, with the pinned
+    /// nodes it lists (anywhere in the network) taken off its limits.
+    fn build_region(
+        &self,
+        order: &[u32],
+        free: &dyn Fn(u32) -> bool,
+        label_of: &dyn Fn(u32) -> Option<u32>,
+    ) -> RegionProblem {
+        let local = |node: u32| order.binary_search(&node).ok().map(|k| k as u32);
+        let mut edges = Vec::with_capacity(order.len());
+        let mut unary = Vec::with_capacity(order.len());
+        for &node in order {
+            let node_free = free(node);
+            edges.push(
+                self.edges[node as usize]
+                    .iter()
+                    .filter_map(|e| {
+                        let to = local(e.to)?;
+                        (node_free || free(e.to)).then_some(Edge {
+                            to,
+                            relation: e.relation,
+                        })
+                    })
+                    .collect::<Vec<_>>(),
+            );
+            unary.push(if node_free {
+                self.unary[node as usize].clone()
+            } else {
+                let label = label_of(node).expect("a pinned node has a label");
+                let weight = self.unary_weight(node as usize, label).expect("candidate");
+                vec![(label, weight)]
+            });
+        }
+        let mut touching: BTreeSet<u32> = BTreeSet::new();
+        for &node in order {
+            if free(node) {
+                touching.extend(self.node_counts[node as usize].iter().copied());
+            }
+        }
+        let mut counts = Vec::with_capacity(touching.len());
+        let mut feasible = true;
+        for c in touching {
+            let count = &self.counts[c as usize];
+            let mut members = Vec::new();
+            let mut pinned_in = 0u32;
+            for &m in &count.nodes {
+                if free(m) {
+                    members.push(local(m).expect("free nodes are in the region"));
+                } else if let Some(l) = label_of(m)
+                    && count.labels.binary_search(&l).is_ok()
+                {
+                    pinned_in += 1;
+                }
+            }
+            if pinned_in > count.max {
+                feasible = false;
+                break;
+            }
+            counts.push(Count {
+                min: count.min.saturating_sub(pinned_in),
+                max: (count.max - pinned_in).min(members.len() as u32),
+                nodes: members,
+                labels: count.labels.clone(),
+            });
+        }
+        RegionProblem {
+            edges,
+            unary,
+            counts,
+            feasible,
+        }
+    }
+
+    /// Solve part of the network with the rest held fixed.
+    ///
+    /// `free` (ascending, distinct) are the nodes to label; `fixed` (ascending
+    /// by node, disjoint from `free`) pins other nodes to a label, which must
+    /// be one of their candidates. Edges to a node in neither list are
+    /// ignored, and so are the members of a count rule that are in neither:
+    /// only the free and fixed members count, so a caller that wants a rule
+    /// to hold must list all of its members. The search is `solve`'s, on the
+    /// free nodes and the edges that touch them; draws are keyed by the nodes'
+    /// numbers in the whole network, so the labels of a node do not depend on
+    /// what other regions are solved, or in what order.
+    pub fn solve_region(
+        &self,
+        free: &[u32],
+        fixed: &[(u32, u32)],
+        counter: &Counter,
+        budget: Budget,
+    ) -> Result<RegionOutcome, Error> {
+        let n = self.nodes() as u32;
+        let ascending =
+            |v: &[u32]| v.windows(2).all(|w| w[0] < w[1]) && v.last().is_none_or(|&x| x < n);
+        let fixed_nodes: Vec<u32> = fixed.iter().map(|f| f.0).collect();
+        if !ascending(free) || !ascending(&fixed_nodes) {
+            return Err(bad_param(
+                "free and fixed nodes must be ascending, distinct and in the network",
+            ));
+        }
+        for &(node, label) in fixed {
+            if free.binary_search(&node).is_ok() {
+                return Err(bad_param("a node is both free and fixed"));
+            }
+            if self.unary_weight(node as usize, label).is_none() {
+                return Err(bad_param("a fixed label is not a candidate of its node"));
+            }
+        }
+        let mut order: Vec<u32> = free
+            .iter()
+            .copied()
+            .chain(fixed.iter().map(|f| f.0))
+            .collect();
+        order.sort_unstable();
+        let is_free = |node: u32| free.binary_search(&node).is_ok();
+        let label_of = |node: u32| {
+            fixed
+                .binary_search_by_key(&node, |f| f.0)
+                .ok()
+                .map(|k| fixed[k].1)
+        };
+        let region = self.build_region(&order, &is_free, &label_of);
+        if !region.feasible {
+            return Ok(RegionOutcome::Refused {
+                reason: RefusalReason::Unsatisfiable,
+                node: None,
+                stats: SolveStats::default(),
+            });
+        }
+        let rows = support_rows(self.labels, &self.tables);
+        let problem = Problem {
+            labels: self.labels,
+            edges: &region.edges,
+            unary: &region.unary,
+            ids: Some(&order),
+            counts: &region.counts,
+        };
+        Ok(match Search::new(problem, &rows, counter, budget).run() {
+            Outcome::Solved { labels, stats } => RegionOutcome::Solved {
+                labels: free
+                    .iter()
+                    .map(|&node| labels[order.binary_search(&node).expect("free")])
+                    .collect(),
+                stats,
+            },
+            Outcome::Refused {
+                reason,
+                node,
+                stats,
+            } => RegionOutcome::Refused {
+                reason,
+                node: node.map(|k| order[k as usize]),
+                stats,
+            },
+        })
     }
 
     /// The weight of `label` among `node`'s candidates.
@@ -683,7 +937,8 @@ impl Network {
         cluster
     }
 
-    /// The unreached neighbours of `layer`, ascending, marked one hop further.
+    /// The unreached neighbours of `layer` (over edges, and over the count rules
+    /// they list), ascending, marked one hop further.
     fn next_layer(&self, layer: &[u32], dist: &mut [u32]) -> Vec<u32> {
         let mut next = Vec::new();
         for &node in layer {
@@ -692,6 +947,16 @@ impl Network {
                 if dist[edge.to as usize] == u32::MAX {
                     dist[edge.to as usize] = d;
                     next.push(edge.to);
+                }
+            }
+            // The other nodes of a count rule are one hop away too: a rule
+            // cannot be mended by changing one of its nodes alone.
+            for &c in &self.node_counts[node as usize] {
+                for &other in &self.counts[c as usize].nodes {
+                    if dist[other as usize] == u32::MAX {
+                        dist[other as usize] = d;
+                        next.push(other);
+                    }
                 }
             }
         }
@@ -717,6 +982,18 @@ impl Network {
             stats,
         }
     }
+}
+
+/// The sub-problem `build_region` makes.
+struct RegionProblem {
+    edges: Vec<Vec<Edge>>,
+    unary: Vec<Vec<(u32, u32)>>,
+    counts: Vec<Count>,
+    feasible: bool,
+}
+
+fn bad_param(message: &str) -> Error {
+    Error::InvalidParameter(message.to_owned())
 }
 
 fn changed(before: &[u32], after: &[u32]) -> u32 {
@@ -753,6 +1030,7 @@ struct Problem<'a> {
     edges: &'a [Vec<Edge>],
     unary: &'a [Vec<(u32, u32)>],
     ids: Option<&'a [u32]>,
+    counts: &'a [Count],
 }
 
 /// While the largest weight is `>= 2^bits`, shift every weight right so the
@@ -810,6 +1088,20 @@ fn heaviest(weights: &[(u32, u64)], unit: u32) -> Option<u32> {
     Some(tied[pick_below(unit, tied.len() as u64) as usize])
 }
 
+/// Whether a domain lies wholly inside a label set, and whether it meets it.
+/// An empty domain is neither.
+fn flags(domain: &[u64], set: &[u64]) -> (bool, bool) {
+    let mut inside = true;
+    let mut meets = false;
+    let mut any = false;
+    for (d, s) in domain.iter().zip(set) {
+        any |= *d != 0;
+        inside &= d & !s == 0;
+        meets |= d & s != 0;
+    }
+    (inside && any, meets)
+}
+
 struct Frame {
     node: usize,
     trail_len: usize,
@@ -828,6 +1120,22 @@ struct Search<'a> {
     trail: Vec<(u32, u32)>,
     queue: std::collections::VecDeque<u32>,
     queued: Vec<bool>,
+    /// Undecided nodes by `(remaining labels, fixed per-node hash, node)`, the
+    /// smallest first. An entry is live only while its size is the node's
+    /// current size and above one; every change of a size pushes the new one.
+    heap: std::collections::BinaryHeap<std::cmp::Reverse<(u32, u32, u32)>>,
+    /// The per-node hash that breaks ties between equally small domains.
+    tie: Vec<u32>,
+    /// For each node, the count rules that list it.
+    member_of: Vec<Vec<u32>>,
+    /// Bitset of each count rule's labels, `words` per rule.
+    set_bits: Vec<u64>,
+    /// Per rule: nodes whose every remaining label is in the rule's set, and
+    /// nodes that still have at least one.
+    definite: Vec<u32>,
+    possible: Vec<u32>,
+    count_queue: std::collections::VecDeque<u32>,
+    count_queued: Vec<bool>,
     stats: SolveStats,
     last_empty: Option<u32>,
 }
@@ -845,6 +1153,32 @@ impl<'a> Search<'a> {
                 size[node] += 1;
             }
         }
+        let tie = (0..n)
+            .map(|node| counter.word(&[net.ids.map_or(node as u32, |ids| ids[node]), 0, 2]))
+            .collect();
+        let mut member_of = vec![Vec::new(); n];
+        let mut set_bits = vec![0u64; net.counts.len() * words];
+        for (c, count) in net.counts.iter().enumerate() {
+            for &node in &count.nodes {
+                member_of[node as usize].push(c as u32);
+            }
+            for &label in &count.labels {
+                set_bits[c * words + label as usize / 64] |= 1 << (label % 64);
+            }
+        }
+        let mut definite = vec![0u32; net.counts.len()];
+        let mut possible = vec![0u32; net.counts.len()];
+        for (c, count) in net.counts.iter().enumerate() {
+            for &node in &count.nodes {
+                let (only, can) = flags(
+                    &domain[node as usize * words..][..words],
+                    &set_bits[c * words..][..words],
+                );
+                definite[c] += u32::from(only);
+                possible[c] += u32::from(can);
+            }
+        }
+        let count_total = net.counts.len();
         Self {
             net,
             counter,
@@ -856,6 +1190,14 @@ impl<'a> Search<'a> {
             trail: Vec::new(),
             queue: Default::default(),
             queued: vec![false; n],
+            heap: Default::default(),
+            tie,
+            member_of,
+            set_bits,
+            definite,
+            possible,
+            count_queue: Default::default(),
+            count_queued: vec![false; count_total],
             stats: SolveStats::default(),
             last_empty: None,
         }
@@ -870,20 +1212,62 @@ impl<'a> Search<'a> {
         self.domain[node * self.words + label as usize / 64] >> (label % 64) & 1 == 1
     }
 
+    /// Add `delta` (1 or minus 1) to the counters of every rule that lists
+    /// `node`, for the flags the node has right now.
+    fn tally(&mut self, node: usize, sign: i32) {
+        for k in 0..self.member_of[node].len() {
+            let c = self.member_of[node][k] as usize;
+            let (only, can) = flags(
+                &self.domain[node * self.words..][..self.words],
+                &self.set_bits[c * self.words..][..self.words],
+            );
+            if only {
+                self.definite[c] = self.definite[c].wrapping_add_signed(sign);
+            }
+            if can {
+                self.possible[c] = self.possible[c].wrapping_add_signed(sign);
+            }
+        }
+    }
+
     fn remove(&mut self, node: usize, label: u32) {
+        self.tally(node, -1);
         self.domain[node * self.words + label as usize / 64] &= !(1 << (label % 64));
         self.size[node] -= 1;
+        self.tally(node, 1);
+        for k in 0..self.member_of[node].len() {
+            let c = self.member_of[node][k] as usize;
+            if !self.count_queued[c] {
+                self.count_queued[c] = true;
+                self.count_queue.push_back(c as u32);
+            }
+        }
         self.trail.push((node as u32, label));
         if self.size[node] == 0 {
             self.last_empty = Some(node as u32);
+        }
+        self.push_live(node);
+    }
+
+    /// Record `node`'s current size in the selection heap if it is undecided.
+    fn push_live(&mut self, node: usize) {
+        if self.size[node] > 1 {
+            self.heap.push(std::cmp::Reverse((
+                self.size[node],
+                self.tie[node],
+                node as u32,
+            )));
         }
     }
 
     fn undo_to(&mut self, length: usize) {
         while self.trail.len() > length {
             let (node, label) = self.trail.pop().expect("trail");
+            self.tally(node as usize, -1);
             self.domain[node as usize * self.words + label as usize / 64] |= 1 << (label % 64);
             self.size[node as usize] += 1;
+            self.tally(node as usize, 1);
+            self.push_live(node as usize);
         }
     }
 
@@ -922,23 +1306,88 @@ impl<'a> Search<'a> {
         changed
     }
 
-    /// Propagate until nothing changes. Returns false on a contradiction.
-    fn propagate(&mut self) -> bool {
-        while let Some(node) = self.queue.pop_front() {
-            let node = node as usize;
-            self.queued[node] = false;
-            if self.revise(node) {
-                if self.size[node] == 0 {
-                    self.queue.clear();
-                    self.queued.iter_mut().for_each(|q| *q = false);
-                    return false;
+    /// Enforce one count rule: refuse when it cannot hold, and when it is at
+    /// its limit strip the other nodes of the rule's labels (at the maximum) or
+    /// of every other label (at the minimum). Returns false on a contradiction.
+    fn revise_count(&mut self, c: usize) -> bool {
+        let count = &self.net.counts[c];
+        let (min, max) = (count.min, count.max);
+        let (definite, possible) = (self.definite[c], self.possible[c]);
+        if definite > max || possible < min {
+            return false;
+        }
+        if possible == definite {
+            return true;
+        }
+        let strip_set = definite == max;
+        let keep_set = possible == min;
+        if !strip_set && !keep_set {
+            return true;
+        }
+        let words = self.words;
+        for k in 0..self.net.counts[c].nodes.len() {
+            let node = self.net.counts[c].nodes[k] as usize;
+            let (only, can) = flags(
+                &self.domain[node * words..][..words],
+                &self.set_bits[c * words..][..words],
+            );
+            if only || !can {
+                continue;
+            }
+            let mut changed = false;
+            for label in self.labels_of(node) {
+                let in_set =
+                    self.set_bits[c * words + label as usize / 64] >> (label % 64) & 1 == 1;
+                if in_set == strip_set {
+                    self.remove(node, label);
+                    changed = true;
                 }
+            }
+            if self.size[node] == 0 {
+                return false;
+            }
+            if changed {
+                self.enqueue(node);
                 for edge in self.net.edges[node].clone() {
                     self.enqueue(edge.to as usize);
                 }
             }
         }
         true
+    }
+
+    fn clear_queues(&mut self) {
+        self.queue.clear();
+        self.queued.iter_mut().for_each(|q| *q = false);
+        self.count_queue.clear();
+        self.count_queued.iter_mut().for_each(|q| *q = false);
+    }
+
+    /// Propagate until nothing changes. Returns false on a contradiction.
+    fn propagate(&mut self) -> bool {
+        loop {
+            if let Some(node) = self.queue.pop_front() {
+                let node = node as usize;
+                self.queued[node] = false;
+                if self.revise(node) {
+                    if self.size[node] == 0 {
+                        self.clear_queues();
+                        return false;
+                    }
+                    for edge in self.net.edges[node].clone() {
+                        self.enqueue(edge.to as usize);
+                    }
+                }
+            } else if let Some(c) = self.count_queue.pop_front() {
+                self.count_queued[c as usize] = false;
+                if !self.revise_count(c as usize) {
+                    self.clear_queues();
+                    return false;
+                }
+            } else {
+                return true;
+            }
+        }
     }
 
     fn refused(&self, reason: RefusalReason) -> Outcome {
@@ -958,26 +1407,30 @@ impl<'a> Search<'a> {
         for node in 0..n {
             self.enqueue(node);
         }
+        for c in 0..self.net.counts.len() {
+            self.count_queued[c] = true;
+            self.count_queue.push_back(c as u32);
+        }
         if !self.propagate() {
             return self.refused(RefusalReason::Unsatisfiable);
         }
         let mut stack: Vec<Frame> = Vec::new();
+        // Every undecided node gets a live entry; later size changes push more.
+        self.heap.clear();
+        for node in 0..n {
+            self.push_live(node);
+        }
         loop {
             // Fewest remaining labels first; ties by a fixed per-node hash.
-            let mut best: Option<(u32, u32, usize)> = None;
-            for node in 0..n {
-                if self.size[node] > 1 {
-                    let key = (
-                        self.size[node],
-                        self.counter.word(&[self.id(node), 0, 2]),
-                        node,
-                    );
-                    if best.is_none_or(|b| key < b) {
-                        best = Some(key);
-                    }
+            // Stale entries (a size that has since changed) are dropped here.
+            let mut best: Option<usize> = None;
+            while let Some(std::cmp::Reverse((size, _, node))) = self.heap.pop() {
+                if self.size[node as usize] == size && size > 1 {
+                    best = Some(node as usize);
+                    break;
                 }
             }
-            let Some((_, _, node)) = best else {
+            let Some(node) = best else {
                 let labels = (0..n)
                     .map(|node| self.labels_of(node)[0])
                     .collect::<Vec<_>>();
@@ -1043,8 +1496,7 @@ impl<'a> Search<'a> {
                         break;
                     }
                 } else {
-                    self.queue.clear();
-                    self.queued.iter_mut().for_each(|q| *q = false);
+                    self.clear_queues();
                 }
                 match stack.pop() {
                     Some(previous) => failed = previous,
@@ -1937,5 +2389,440 @@ mod tests {
         }
         assert!(satisfiable_cases > 100, "{satisfiable_cases}");
         assert!(needed_growth > 0);
+    }
+
+    // ---- count rules and region solves ----
+
+    /// A random small network (a random graph, random symmetric tables with
+    /// zeros, random candidate lists) with random count rules.
+    fn random_counted(seed: u32) -> Network {
+        let c = Counter::new(seed);
+        let r = |keys: &[u32], below: u32| c.below(below as u64, keys) as u32;
+        let labels = 2 + r(&[0], 2);
+        let n = 3 + r(&[1], 5) as usize;
+        let mut edges = vec![Vec::new(); n];
+        let mut tables = Vec::new();
+        for a in 0..n {
+            for b in a + 1..n {
+                if r(&[2, a as u32, b as u32], 3) == 0 {
+                    let l = labels as usize;
+                    let w: Vec<u32> = (0..l * l)
+                        .map(|k| u32::from(r(&[3, a as u32, b as u32, k as u32], 4) != 0))
+                        .collect();
+                    let forward = PairTable::new(labels, w).unwrap();
+                    let back = transpose(&forward);
+                    let at = tables.len() as u32;
+                    tables.push(forward);
+                    tables.push(back);
+                    edges[a].push(Edge {
+                        to: b as u32,
+                        relation: at,
+                    });
+                    edges[b].push(Edge {
+                        to: a as u32,
+                        relation: at + 1,
+                    });
+                }
+            }
+        }
+        let unary: Vec<Vec<(u32, u32)>> = (0..n)
+            .map(|v| {
+                let mut list: Vec<(u32, u32)> = (0..labels)
+                    .filter(|&l| r(&[4, v as u32, l], 5) != 0)
+                    .map(|l| (l, 1 + r(&[5, v as u32, l], 3)))
+                    .collect();
+                if list.is_empty() {
+                    list.push((0, 1));
+                }
+                list
+            })
+            .collect();
+        let mut counts = Vec::new();
+        for k in 0..r(&[6], 3) {
+            let nodes: Vec<u32> = (0..n as u32).filter(|&v| r(&[7, k, v], 2) == 0).collect();
+            let set: Vec<u32> = (0..labels).filter(|&l| r(&[8, k, l], 2) == 0).collect();
+            if nodes.is_empty() || set.is_empty() {
+                continue;
+            }
+            let a = r(&[9, k], nodes.len() as u32 + 1);
+            let b = r(&[10, k], nodes.len() as u32 + 1);
+            counts.push(Count {
+                nodes,
+                labels: set,
+                min: a.min(b),
+                max: a.max(b),
+            });
+        }
+        Network::new(labels, edges, tables, unary)
+            .unwrap()
+            .with_counts(counts)
+            .unwrap()
+    }
+
+    /// Every labelling the network allows, by brute force.
+    fn allowed(net: &Network) -> Vec<Vec<u32>> {
+        let n = net.nodes();
+        let l = net.labels() as usize;
+        let mut out = Vec::new();
+        let total = l.pow(n as u32);
+        for code in 0..total {
+            let mut labels = vec![0u32; n];
+            let mut c = code;
+            for slot in labels.iter_mut() {
+                *slot = (c % l) as u32;
+                c /= l;
+            }
+            let candidates = (0..n).all(|v| net.unary[v].iter().any(|p| p.0 == labels[v]));
+            if candidates && net.violations(&labels).unwrap() == 0 {
+                out.push(labels);
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn solve_with_count_rules_agrees_with_brute_force() {
+        let budget = Budget {
+            max_decisions: 100_000,
+            max_backtracks: 100_000,
+        };
+        let (mut solved, mut refused, mut with_counts) = (0, 0, 0);
+        for seed in 0..400 {
+            let net = random_counted(seed);
+            let good = allowed(&net);
+            with_counts += usize::from(!net.counts().is_empty());
+            match net.solve(&Counter::new(seed ^ 77), budget) {
+                Outcome::Solved { labels, .. } => {
+                    assert!(
+                        good.contains(&labels),
+                        "seed {seed}: {labels:?} breaks a rule"
+                    );
+                    solved += 1;
+                }
+                Outcome::Refused { reason, .. } => {
+                    assert_eq!(reason, RefusalReason::Unsatisfiable, "seed {seed}");
+                    assert!(good.is_empty(), "seed {seed}: a solution exists");
+                    refused += 1;
+                }
+            }
+        }
+        assert!(
+            solved > 100 && refused > 20 && with_counts > 200,
+            "{solved} {refused} {with_counts}"
+        );
+    }
+
+    #[test]
+    fn a_count_rule_pins_labels_exactly_when_it_must() {
+        // Four free nodes, label 1 exactly twice.
+        let net = Network::new(
+            2,
+            vec![Vec::new(); 4],
+            vec![],
+            vec![vec![(0, 1), (1, 1)]; 4],
+        )
+        .unwrap()
+        .with_counts(vec![Count {
+            nodes: vec![0, 1, 2, 3],
+            labels: vec![1],
+            min: 2,
+            max: 2,
+        }])
+        .unwrap();
+        for seed in 0..20 {
+            let Outcome::Solved { labels, stats } = net.solve(
+                &Counter::new(seed),
+                Budget {
+                    max_decisions: 100,
+                    max_backtracks: 0,
+                },
+            ) else {
+                panic!("refused");
+            };
+            assert_eq!(labels.iter().filter(|&&l| l == 1).count(), 2);
+            assert_eq!(stats.backtracks, 0, "propagation alone finishes it");
+        }
+        // Not enough room for the minimum.
+        let tight = Network::new(2, vec![Vec::new(); 3], vec![], vec![vec![(0, 1)]; 3])
+            .unwrap()
+            .with_counts(vec![Count {
+                nodes: vec![0, 1, 2],
+                labels: vec![1],
+                min: 1,
+                max: 3,
+            }])
+            .unwrap();
+        assert!(matches!(
+            tight.solve(
+                &Counter::new(1),
+                Budget {
+                    max_decisions: 10,
+                    max_backtracks: 10
+                }
+            ),
+            Outcome::Refused {
+                reason: RefusalReason::Unsatisfiable,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn count_rules_are_checked_when_a_network_is_built() {
+        let base = || {
+            Network::new(
+                2,
+                vec![Vec::new(); 3],
+                vec![],
+                vec![vec![(0, 1), (1, 1)]; 3],
+            )
+            .unwrap()
+        };
+        let rule = |nodes: Vec<u32>, labels: Vec<u32>, min, max| Count {
+            nodes,
+            labels,
+            min,
+            max,
+        };
+        assert!(
+            base()
+                .with_counts(vec![rule(vec![0, 1], vec![1], 0, 2)])
+                .is_ok()
+        );
+        assert!(
+            base()
+                .with_counts(vec![rule(vec![1, 0], vec![1], 0, 2)])
+                .is_err()
+        );
+        assert!(
+            base()
+                .with_counts(vec![rule(vec![0, 3], vec![1], 0, 2)])
+                .is_err()
+        );
+        assert!(
+            base()
+                .with_counts(vec![rule(vec![0, 1], vec![2], 0, 2)])
+                .is_err()
+        );
+        assert!(
+            base()
+                .with_counts(vec![rule(vec![0, 1], vec![1], 2, 1)])
+                .is_err()
+        );
+        assert!(
+            base()
+                .with_counts(vec![rule(vec![0, 1], vec![1], 0, 3)])
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn violations_count_a_rule_that_does_not_hold_once() {
+        let net = Network::new(
+            2,
+            vec![Vec::new(); 3],
+            vec![],
+            vec![vec![(0, 1), (1, 1)]; 3],
+        )
+        .unwrap()
+        .with_counts(vec![Count {
+            nodes: vec![0, 1, 2],
+            labels: vec![1],
+            min: 1,
+            max: 1,
+        }])
+        .unwrap();
+        assert_eq!(net.violations(&[0, 0, 0]).unwrap(), 1);
+        assert_eq!(net.violations(&[0, 1, 0]).unwrap(), 0);
+        assert_eq!(net.violations(&[1, 1, 0]).unwrap(), 1);
+    }
+
+    #[test]
+    fn repair_mends_a_count_rule_and_leaves_what_it_can() {
+        let mut mended = 0;
+        for seed in 0..200 {
+            let net = random_counted(seed);
+            if net.counts().is_empty() {
+                continue;
+            }
+            let good = allowed(&net);
+            // Start from the first labelling that satisfies every candidate list.
+            let start: Vec<u32> = (0..net.nodes()).map(|v| net.unary[v][0].0).collect();
+            let outcome = net
+                .repair(
+                    &start,
+                    &Counter::new(seed),
+                    RepairBudget {
+                        max_radius: 16,
+                        max_decisions: 100_000,
+                        max_backtracks: 100_000,
+                        max_rounds: 1000,
+                    },
+                )
+                .unwrap();
+            match outcome {
+                RepairOutcome::Repaired { labels, .. } => {
+                    assert!(good.contains(&labels), "seed {seed}");
+                    mended += 1;
+                }
+                RepairOutcome::Refused {
+                    labels, remaining, ..
+                } => {
+                    // A whole-network radius refuses only when nothing satisfies the rules.
+                    assert_eq!(remaining, net.violations(&labels).unwrap(), "seed {seed}");
+                    assert!(
+                        good.is_empty(),
+                        "seed {seed}: repair gave up on a solvable network"
+                    );
+                }
+            }
+        }
+        assert!(mended > 50, "{mended}");
+    }
+
+    #[test]
+    fn a_region_solve_keeps_its_border_and_its_rules() {
+        // A 6 by 6 grid of 3 labels, neighbours must differ; free the top
+        // left 3 by 3 and pin everything touching it from a known solution.
+        let (w, h) = (6usize, 6usize);
+        let tables = four(differ(3), differ(3));
+        let net = Network::new(
+            3,
+            grid(w, h),
+            tables,
+            vec![(0..3).map(|l| (l, 1)).collect(); w * h],
+        )
+        .unwrap();
+        let Outcome::Solved { labels: whole, .. } = net.solve(
+            &Counter::new(5),
+            Budget {
+                max_decisions: 10_000,
+                max_backtracks: 10_000,
+            },
+        ) else {
+            panic!("refused");
+        };
+        let at = |x: usize, y: usize| (y * w + x) as u32;
+        let free: Vec<u32> = (0..3).flat_map(|y| (0..3).map(move |x| at(x, y))).collect();
+        let mut fixed: Vec<(u32, u32)> = Vec::new();
+        for y in 0..4 {
+            for x in 0..4 {
+                let node = at(x, y);
+                if !free.contains(&node) {
+                    fixed.push((node, whole[node as usize]));
+                }
+            }
+        }
+        fixed.sort_unstable();
+        let budget = Budget {
+            max_decisions: 10_000,
+            max_backtracks: 10_000,
+        };
+        let outcome = net
+            .solve_region(&free, &fixed, &Counter::new(9), budget)
+            .unwrap();
+        let RegionOutcome::Solved { labels, .. } = outcome else {
+            panic!("refused");
+        };
+        let mut merged = whole.clone();
+        for (k, &node) in free.iter().enumerate() {
+            merged[node as usize] = labels[k];
+        }
+        assert_eq!(net.violations(&merged).unwrap(), 0);
+        // The region's own labels do not depend on the counter of another region,
+        // and a different counter gives a different region.
+        let again = net
+            .solve_region(&free, &fixed, &Counter::new(9), budget)
+            .unwrap();
+        assert_eq!(
+            again,
+            RegionOutcome::Solved {
+                labels: labels.clone(),
+                stats: match &again {
+                    RegionOutcome::Solved { stats, .. } => *stats,
+                    RegionOutcome::Refused { stats, .. } => *stats,
+                }
+            }
+        );
+        // Bad input is named.
+        assert!(
+            net.solve_region(&[3, 1], &[], &Counter::new(1), budget)
+                .is_err()
+        );
+        assert!(
+            net.solve_region(&[1], &[(1, 0)], &Counter::new(1), budget)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn a_region_counts_what_is_pinned_beside_it() {
+        // Six nodes in a rule: label 1 exactly twice. Two are pinned to 1, so
+        // the four free nodes must all take 0; pin three and it cannot hold.
+        let net = Network::new(
+            2,
+            vec![Vec::new(); 6],
+            vec![],
+            vec![vec![(0, 1), (1, 1)]; 6],
+        )
+        .unwrap()
+        .with_counts(vec![Count {
+            nodes: (0..6).collect(),
+            labels: vec![1],
+            min: 2,
+            max: 2,
+        }])
+        .unwrap();
+        let budget = Budget {
+            max_decisions: 100,
+            max_backtracks: 100,
+        };
+        let free = [2, 3, 4, 5];
+        let RegionOutcome::Solved { labels, .. } = net
+            .solve_region(&free, &[(0, 1), (1, 1)], &Counter::new(1), budget)
+            .unwrap()
+        else {
+            panic!("refused");
+        };
+        assert_eq!(labels, vec![0, 0, 0, 0]);
+        let RegionOutcome::Solved { labels, .. } = net
+            .solve_region(&free, &[(0, 1), (1, 0)], &Counter::new(1), budget)
+            .unwrap()
+        else {
+            panic!("refused");
+        };
+        assert_eq!(labels.iter().filter(|&&l| l == 1).count(), 1);
+        assert!(matches!(
+            net.solve_region(
+                &[3, 4, 5],
+                &[(0, 1), (1, 1), (2, 1)],
+                &Counter::new(1),
+                budget
+            )
+            .unwrap(),
+            RegionOutcome::Refused { .. }
+        ));
+    }
+
+    #[test]
+    fn a_node_draws_the_same_in_a_region_whatever_else_is_solved() {
+        // Two far-apart regions of one path: each region's labels are fixed by
+        // the counter and the node numbers alone.
+        let n = 40;
+        let (edges, tables) = path(n, 4, PairTable::uniform(4, 1));
+        let net = Network::new(4, edges, tables, everything(n, 4)).unwrap();
+        let budget = Budget {
+            max_decisions: 1000,
+            max_backtracks: 10,
+        };
+        let counter = Counter::new(3);
+        let region = |free: Vec<u32>| match net.solve_region(&free, &[], &counter, budget).unwrap()
+        {
+            RegionOutcome::Solved { labels, .. } => labels,
+            RegionOutcome::Refused { .. } => panic!("refused"),
+        };
+        let a = region(vec![2, 3, 4]);
+        let both = region(vec![2, 3, 4, 20, 21]);
+        assert_eq!(&both[..3], &a[..]);
     }
 }

@@ -2,10 +2,10 @@
 //! Models and algorithms remain in the ordinary Rust API.
 
 use crate::{
-    Assignment, BlendStrategy, BoundaryData, Budget, Constraint, Counter, Direction, Distribution,
-    Edge, Error, GenerateOptions, Limits, Markov, MarkovData, Model, ModelSpec, Network, Outcome,
-    PairStats, PairTable, RepairBudget, RepairOutcome, Replacement, Rng, RngState, Row, Schedule,
-    Seed, Table, TransitionData, Variable, Weighted,
+    Assignment, BlendStrategy, BoundaryData, Budget, Constraint, Count, Counter, Direction,
+    Distribution, Edge, Error, GenerateOptions, Limits, Markov, MarkovData, Model, ModelSpec,
+    Network, Outcome, PairStats, PairTable, RegionOutcome, RepairBudget, RepairOutcome,
+    Replacement, Rng, RngState, Row, Schedule, Seed, Table, TransitionData, Variable, Weighted,
 };
 use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
@@ -858,6 +858,46 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
                 output.u32(label);
             }
         }
+        81 => {
+            let network = read_network(&mut reader)?;
+            let seed = reader.u32()?;
+            let budget = Budget {
+                max_decisions: reader.u32()?,
+                max_backtracks: reader.u32()?,
+            };
+            let free = reader.count()?;
+            let free = (0..free)
+                .map(|_| reader.u32())
+                .collect::<Result<Vec<_>, _>>()?;
+            let fixed = reader.count()?;
+            let fixed = (0..fixed)
+                .map(|_| Ok((reader.u32()?, reader.u32()?)))
+                .collect::<Result<Vec<_>, Error>>()?;
+            reader.finish()?;
+            match network.solve_region(&free, &fixed, &Counter::new(seed), budget)? {
+                RegionOutcome::Solved { labels, stats } => {
+                    output.0.push(1);
+                    output.u32(stats.decisions);
+                    output.u32(stats.backtracks);
+                    output.u32(labels.len() as u32);
+                    for label in labels {
+                        output.u32(label);
+                    }
+                }
+                RegionOutcome::Refused {
+                    reason,
+                    node,
+                    stats,
+                } => {
+                    output.0.push(0);
+                    output.u32(stats.decisions);
+                    output.u32(stats.backtracks);
+                    output.text(reason.name());
+                    output.0.push(u8::from(node.is_some()));
+                    output.u32(node.unwrap_or(0));
+                }
+            }
+        }
         _ => return Err(invalid("unknown operation")),
     }
     Ok(output.0)
@@ -866,7 +906,9 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
 /// Wire form of a network: label count u32; node count u32; per node an edge
 /// count u32 and repeated (to u32, relation u32); table count u32; per table
 /// label*label weights u32; per node a unary count u32 and repeated
-/// (label u32, weight u32).
+/// (label u32, weight u32); then the count rules: a rule count u32 and per rule
+/// a node count u32 and nodes u32, a label count u32 and labels u32, min u32
+/// and max u32.
 fn read_network(reader: &mut Reader<'_>) -> Result<Network, Error> {
     let labels = reader.u32()?;
     if labels == 0 {
@@ -910,7 +952,25 @@ fn read_network(reader: &mut Reader<'_>) -> Result<Network, Error> {
                 .collect::<Result<Vec<_>, Error>>()?,
         );
     }
-    Network::new(labels, edges, parsed, unary)
+    let rules = reader.count()?;
+    let mut counts = Vec::with_capacity(rules.min(65_536));
+    for _ in 0..rules {
+        let nodes = reader.count()?;
+        let nodes = (0..nodes)
+            .map(|_| reader.u32())
+            .collect::<Result<Vec<_>, _>>()?;
+        let set = reader.count()?;
+        let set = (0..set)
+            .map(|_| reader.u32())
+            .collect::<Result<Vec<_>, _>>()?;
+        counts.push(Count {
+            nodes,
+            labels: set,
+            min: reader.u32()?,
+            max: reader.u32()?,
+        });
+    }
+    Network::new(labels, edges, parsed, unary)?.with_counts(counts)
 }
 
 fn direction(value: u8) -> Result<Direction, Error> {

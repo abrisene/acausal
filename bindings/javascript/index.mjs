@@ -896,6 +896,15 @@ function writeNetwork(spec) {
     writer.u32(asCount(node.length, 'unary count'));
     for (const [label, weight] of node) writer.u32(label).u32(weight);
   }
+  const counts = spec.counts ?? [];
+  writer.u32(asCount(counts.length, 'count rule count'));
+  for (const rule of counts) {
+    writer.u32(asCount(rule.nodes.length, 'count rule nodes'));
+    for (const node of rule.nodes) writer.u32(node);
+    writer.u32(asCount(rule.labels.length, 'count rule labels'));
+    for (const label of rule.labels) writer.u32(label);
+    writer.u32(rule.min).u32(rule.max);
+  }
   return writer;
 }
 
@@ -926,6 +935,35 @@ export function networkSolve(spec, seed, { maxDecisions = 1_000_000, maxBacktrac
   const writer = writeNetwork(spec)
     .u32(asU32(seed, 'seed')).u32(asU32(maxDecisions, 'maxDecisions')).u32(asU32(maxBacktracks, 'maxBacktracks'));
   const reader = new Reader(engine.call(72, writer.finish()));
+  const solved = reader.u8() === 1;
+  const decisions = reader.u32();
+  const backtracks = reader.u32();
+  if (solved) {
+    const labels = Array.from({ length: reader.u32() }, () => reader.u32());
+    reader.finish();
+    return { status: 'solved', labels, decisions, backtracks };
+  }
+  const reason = reader.text();
+  const hasNode = reader.u8() === 1;
+  const node = reader.u32();
+  reader.finish();
+  return { status: 'refused', reason, node: hasNode ? node : null, decisions, backtracks };
+}
+
+/**
+ * Solve part of the network with the rest held fixed: `free` are the nodes to label (ascending),
+ * `fixed` is a list of `[node, label]` pairs (ascending by node) that pin other nodes. Edges to
+ * nodes in neither list are ignored. Returns one label per free node, in order.
+ */
+export function networkSolveRegion(spec, free, fixed, seed, { maxDecisions = 1_000_000, maxBacktracks = 2_000 } = {}) {
+  const engine = requireRuntime();
+  const writer = writeNetwork(spec)
+    .u32(asU32(seed, 'seed')).u32(asU32(maxDecisions, 'maxDecisions')).u32(asU32(maxBacktracks, 'maxBacktracks'))
+    .u32(asCount(free.length, 'free count'));
+  for (const node of free) writer.u32(asU32(node, 'free node'));
+  writer.u32(asCount(fixed.length, 'fixed count'));
+  for (const [node, label] of fixed) writer.u32(asU32(node, 'fixed node')).u32(asU32(label, 'fixed label'));
+  const reader = new Reader(engine.call(81, writer.finish()));
   const solved = reader.u8() === 1;
   const decisions = reader.u32();
   const backtracks = reader.u32();
@@ -1026,4 +1064,4 @@ export class PairStats {
   [Symbol.dispose]() { this.close(); }
 }
 
-const api = Object.freeze({ init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkRepair, networkViolations, AcausalError });
+const api = Object.freeze({ init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkRepair, networkSolveRegion, networkViolations, AcausalError });

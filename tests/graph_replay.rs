@@ -3,8 +3,8 @@
 //! Python bindings by scripts/smoke-bindings.*.
 
 use acausal::{
-    Budget, Counter, Edge, Network, Outcome, PairStats, PairTable, RepairBudget, RepairOutcome,
-    Schedule,
+    Budget, Count, Counter, Edge, Network, Outcome, PairStats, PairTable, RegionOutcome,
+    RepairBudget, RepairOutcome, Schedule,
 };
 use std::collections::BTreeMap;
 
@@ -187,6 +187,7 @@ fn network_samples_and_solves_match_the_fixture() {
     let mut refused = 0;
     let mut repaired = 0;
     let mut repair_refused = 0;
+    let mut regions = 0;
     for case in f.get("networks").list() {
         let n = case.get("network");
         let labels = n.get("labels").u32();
@@ -210,7 +211,21 @@ fn network_samples_and_solves_match_the_fixture() {
                     .collect()
             })
             .collect();
-        let net = Network::new(labels, edges_of(n.get("edges")), tables, unary).unwrap();
+        let counts = n
+            .get("counts")
+            .list()
+            .iter()
+            .map(|c| Count {
+                nodes: c.get("nodes").u32s(),
+                labels: c.get("labels").u32s(),
+                min: c.get("min").u32(),
+                max: c.get("max").u32(),
+            })
+            .collect();
+        let net = Network::new(labels, edges_of(n.get("edges")), tables, unary)
+            .unwrap()
+            .with_counts(counts)
+            .unwrap();
         for run in case.get("runs").list() {
             let seed = run.get("seed").u32();
             match run.get("op").str() {
@@ -249,13 +264,14 @@ fn network_samples_and_solves_match_the_fixture() {
                             assert_eq!(labels, run.get("labels").u32s());
                             assert_eq!(stats.decisions, run.get("decisions").u32());
                             assert_eq!(stats.backtracks, run.get("backtracks").u32());
-                            // A solved labelling really satisfies every edge.
+                            // A solved labelling really satisfies every edge and rule.
                             for (node, list) in net_edges(n).iter().enumerate() {
                                 for e in list {
                                     let t = &net_table(n, e.relation);
                                     assert!(t.get(labels[node], labels[e.to as usize]) > 0);
                                 }
                             }
+                            assert_eq!(net.violations(&labels).unwrap(), 0);
                             solved += 1;
                         }
                         (
@@ -284,6 +300,58 @@ fn network_samples_and_solves_match_the_fixture() {
                         ),
                     }
                 }
+                "region" => {
+                    let free = run.get("free").u32s();
+                    let fixed: Vec<(u32, u32)> = run
+                        .get("fixed")
+                        .list()
+                        .iter()
+                        .map(|p| {
+                            let v = p.u32s();
+                            (v[0], v[1])
+                        })
+                        .collect();
+                    let outcome = net
+                        .solve_region(
+                            &free,
+                            &fixed,
+                            &Counter::new(seed),
+                            Budget {
+                                max_decisions: run.get("maxDecisions").u32(),
+                                max_backtracks: run.get("maxBacktracks").u32(),
+                            },
+                        )
+                        .unwrap();
+                    match (outcome, run.get("status").str()) {
+                        (RegionOutcome::Solved { labels, stats }, "solved") => {
+                            assert_eq!(labels, run.get("labels").u32s());
+                            assert_eq!(stats.decisions, run.get("decisions").u32());
+                            assert_eq!(stats.backtracks, run.get("backtracks").u32());
+                            regions += 1;
+                        }
+                        (
+                            RegionOutcome::Refused {
+                                reason,
+                                node,
+                                stats,
+                            },
+                            "refused",
+                        ) => {
+                            assert_eq!(reason.name(), run.get("reason").str());
+                            assert_eq!(
+                                node,
+                                match run.get("node") {
+                                    Json::Null => None,
+                                    j => Some(j.u32()),
+                                }
+                            );
+                            assert_eq!(stats.decisions, run.get("decisions").u32());
+                            assert_eq!(stats.backtracks, run.get("backtracks").u32());
+                            regions += 1;
+                        }
+                        (other, status) => panic!("got {other:?}, fixture says {status}"),
+                    }
+                }
                 "repair" => {
                     let start = run.get("start").u32s();
                     let outcome = net
@@ -301,13 +369,14 @@ fn network_samples_and_solves_match_the_fixture() {
                     let name = case.get("name").str();
                     let (labels, stats) = match (&outcome, run.get("status").str()) {
                         (RepairOutcome::Repaired { labels, stats }, "repaired") => {
-                            // A repaired labelling really satisfies every edge.
+                            // A repaired labelling really satisfies every edge and rule.
                             for (node, list) in net_edges(n).iter().enumerate() {
                                 for e in list {
                                     let t = &net_table(n, e.relation);
                                     assert!(t.get(labels[node], labels[e.to as usize]) > 0);
                                 }
                             }
+                            assert_eq!(net.violations(labels).unwrap(), 0);
                             repaired += 1;
                             (labels, stats)
                         }
@@ -343,8 +412,13 @@ fn network_samples_and_solves_match_the_fixture() {
         }
     }
     assert!(
-        sampled >= 20 && solved >= 10 && refused >= 6 && repaired >= 4 && repair_refused >= 4,
-        "{sampled} {solved} {refused} {repaired} {repair_refused}"
+        sampled >= 20
+            && solved >= 10
+            && refused >= 6
+            && repaired >= 4
+            && repair_refused >= 4
+            && regions >= 5,
+        "{sampled} {solved} {refused} {repaired} {repair_refused} {regions}"
     );
 }
 

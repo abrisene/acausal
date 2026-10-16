@@ -74,7 +74,7 @@ Model.fromState uses op60 with saved bytes. Resource clone op10 covers models an
 
 ## Graph primitives
 
-A network (read by ops 71, 72, 79 and 80): label count u32; node count u32; per node an edge count u32 and repeated (to u32, relation u32); table count u32; per table `labels * labels` weights u32; per node a unary count u32 and repeated (label u32, weight u32). Tables are indexed `[a * labels + b]` for (this node, neighbour). Weight 0 forbids. Every edge needs a reverse edge whose table is the transpose.
+A network (read by ops 71, 72, 79, 80 and 81): label count u32; node count u32; per node an edge count u32 and repeated (to u32, relation u32); table count u32; per table `labels * labels` weights u32; per node a unary count u32 and repeated (label u32, weight u32); then a count-rule count u32 and per rule a node count u32 and nodes u32 (ascending), a label count u32 and labels u32 (ascending), min u32 and max u32 (`min <= max <= nodes`: between min and max of the nodes must hold one of the labels; ops 72, 79, 80 and 81 enforce rules, 71 ignores them). Tables are indexed `[a * labels + b]` for (this node, neighbour). Weight 0 forbids. Every edge needs a reverse edge whose table is the transpose.
 
 | op | input | output |
 |---|---|---|
@@ -89,6 +89,7 @@ A network (read by ops 71, 72, 79 and 80): label count u32; node count u32; per 
 | 78 | handle, relation u32 | count u32, repeated (a u32, b u32, n u64) |
 | 79 | network, label count u32, labels u32 | violations u32 |
 | 80 | network, label count u32, labels u32, seed u32, max_radius u32, max_decisions u32, max_backtracks u32, max_rounds u32 | status byte, then rounds u32, decisions u32, backtracks u32, changed u32; 0 refused adds reason string (`unrepairable` or `round-limit`), node u32, remaining u32; both end with count u32, labels u32 |
+| 81 | network, seed u32, max_decisions u32, max_backtracks u32, free count u32 + nodes u32, fixed count u32 + repeated (node u32, label u32) | like op 72, with the labels of the free nodes in order |
 
 Op 10 clones a PairStats handle. The counter hash is specified in `docs/specs/network.md`.
 
