@@ -105,7 +105,7 @@ match net.solve(&Counter::new(7), Budget { max_decisions: 1000, max_backtracks: 
 
 `sample` runs a graph-colouring Gibbs sweep then greedy sweeps: nodes of one colour share no edge, so they update in any order with the same result. `solve` treats a pair weight of zero as forbidden, keeps arc consistency and backtracks within a budget. It returns a refusal with a reason (`unsatisfiable`, `backtrack-limit`, `decision-limit`) rather than hanging.
 
-A sample can leave a node stuck on a label that conflicts with a neighbour. `repair` mends those violations locally instead of solving the whole network again. It takes the lowest violating node's cluster of conflicts, frees every node within a radius of it, pins the nodes just outside to their labels and solves that region. The radius grows up to `max_radius` until the region solves, and every node outside the solved regions keeps its label:
+A sample can leave a node stuck on a label that conflicts with a neighbour. `repair` mends those violations locally instead of solving the whole network again. It takes the lowest violating node's cluster of conflicts, frees every node within a radius of it (following the edges that can forbid something), pins the nodes just outside to their labels and solves that region; a pinned node that is itself in a violation is freed with it, and a region the search runs dry in grows past the node it ran dry at. The radius grows up to `max_radius` until the region solves, and every node outside the solved regions keeps its label (nodes can change a little beyond `max_radius` hops when closure or growth frees more):
 
 ```rust
 use acausal::{Counter, RepairBudget, RepairOutcome};
