@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const modulePath = process.env.ACAUSAL_JS_MODULE ?? '../bindings/javascript/index.mjs';
-const { init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkViolations } = await import(modulePath);
+const { init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkRepair, networkViolations } = await import(modulePath);
 await init();
 const resources = [];
 const keep = value => (resources.push(value), value);
@@ -85,7 +85,15 @@ try {
         const got = networkSample(spec, run.seed, {gibbs: run.gibbs, icm: run.icm});
         assert.deepEqual(got, run.labels, item.name);
         assert.equal(networkViolations(spec, got), run.violations, item.name);
+      } else if (run.op === 'repair') {
+        const got = networkRepair(spec, run.start, run.seed, {maxRadius: run.maxRadius, maxDecisions: run.maxDecisions, maxBacktracks: run.maxBacktracks, maxRounds: run.maxRounds});
+        assert.equal(got.status, run.status, item.name);
+        assert.deepEqual(got.labels, run.labels, item.name);
+        assert.deepEqual([got.rounds, got.decisions, got.backtracks, got.changed], [run.rounds, run.decisions, run.backtracks, run.changed], item.name);
+        if (run.status === 'repaired') assert.equal(networkViolations(spec, got.labels), 0, item.name);
+        else assert.deepEqual([got.reason, got.node, got.remaining], [run.reason, run.node, run.remaining], item.name);
       } else {
+        assert.equal(run.op, 'solve');
         const got = networkSolve(spec, run.seed, {maxDecisions: run.maxDecisions, maxBacktracks: run.maxBacktracks});
         assert.equal(got.status, run.status, item.name);
         assert.equal(got.decisions, run.decisions);
@@ -107,6 +115,9 @@ try {
     }
   }
   assert.throws(() => new PairStats(100000));
+  const repairable = graph.networks.find(item => item.runs.some(run => run.op === 'repair')).network;
+  assert.throws(() => networkRepair(repairable, [0], 1));
+  assert.throws(() => networkRepair(repairable, repairable.unary.map(([[label]]) => label), 1, {maxRadius: 17}));
   assert.throws(() => networkSample({labels: 2, edges: [[[1, 0]], []], tables: [[1, 1, 1, 1]], unary: [[[0, 1]], [[0, 1]]]}, 1));
   assert.equal(counterWord(1, [1]), graph.counter.find(r => r.seed === 1 && r.keys.length === 1 && r.keys[0] === 1).word);
   console.log(JSON.stringify({samples, uses: sampleRng.uses(), generated, posterior: posterior.probabilities, graphRuns: replayed}));

@@ -3,7 +3,7 @@ from contextlib import ExitStack
 import json
 import math
 from pathlib import Path
-from acausal import Rng, Weighted, Markov, Model, PairStats, AcausalError, counter_word, counter_unit, network_sample, network_solve, network_violations
+from acausal import Rng, Weighted, Markov, Model, PairStats, AcausalError, counter_word, counter_unit, network_sample, network_solve, network_repair, network_violations
 
 root = Path(__file__).resolve().parents[1]
 
@@ -86,7 +86,17 @@ with ExitStack() as stack:
                 got = network_sample(spec, run["seed"], run["gibbs"], run["icm"])
                 assert got == run["labels"], item["name"]
                 assert network_violations(spec, got) == run["violations"], item["name"]
+            elif run["op"] == "repair":
+                got = network_repair(spec, run["start"], run["seed"], run["maxRadius"], run["maxDecisions"], run["maxBacktracks"], run["maxRounds"])
+                assert got["status"] == run["status"], item["name"]
+                assert got["labels"] == run["labels"], item["name"]
+                assert [got[k] for k in ("rounds", "decisions", "backtracks", "changed")] == [run[k] for k in ("rounds", "decisions", "backtracks", "changed")], item["name"]
+                if run["status"] == "repaired":
+                    assert network_violations(spec, got["labels"]) == 0, item["name"]
+                else:
+                    assert [got[k] for k in ("reason", "node", "remaining")] == [run[k] for k in ("reason", "node", "remaining")], item["name"]
             else:
+                assert run["op"] == "solve"
                 got = network_solve(spec, run["seed"], run["maxDecisions"], run["maxBacktracks"])
                 assert got["status"] == run["status"], item["name"]
                 assert (got["decisions"], got["backtracks"]) == (run["decisions"], run["backtracks"])
@@ -104,6 +114,9 @@ with ExitStack() as stack:
             assert stats.table(r["relation"]) == r["table"]
             assert stats.table(r["relation"], observed_only=True) == r["support"]
     fails(lambda: PairStats(100000))
+    repairable = next(item["network"] for item in graph["networks"] if any(run["op"] == "repair" for run in item["runs"]))
+    fails(lambda: network_repair(repairable, [0], 1))
+    fails(lambda: network_repair(repairable, [node[0][0] for node in repairable["unary"]], 1, max_radius=17))
     fails(lambda: network_sample({"labels":2,"edges":[[(1,0)],[]],"tables":[[1,1,1,1]],"unary":[[(0,1)],[(0,1)]]}, 1))
     assert counter_word(1, [1]) == next(r["word"] for r in graph["counter"] if r["seed"] == 1 and r["keys"] == [1])
     print(json.dumps({"samples":samples,"uses":sample_rng.uses(),"generated":generated,"posterior":posterior["probabilities"],"graphRuns":replayed},separators=(",",":")))

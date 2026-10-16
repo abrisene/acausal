@@ -105,6 +105,26 @@ match net.solve(&Counter::new(7), Budget { max_decisions: 1000, max_backtracks: 
 
 `sample` runs a graph-colouring Gibbs sweep then greedy sweeps: nodes of one colour share no edge, so they update in any order with the same result. `solve` treats a pair weight of zero as forbidden, keeps arc consistency and backtracks within a budget. It returns a refusal with a reason (`unsatisfiable`, `backtrack-limit`, `decision-limit`) rather than hanging.
 
+A sample can leave a node stuck on a label that conflicts with a neighbour. `repair` mends those violations locally instead of solving the whole network again. It takes the lowest violating node's cluster of conflicts, frees every node within a radius of it, pins the nodes just outside to their labels and solves that region. The radius grows up to `max_radius` until the region solves, and every node outside the solved regions keeps its label:
+
+```rust
+use acausal::{Counter, RepairBudget, RepairOutcome};
+
+let mut labels = net.sample(&Counter::new(7), Schedule { gibbs: 6, icm: 2 })?;
+if net.violations(&labels) > 0 {
+    let budget = RepairBudget { max_radius: 4, max_decisions: 100_000, max_backtracks: 1_000, max_rounds: 10_000 };
+    match net.repair(&labels, &Counter::new(7), budget)? {
+        RepairOutcome::Repaired { labels: mended, .. } => labels = mended,
+        RepairOutcome::Refused { reason, node, remaining, .. } => {
+            println!("{}: {remaining} conflicts left near node {node}", reason.name())
+        }
+    }
+}
+# Ok::<(), acausal::Error>(())
+```
+
+A refusal is `unrepairable` (no region up to `max_radius` could be solved around that node) or `round-limit`. Each round removes one cluster's violations and adds none, so the rounds are at most the number of violating edges.
+
 `PairStats` learns pair statistics from labelled example graphs. It keeps counts in an order-1 `Markov` model per relation and a `Weighted` table of label frequencies, and `table(relation)` turns them into integer lift weights a `Network` can read. The exact arithmetic of all of this is in `docs/specs/network.md`; `fixtures/graph.json` holds the golden cases, replayed by `tests/graph_replay.rs` and by both smoke programs.
 
 ## Bindings

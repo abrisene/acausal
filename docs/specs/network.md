@@ -113,7 +113,49 @@ A refusal reports the reason, the node whose domain emptied last (or none), the 
 
 ## Violations
 
-`violations(labels)` counts the edges `(i, j)` with `i < j` for which `tables[r][a][b]` is zero, where `r` is the relation of `i`'s edge to `j`, `a` the label of `i` and `b` the label of `j`. (The reverse edge's table is the transpose, so one direction decides.) `sample` treats zero as forbidden: a node whose candidates all have weight zero keeps its current label, so a sample can finish with violations. Use `solve` for hard constraints.
+`violations(labels)` counts the edges `(i, j)` with `i < j` for which `tables[r][a][b]` is zero, where `r` is the relation of `i`'s edge to `j`, `a` the label of `i` and `b` the label of `j`. (The reverse edge's table is the transpose, so one direction decides.) `sample` treats zero as forbidden: a node whose candidates all have weight zero keeps its current label, so a sample can finish with violations. Use `repair` to mend them locally, or `solve` for hard constraints over the whole network.
+
+## Repair
+
+`repair(labels, seed, budget)` mends the violations of a labelling locally. It frees a neighbourhood around one cluster of violations at a time, pins the nodes just outside it to their current labels, and solves the neighbourhood with the `solve` search. Nodes outside the solved neighbourhoods keep their labels.
+
+`budget` is `max_radius` (1 to 16), `max_decisions` and `max_backtracks` (the limits of each neighbourhood search) and `max_rounds` (at most 100000). A budget out of range, a labelling whose length is not the node count, or a label that is not one of its node's candidates (a unary label with non-zero weight) is an invalid-parameter error. Everything else returns an outcome.
+
+```
+state = labels
+bad = the violating edges (i, j), i < j, as in `violations`
+rounds = decisions = backtracks = 0
+loop:
+  bad empty -> repaired
+  v0 = the smallest i over bad (the lowest node that has a violating edge)
+  rounds == max_rounds -> refuse "round-limit"
+  layer[0] = cluster: the nodes reached from v0 over violating edges (under state)
+  layer[d] = the nodes at hop distance exactly d from the cluster over all edges
+  for radius in 1 ..= max_radius:
+    if radius > 1 and layer[radius] is empty: stop growing      # the component is already free
+    free     = layer[0] .. layer[radius]
+    boundary = layer[radius + 1]                               # pinned
+    order    = free + boundary, ascending node id; a node's local index is its position in order
+    edges:  for each node in order, its edges in listed order, keeping an edge (node -> to)
+            when `to` is in order and at least one of node, to is free
+    unary:  a free node keeps its candidates and weights; a boundary node has the single
+            candidate (state[node], its unary weight)
+    run the `solve` search on this subproblem with
+      counter = Counter(word(seed, [0x52455041, v0, radius]))
+      budget  = (max_decisions, max_backtracks)
+      every hash that `solve` keys on a node index, word(.., [node, 0, 2]) and
+      unit(.., [node, serial, 1]), uses the node's id in the whole network instead
+    decisions += its decisions; backtracks += its backtracks          # failed searches count too
+    solved -> state[node] = its label for every free node; drop from bad every edge
+              touching a free node; rounds += 1; next loop iteration
+  no radius solved -> refuse "unrepairable"
+```
+
+A refusal names `v0` as `node`, reports `remaining` (the number of edges in `bad`) and returns `state` as repaired so far. Both outcomes report `rounds`, `decisions`, `backtracks` (sums, saturating at `2^32 - 1`) and `changed`, the number of nodes whose label differs from the input.
+
+The subproblem keeps no edge between two pinned nodes, because neither label can change. Arc consistency leaves each pinned node its own label only when that label supports every free neighbour, so a solved subproblem satisfies every edge that touches a free node. Every edge of the cluster lies between free nodes, and edges between locked nodes do not change. A round therefore removes the cluster's violations and adds none, and an edge that is satisfied stays satisfied. There are at most as many rounds as violating edges in the input, and `v0` increases from round to round.
+
+The subproblem's numbering is ascending node id and every hash reads the node id, so the result does not depend on how the subproblem is numbered. The radius a cluster needs depends on the constraints. On a 12 by 12 grid with three labels that must differ, some clusters left by `sample` need radius 6, because the labels pinned around a smaller region leave no colouring of its inside.
 
 ## Pair statistics
 
@@ -131,4 +173,4 @@ Integer division throughout. A relation with no observations gives 33 everywhere
 
 ## Fixtures
 
-`fixtures/graph.json` holds counter words and units, networks with sampling and solving runs (solved and refused), and pair statistics tables. Regenerate with `cargo run --offline --example graph_fixtures`; the replay is `tests/graph_replay.rs`, and `scripts/smoke-bindings.*` replay the same file through wasm and Python.
+`fixtures/graph.json` holds counter words and units, networks with sampling, solving runs (solved and refused) and repair runs (repaired and refused; each records its starting labelling), and pair statistics tables. Regenerate with `cargo run --offline --example graph_fixtures`; the replay is `tests/graph_replay.rs`, and `scripts/smoke-bindings.*` replay the same file through wasm and Python.

@@ -941,6 +941,29 @@ export function networkSolve(spec, seed, { maxDecisions = 1_000_000, maxBacktrac
   return { status: 'refused', reason, node: hasNode ? node : null, decisions, backtracks };
 }
 
+/**
+ * Repair the zero-weight edges of `labels` locally: free the nodes within `maxRadius` hops of each
+ * cluster of violations, pin the nodes just outside, and solve that region.
+ */
+export function networkRepair(spec, labels, seed, { maxRadius = 4, maxDecisions = 100_000, maxBacktracks = 1_000, maxRounds = 100_000 } = {}) {
+  const engine = requireRuntime();
+  const writer = writeNetwork(spec).u32(asCount(labels.length, 'label count'));
+  for (const label of labels) writer.u32(asU32(label, 'label'));
+  writer.u32(asU32(seed, 'seed')).u32(asU32(maxRadius, 'maxRadius')).u32(asU32(maxDecisions, 'maxDecisions'))
+    .u32(asU32(maxBacktracks, 'maxBacktracks')).u32(asU32(maxRounds, 'maxRounds'));
+  const reader = new Reader(engine.call(80, writer.finish()));
+  const repaired = reader.u8() === 1;
+  const result = { status: repaired ? 'repaired' : 'refused', rounds: reader.u32(), decisions: reader.u32(), backtracks: reader.u32(), changed: reader.u32() };
+  if (!repaired) {
+    result.reason = reader.text();
+    result.node = reader.u32();
+    result.remaining = reader.u32();
+  }
+  result.labels = Array.from({ length: reader.u32() }, () => reader.u32());
+  reader.finish();
+  return result;
+}
+
 /** Neighbour statistics over a fixed number of labels, counted per relation. */
 export class PairStats {
   constructor(labels) {
@@ -1003,4 +1026,4 @@ export class PairStats {
   [Symbol.dispose]() { this.close(); }
 }
 
-const api = Object.freeze({ init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkViolations, AcausalError });
+const api = Object.freeze({ init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkRepair, networkViolations, AcausalError });

@@ -2,7 +2,10 @@
 //! and asserts exact equality. The same file is replayed through the wasm and
 //! Python bindings by scripts/smoke-bindings.*.
 
-use acausal::{Budget, Counter, Edge, Network, Outcome, PairStats, PairTable, Schedule};
+use acausal::{
+    Budget, Counter, Edge, Network, Outcome, PairStats, PairTable, RepairBudget, RepairOutcome,
+    Schedule,
+};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Clone)]
@@ -182,6 +185,8 @@ fn network_samples_and_solves_match_the_fixture() {
     let mut sampled = 0;
     let mut solved = 0;
     let mut refused = 0;
+    let mut repaired = 0;
+    let mut repair_refused = 0;
     for case in f.get("networks").list() {
         let n = case.get("network");
         let labels = n.get("labels").u32();
@@ -276,13 +281,67 @@ fn network_samples_and_solves_match_the_fixture() {
                         ),
                     }
                 }
+                "repair" => {
+                    let start = run.get("start").u32s();
+                    let outcome = net
+                        .repair(
+                            &start,
+                            &Counter::new(seed),
+                            RepairBudget {
+                                max_radius: run.get("maxRadius").u32(),
+                                max_decisions: run.get("maxDecisions").u32(),
+                                max_backtracks: run.get("maxBacktracks").u32(),
+                                max_rounds: run.get("maxRounds").u32(),
+                            },
+                        )
+                        .unwrap();
+                    let name = case.get("name").str();
+                    let (labels, stats) = match (&outcome, run.get("status").str()) {
+                        (RepairOutcome::Repaired { labels, stats }, "repaired") => {
+                            // A repaired labelling really satisfies every edge.
+                            for (node, list) in net_edges(n).iter().enumerate() {
+                                for e in list {
+                                    let t = &net_table(n, e.relation);
+                                    assert!(t.get(labels[node], labels[e.to as usize]) > 0);
+                                }
+                            }
+                            repaired += 1;
+                            (labels, stats)
+                        }
+                        (
+                            RepairOutcome::Refused {
+                                reason,
+                                node,
+                                remaining,
+                                labels,
+                                stats,
+                            },
+                            "refused",
+                        ) => {
+                            assert_eq!(reason.name(), run.get("reason").str(), "{name}");
+                            assert_eq!(*node, run.get("node").u32(), "{name}");
+                            assert_eq!(*remaining as u32, run.get("remaining").u32(), "{name}");
+                            assert_eq!(net.violations(labels), *remaining);
+                            repair_refused += 1;
+                            (labels, stats)
+                        }
+                        (other, status) => {
+                            panic!("{name}: got {other:?}, fixture says {status}")
+                        }
+                    };
+                    assert_eq!(labels, &run.get("labels").u32s(), "{name} seed {seed}");
+                    assert_eq!(stats.rounds, run.get("rounds").u32(), "{name}");
+                    assert_eq!(stats.decisions, run.get("decisions").u32(), "{name}");
+                    assert_eq!(stats.backtracks, run.get("backtracks").u32(), "{name}");
+                    assert_eq!(stats.changed, run.get("changed").u32(), "{name}");
+                }
                 op => panic!("unknown op {op}"),
             }
         }
     }
     assert!(
-        sampled >= 20 && solved >= 10 && refused >= 6,
-        "{sampled} {solved} {refused}"
+        sampled >= 20 && solved >= 10 && refused >= 6 && repaired >= 4 && repair_refused >= 4,
+        "{sampled} {solved} {refused} {repaired} {repair_refused}"
     );
 }
 

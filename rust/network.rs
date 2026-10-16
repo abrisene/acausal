@@ -131,6 +131,75 @@ pub enum Outcome {
     },
 }
 
+/// Largest neighbourhood radius [`Network::repair`] may grow to.
+pub const MAX_REPAIR_RADIUS: u32 = 16;
+
+/// Largest number of rounds [`Network::repair`] may run.
+pub const MAX_REPAIR_ROUNDS: u32 = 100_000;
+
+/// First key of the counter word that seeds each repair search ("REPA").
+const REPAIR_KEY: u32 = 0x5245_5041;
+
+/// Limits for [`Network::repair`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RepairBudget {
+    /// Largest hop distance from a cluster of violations that is freed, `1..=16`.
+    pub max_radius: u32,
+    /// Decision limit of each neighbourhood search.
+    pub max_decisions: u32,
+    /// Backtrack limit of each neighbourhood search.
+    pub max_backtracks: u32,
+    /// Largest number of repaired clusters, at most 100000.
+    pub max_rounds: u32,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct RepairStats {
+    /// Clusters repaired.
+    pub rounds: u32,
+    /// Decisions summed over every neighbourhood search, failed ones included.
+    pub decisions: u32,
+    /// Backtracks summed over every neighbourhood search, failed ones included.
+    pub backtracks: u32,
+    /// Nodes whose label differs from the input labelling.
+    pub changed: u32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RepairRefusal {
+    /// No neighbourhood up to `max_radius` could be solved.
+    Unrepairable,
+    /// Violations remain after `max_rounds` rounds.
+    RoundLimit,
+}
+
+impl RepairRefusal {
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Unrepairable => "unrepairable",
+            Self::RoundLimit => "round-limit",
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RepairOutcome {
+    Repaired {
+        labels: Vec<u32>,
+        stats: RepairStats,
+    },
+    Refused {
+        reason: RepairRefusal,
+        /// The lowest node that still has a violating edge.
+        node: u32,
+        /// Violating edges left.
+        remaining: usize,
+        /// The labelling as far as it was repaired.
+        labels: Vec<u32>,
+        stats: RepairStats,
+    },
+}
+
 #[derive(Clone, Debug)]
 pub struct Network {
     labels: u32,
@@ -383,8 +452,296 @@ impl Network {
 
     /// Search for a labelling where every edge's pair weight is non-zero.
     pub fn solve(&self, counter: &Counter, budget: Budget) -> Outcome {
-        Search::new(self, counter, budget).run()
+        let rows = support_rows(self.labels, &self.tables);
+        let problem = Problem {
+            labels: self.labels,
+            edges: &self.edges,
+            unary: &self.unary,
+            ids: None,
+        };
+        Search::new(problem, &rows, counter, budget).run()
     }
+
+    /// Repair the violations of `labels` locally.
+    ///
+    /// Each round takes the lowest node with a violating edge and its cluster
+    /// (the nodes reached from it over violating edges), frees every node
+    /// within `radius` hops of the cluster, pins the nodes just outside to
+    /// their current labels, and solves that region with the `solve` search.
+    /// The radius grows from 1 until a region is solved. Nodes outside the
+    /// solved regions keep their labels.
+    ///
+    /// `Err` only for invalid input: a labelling of the wrong length, a label
+    /// that is not one of the node's candidates, or a budget out of range.
+    pub fn repair(
+        &self,
+        labels: &[u32],
+        counter: &Counter,
+        budget: RepairBudget,
+    ) -> Result<RepairOutcome, Error> {
+        if !(1..=MAX_REPAIR_RADIUS).contains(&budget.max_radius) {
+            return Err(Error::InvalidParameter(format!(
+                "max_radius must be in 1..={MAX_REPAIR_RADIUS}"
+            )));
+        }
+        if budget.max_rounds > MAX_REPAIR_ROUNDS {
+            return Err(Error::InvalidParameter(format!(
+                "max_rounds may not exceed {MAX_REPAIR_ROUNDS}"
+            )));
+        }
+        let n = self.nodes();
+        if labels.len() != n {
+            return Err(Error::InvalidParameter(
+                "repair needs one label per node".to_owned(),
+            ));
+        }
+        for (node, &label) in labels.iter().enumerate() {
+            if self.unary_weight(node, label).is_none() {
+                return Err(Error::InvalidParameter(format!(
+                    "label {label} is not a candidate of node {node}"
+                )));
+            }
+        }
+        let mut state = labels.to_vec();
+        let mut stats = RepairStats::default();
+        // Violating edges as (lower node, higher node), in ascending order.
+        let mut bad: BTreeSet<(u32, u32)> = BTreeSet::new();
+        for (node, list) in self.edges.iter().enumerate() {
+            for edge in list {
+                if edge.to as usize > node && self.violates(&state, node, edge) {
+                    bad.insert((node as u32, edge.to));
+                }
+            }
+        }
+        let mut rows: Option<Vec<Vec<u64>>> = None;
+        // Scratch indexed by node, reset after each use: hop distance from the
+        // cluster (u32::MAX = unreached), and index in the current region.
+        let mut dist = vec![u32::MAX; n];
+        let mut local = vec![u32::MAX; n];
+        loop {
+            let Some(&(v0, _)) = bad.first() else {
+                stats.changed = changed(labels, &state);
+                return Ok(RepairOutcome::Repaired {
+                    labels: state,
+                    stats,
+                });
+            };
+            if stats.rounds == budget.max_rounds {
+                return Ok(self.repair_refused(
+                    RepairRefusal::RoundLimit,
+                    v0,
+                    bad.len(),
+                    labels,
+                    state,
+                    stats,
+                ));
+            }
+            let rows = rows.get_or_insert_with(|| support_rows(self.labels, &self.tables));
+            // layers[d] holds the nodes at hop distance d from the cluster,
+            // each in ascending order. Layer 0 is the cluster.
+            let mut layers: Vec<Vec<u32>> = vec![self.cluster(&state, v0, &mut dist)];
+            let mut solved = false;
+            for radius in 1..=budget.max_radius {
+                while layers.len() <= radius as usize + 1 {
+                    let next = self.next_layer(layers.last().expect("layer 0"), &mut dist);
+                    layers.push(next);
+                }
+                if radius > 1 && layers[radius as usize].is_empty() {
+                    // The region is a whole connected component already.
+                    break;
+                }
+                let mut order: Vec<u32> = layers[..=radius as usize + 1]
+                    .iter()
+                    .flatten()
+                    .copied()
+                    .collect();
+                order.sort_unstable();
+                for (k, &node) in order.iter().enumerate() {
+                    local[node as usize] = k as u32;
+                }
+                let free = |node: u32| dist[node as usize] <= radius;
+                let mut edges = Vec::with_capacity(order.len());
+                let mut unary = Vec::with_capacity(order.len());
+                for &node in &order {
+                    let node_free = free(node);
+                    edges.push(
+                        self.edges[node as usize]
+                            .iter()
+                            .filter(|e| {
+                                local[e.to as usize] != u32::MAX && (node_free || free(e.to))
+                            })
+                            .map(|e| Edge {
+                                to: local[e.to as usize],
+                                relation: e.relation,
+                            })
+                            .collect::<Vec<_>>(),
+                    );
+                    unary.push(if node_free {
+                        self.unary[node as usize].clone()
+                    } else {
+                        let label = state[node as usize];
+                        let weight = self.unary_weight(node as usize, label).expect("candidate");
+                        vec![(label, weight)]
+                    });
+                }
+                let problem = Problem {
+                    labels: self.labels,
+                    edges: &edges,
+                    unary: &unary,
+                    ids: Some(&order),
+                };
+                let search_counter = Counter::new(counter.word(&[REPAIR_KEY, v0, radius]));
+                let outcome = Search::new(
+                    problem,
+                    rows,
+                    &search_counter,
+                    Budget {
+                        max_decisions: budget.max_decisions,
+                        max_backtracks: budget.max_backtracks,
+                    },
+                )
+                .run();
+                for &node in &order {
+                    local[node as usize] = u32::MAX;
+                }
+                let search = match &outcome {
+                    Outcome::Solved { stats, .. } | Outcome::Refused { stats, .. } => *stats,
+                };
+                stats.decisions = stats.decisions.saturating_add(search.decisions);
+                stats.backtracks = stats.backtracks.saturating_add(search.backtracks);
+                if let Outcome::Solved { labels: found, .. } = outcome {
+                    for (k, &node) in order.iter().enumerate() {
+                        if free(node) {
+                            state[node as usize] = found[k];
+                            for edge in &self.edges[node as usize] {
+                                let pair = (node.min(edge.to), node.max(edge.to));
+                                bad.remove(&pair);
+                            }
+                        }
+                    }
+                    stats.rounds += 1;
+                    solved = true;
+                    break;
+                }
+            }
+            for &node in layers.iter().flatten() {
+                dist[node as usize] = u32::MAX;
+            }
+            if !solved {
+                return Ok(self.repair_refused(
+                    RepairRefusal::Unrepairable,
+                    v0,
+                    bad.len(),
+                    labels,
+                    state,
+                    stats,
+                ));
+            }
+        }
+    }
+
+    /// The weight of `label` among `node`'s candidates.
+    fn unary_weight(&self, node: usize, label: u32) -> Option<u32> {
+        let list = &self.unary[node];
+        list.binary_search_by_key(&label, |p| p.0)
+            .ok()
+            .map(|i| list[i].1)
+    }
+
+    fn violates(&self, state: &[u32], node: usize, edge: &Edge) -> bool {
+        self.tables[edge.relation as usize].get(state[node], state[edge.to as usize]) == 0
+    }
+
+    /// The nodes reached from `start` over violating edges, ascending. Marks
+    /// each with distance 0.
+    fn cluster(&self, state: &[u32], start: u32, dist: &mut [u32]) -> Vec<u32> {
+        let mut cluster = vec![start];
+        dist[start as usize] = 0;
+        let mut at = 0;
+        while at < cluster.len() {
+            let node = cluster[at] as usize;
+            at += 1;
+            for edge in &self.edges[node] {
+                if dist[edge.to as usize] == u32::MAX && self.violates(state, node, edge) {
+                    dist[edge.to as usize] = 0;
+                    cluster.push(edge.to);
+                }
+            }
+        }
+        cluster.sort_unstable();
+        cluster
+    }
+
+    /// The unreached neighbours of `layer`, ascending, marked one hop further.
+    fn next_layer(&self, layer: &[u32], dist: &mut [u32]) -> Vec<u32> {
+        let mut next = Vec::new();
+        for &node in layer {
+            let d = dist[node as usize] + 1;
+            for edge in &self.edges[node as usize] {
+                if dist[edge.to as usize] == u32::MAX {
+                    dist[edge.to as usize] = d;
+                    next.push(edge.to);
+                }
+            }
+        }
+        next.sort_unstable();
+        next
+    }
+
+    fn repair_refused(
+        &self,
+        reason: RepairRefusal,
+        node: u32,
+        remaining: usize,
+        input: &[u32],
+        labels: Vec<u32>,
+        mut stats: RepairStats,
+    ) -> RepairOutcome {
+        stats.changed = changed(input, &labels);
+        RepairOutcome::Refused {
+            reason,
+            node,
+            remaining,
+            labels,
+            stats,
+        }
+    }
+}
+
+fn changed(before: &[u32], after: &[u32]) -> u32 {
+    before.iter().zip(after).filter(|(a, b)| a != b).count() as u32
+}
+
+/// `rows[relation][a * words ..]` is the bitset of neighbour labels `b` with a
+/// non-zero table entry for `(a, b)`; `words` is `ceil(labels / 64)`, at least 1.
+fn support_rows(labels: u32, tables: &[PairTable]) -> Vec<Vec<u64>> {
+    let labels = labels as usize;
+    let words = labels.div_ceil(64).max(1);
+    tables
+        .iter()
+        .map(|table| {
+            let mut rows = vec![0u64; labels * words];
+            for a in 0..labels {
+                for b in 0..labels {
+                    if table.get(a as u32, b as u32) > 0 {
+                        rows[a * words + b / 64] |= 1 << (b % 64);
+                    }
+                }
+            }
+            rows
+        })
+        .collect()
+}
+
+/// What a [`Search`] reads: the whole network for `solve`, or a region of it
+/// for `repair`. `ids[node]` is the id hashed for a node (its index in the
+/// whole network); `None` hashes the index itself.
+#[derive(Clone, Copy)]
+struct Problem<'a> {
+    labels: u32,
+    edges: &'a [Vec<Edge>],
+    unary: &'a [Vec<(u32, u32)>],
+    ids: Option<&'a [u32]>,
 }
 
 /// While the largest weight is `>= 2^bits`, shift every weight right so the
@@ -449,15 +806,14 @@ struct Frame {
 }
 
 struct Search<'a> {
-    net: &'a Network,
+    net: Problem<'a>,
     counter: &'a Counter,
     budget: Budget,
     words: usize,
     domain: Vec<u64>,
     size: Vec<u32>,
-    /// `rows[relation][a * words ..]` is the bitset of neighbour labels `b`
-    /// with a non-zero table entry for `(a, b)`.
-    rows: Vec<Vec<u64>>,
+    /// See [`support_rows`].
+    rows: &'a [Vec<u64>],
     trail: Vec<(u32, u32)>,
     queue: std::collections::VecDeque<u32>,
     queued: Vec<bool>,
@@ -466,8 +822,8 @@ struct Search<'a> {
 }
 
 impl<'a> Search<'a> {
-    fn new(net: &'a Network, counter: &'a Counter, budget: Budget) -> Self {
-        let n = net.nodes();
+    fn new(net: Problem<'a>, rows: &'a [Vec<u64>], counter: &'a Counter, budget: Budget) -> Self {
+        let n = net.edges.len();
         let labels = net.labels as usize;
         let words = labels.div_ceil(64).max(1);
         let mut domain = vec![0u64; n * words];
@@ -478,21 +834,6 @@ impl<'a> Search<'a> {
                 size[node] += 1;
             }
         }
-        let rows = net
-            .tables
-            .iter()
-            .map(|table| {
-                let mut rows = vec![0u64; labels * words];
-                for a in 0..labels {
-                    for b in 0..labels {
-                        if table.get(a as u32, b as u32) > 0 {
-                            rows[a * words + b / 64] |= 1 << (b % 64);
-                        }
-                    }
-                }
-                rows
-            })
-            .collect();
         Self {
             net,
             counter,
@@ -507,6 +848,11 @@ impl<'a> Search<'a> {
             stats: SolveStats::default(),
             last_empty: None,
         }
+    }
+
+    /// The id hashed for `node`.
+    fn id(&self, node: usize) -> u32 {
+        self.net.ids.map_or(node as u32, |ids| ids[node])
     }
 
     fn has(&self, node: usize, label: u32) -> bool {
@@ -593,7 +939,7 @@ impl<'a> Search<'a> {
     }
 
     fn run(mut self) -> Outcome {
-        let n = self.net.nodes();
+        let n = self.net.edges.len();
         if (0..n).any(|node| self.size[node] == 0) {
             self.last_empty = (0..n).find(|&node| self.size[node] == 0).map(|v| v as u32);
             return self.refused(RefusalReason::Unsatisfiable);
@@ -612,7 +958,7 @@ impl<'a> Search<'a> {
                 if self.size[node] > 1 {
                     let key = (
                         self.size[node],
-                        self.counter.word(&[node as u32, 0, 2]),
+                        self.counter.word(&[self.id(node), 0, 2]),
                         node,
                     );
                     if best.is_none_or(|b| key < b) {
@@ -646,7 +992,7 @@ impl<'a> Search<'a> {
                 })
                 .collect();
             shift_down_total(&mut weights, 40);
-            let label = draw(&weights, self.counter.unit(&[node as u32, serial, 1]))
+            let label = draw(&weights, self.counter.unit(&[self.id(node), serial, 1]))
                 .expect("a live domain has positive weights");
             let frame = Frame {
                 node,
@@ -953,5 +1299,622 @@ mod tests {
         let mut edges = vec![Vec::new(); 2];
         edges[0].push(Edge { to: 1, relation: 0 });
         assert!(Network::new(2, edges, vec![PairTable::uniform(2, 1)], everything(2, 2)).is_err());
+    }
+
+    // ---- repair ----
+
+    /// Directions of a grid node's edges: 0 east, 1 down, 2 west, 3 up.
+    fn grid(w: usize, h: usize) -> Vec<Vec<Edge>> {
+        let mut edges = vec![Vec::new(); w * h];
+        for y in 0..h {
+            for x in 0..w {
+                let i = y * w + x;
+                if x + 1 < w {
+                    edges[i].push(Edge {
+                        to: (i + 1) as u32,
+                        relation: 0,
+                    });
+                }
+                if y + 1 < h {
+                    edges[i].push(Edge {
+                        to: (i + w) as u32,
+                        relation: 1,
+                    });
+                }
+                if x > 0 {
+                    edges[i].push(Edge {
+                        to: (i - 1) as u32,
+                        relation: 2,
+                    });
+                }
+                if y > 0 {
+                    edges[i].push(Edge {
+                        to: (i - w) as u32,
+                        relation: 3,
+                    });
+                }
+            }
+        }
+        edges
+    }
+
+    fn transpose(t: &PairTable) -> PairTable {
+        let n = t.labels();
+        let mut w = vec![0; (n * n) as usize];
+        for a in 0..n {
+            for b in 0..n {
+                w[(a * n + b) as usize] = t.get(b, a);
+            }
+        }
+        PairTable::new(n, w).unwrap()
+    }
+
+    /// Tables for the four grid relations from the east and down tables.
+    fn four(east: PairTable, down: PairTable) -> Vec<PairTable> {
+        let (west, up) = (transpose(&east), transpose(&down));
+        vec![east, down, west, up]
+    }
+
+    fn differ(labels: u32) -> PairTable {
+        let n = labels as usize;
+        PairTable::new(
+            labels,
+            (0..n * n).map(|i| u32::from(i / n != i % n)).collect(),
+        )
+        .unwrap()
+    }
+
+    fn budget(max_radius: u32) -> RepairBudget {
+        RepairBudget {
+            max_radius,
+            max_decisions: 1_000_000,
+            max_backtracks: 1_000_000,
+            max_rounds: 10_000,
+        }
+    }
+
+    /// Every directed edge holds a pair with a non-zero table entry, read
+    /// straight from the tables the network was built from.
+    fn satisfies(edges: &[Vec<Edge>], tables: &[PairTable], labels: &[u32]) -> bool {
+        edges.iter().enumerate().all(|(node, list)| {
+            list.iter()
+                .all(|e| tables[e.relation as usize].get(labels[node], labels[e.to as usize]) > 0)
+        })
+    }
+
+    /// Endpoints of edges whose table entry is zero.
+    fn conflicted(edges: &[Vec<Edge>], tables: &[PairTable], labels: &[u32]) -> Vec<usize> {
+        (0..edges.len())
+            .filter(|&node| {
+                edges[node].iter().any(|e| {
+                    tables[e.relation as usize].get(labels[node], labels[e.to as usize]) == 0
+                })
+            })
+            .collect()
+    }
+
+    /// Hop distance from the nearest source (u32::MAX if unreachable).
+    fn hops(edges: &[Vec<Edge>], sources: &[usize]) -> Vec<u32> {
+        let mut dist = vec![u32::MAX; edges.len()];
+        let mut queue = std::collections::VecDeque::new();
+        for &s in sources {
+            dist[s] = 0;
+            queue.push_back(s);
+        }
+        while let Some(node) = queue.pop_front() {
+            for e in &edges[node] {
+                if dist[e.to as usize] == u32::MAX {
+                    dist[e.to as usize] = dist[node] + 1;
+                    queue.push_back(e.to as usize);
+                }
+            }
+        }
+        dist
+    }
+
+    /// What every repair must uphold: a repaired labelling satisfies every
+    /// edge, only nodes within `max_radius` hops of a violation change, every
+    /// round removes at least one violating edge, and `changed` counts the
+    /// nodes that changed.
+    fn check(
+        edges: &[Vec<Edge>],
+        tables: &[PairTable],
+        start: &[u32],
+        outcome: &RepairOutcome,
+        max_radius: u32,
+    ) {
+        let (labels, stats) = match outcome {
+            RepairOutcome::Repaired { labels, stats } => {
+                assert!(satisfies(edges, tables, labels));
+                (labels, stats)
+            }
+            RepairOutcome::Refused {
+                labels,
+                stats,
+                node,
+                remaining,
+                ..
+            } => {
+                assert!(*remaining > 0);
+                assert!(conflicted(edges, tables, labels).contains(&(*node as usize)));
+                (labels, stats)
+            }
+        };
+        let near = hops(edges, &conflicted(edges, tables, start));
+        let mut changed = 0;
+        for node in 0..start.len() {
+            if labels[node] != start[node] {
+                assert!(
+                    near[node] <= max_radius,
+                    "node {node} changed {} hops away",
+                    near[node]
+                );
+                changed += 1;
+            }
+        }
+        assert_eq!(stats.changed, changed);
+        let before = (0..edges.len())
+            .flat_map(|i| edges[i].iter().map(move |e| (i, e)))
+            .filter(|(i, e)| {
+                *i < e.to as usize
+                    && tables[e.relation as usize].get(start[*i], start[e.to as usize]) == 0
+            })
+            .count();
+        assert!(stats.rounds as usize <= before);
+    }
+
+    #[test]
+    fn repair_clears_what_sampling_leaves_on_a_three_colour_grid() {
+        let edges = grid(12, 12);
+        let tables = four(differ(3), differ(3));
+        let net = Network::new(3, edges.clone(), tables.clone(), everything(144, 3)).unwrap();
+        let mut frustrated = 0;
+        for seed in 0..8 {
+            let start = net
+                .sample(&Counter::new(seed), Schedule { gibbs: 3, icm: 1 })
+                .unwrap();
+            if net.violations(&start) == 0 {
+                continue;
+            }
+            frustrated += 1;
+            // A pinned boundary can force a 3-colouring's parity, so some
+            // clusters need a region several hops wide.
+            let outcome = net.repair(&start, &Counter::new(seed), budget(8)).unwrap();
+            assert!(
+                matches!(outcome, RepairOutcome::Repaired { .. }),
+                "{outcome:?}"
+            );
+            check(&edges, &tables, &start, &outcome, 8);
+            for radius in [1, 2] {
+                let outcome = net
+                    .repair(&start, &Counter::new(seed), budget(radius))
+                    .unwrap();
+                check(&edges, &tables, &start, &outcome, radius);
+            }
+        }
+        assert!(frustrated > 0, "sampling left no violations to repair");
+    }
+
+    /// Pipe tiles: label bits are the open sides (1 east, 2 up, 4 west,
+    /// 8 down). Neighbours must agree on the side they share, so the east
+    /// and down tables are not symmetric and the four relations differ. Only
+    /// straights and corners (two open sides) are candidates, so a node whose
+    /// neighbours ask for three open sides has no label that fits.
+    type Unary = Vec<Vec<(u32, u32)>>;
+
+    fn pipes(w: usize, h: usize) -> (Vec<Vec<Edge>>, Vec<PairTable>, Unary) {
+        let mut east = vec![0; 256];
+        let mut down = vec![0; 256];
+        for a in 0..16usize {
+            for b in 0..16usize {
+                east[a * 16 + b] = u32::from((a & 1 != 0) == (b & 4 != 0));
+                down[a * 16 + b] = u32::from((a & 8 != 0) == (b & 2 != 0));
+            }
+        }
+        let tables = four(
+            PairTable::new(16, east).unwrap(),
+            PairTable::new(16, down).unwrap(),
+        );
+        let unary = vec![
+            (0..16u32)
+                .filter(|l| l.count_ones() == 2)
+                .map(|l| (l, if l == 5 || l == 10 { 1 } else { 4 }))
+                .collect();
+            w * h
+        ];
+        (grid(w, h), tables, unary)
+    }
+
+    #[test]
+    fn repair_joins_pipes_that_sampling_left_broken() {
+        let (edges, tables, unary) = pipes(9, 7);
+        assert_ne!(tables[0], transpose(&tables[0]));
+        let net = Network::new(16, edges.clone(), tables.clone(), unary).unwrap();
+        let mut frustrated = 0;
+        for seed in 0..6 {
+            let start = net
+                .sample(&Counter::new(seed), Schedule { gibbs: 2, icm: 1 })
+                .unwrap();
+            if net.violations(&start) == 0 {
+                continue;
+            }
+            frustrated += 1;
+            let outcome = net.repair(&start, &Counter::new(seed), budget(8)).unwrap();
+            assert!(
+                matches!(outcome, RepairOutcome::Repaired { .. }),
+                "{outcome:?}"
+            );
+            check(&edges, &tables, &start, &outcome, 8);
+            for radius in [1, 2] {
+                let outcome = net
+                    .repair(&start, &Counter::new(seed), budget(radius))
+                    .unwrap();
+                check(&edges, &tables, &start, &outcome, radius);
+            }
+        }
+        assert!(frustrated > 0, "sampling left no violations to repair");
+    }
+
+    fn complete(n: usize) -> Vec<Vec<Edge>> {
+        (0..n)
+            .map(|i| {
+                (0..n)
+                    .filter(|&j| j != i)
+                    .map(|j| Edge {
+                        to: j as u32,
+                        relation: 0,
+                    })
+                    .collect()
+            })
+            .collect()
+    }
+
+    fn ring(n: usize) -> Vec<Vec<Edge>> {
+        (0..n)
+            .map(|i| {
+                vec![
+                    Edge {
+                        to: ((i + 1) % n) as u32,
+                        relation: 0,
+                    },
+                    Edge {
+                        to: ((i + n - 1) % n) as u32,
+                        relation: 0,
+                    },
+                ]
+            })
+            .collect()
+    }
+
+    #[test]
+    fn repair_refuses_networks_with_no_valid_labelling() {
+        for (labels, edges, start) in [
+            (3u32, complete(4), vec![0u32, 0, 1, 2]),
+            (2, ring(5), vec![0, 1, 0, 1, 0]),
+            (2, ring(9), vec![1, 1, 0, 1, 0, 1, 0, 1, 0]),
+        ] {
+            let tables = vec![differ(labels)];
+            let n = edges.len();
+            let net =
+                Network::new(labels, edges.clone(), tables.clone(), everything(n, labels)).unwrap();
+            let outcome = net
+                .repair(&start, &Counter::new(4), budget(MAX_REPAIR_RADIUS))
+                .unwrap();
+            let RepairOutcome::Refused { reason, .. } = outcome else {
+                panic!("{outcome:?}");
+            };
+            assert_eq!(reason, RepairRefusal::Unrepairable);
+            check(&edges, &tables, &start, &outcome, MAX_REPAIR_RADIUS);
+        }
+    }
+
+    #[test]
+    fn a_round_limit_stops_with_the_rest_unrepaired() {
+        // Two conflicts far apart on a three-colour path: two rounds.
+        let edges = path(40, 3, differ(3)).0;
+        let tables = vec![differ(3)];
+        let net = Network::new(3, edges.clone(), tables.clone(), everything(40, 3)).unwrap();
+        let mut start: Vec<u32> = (0..40).map(|i| i % 3).collect();
+        start[5] = start[4];
+        start[30] = start[29];
+        let initial = net.violations(&start);
+        assert_eq!(initial, 2);
+        let limited = |max_rounds| {
+            net.repair(
+                &start,
+                &Counter::new(1),
+                RepairBudget {
+                    max_rounds,
+                    ..budget(2)
+                },
+            )
+            .unwrap()
+        };
+        for max_rounds in [0, 1] {
+            let outcome = limited(max_rounds);
+            check(&edges, &tables, &start, &outcome, 2);
+            let RepairOutcome::Refused {
+                reason,
+                remaining,
+                labels,
+                stats,
+                ..
+            } = &outcome
+            else {
+                panic!("{outcome:?}");
+            };
+            assert_eq!(*reason, RepairRefusal::RoundLimit);
+            assert_eq!(stats.rounds, max_rounds);
+            assert_eq!(*remaining, net.violations(labels));
+            assert_eq!(*remaining, initial - max_rounds as usize);
+        }
+        let outcome = limited(2);
+        check(&edges, &tables, &start, &outcome, 2);
+        assert!(matches!(outcome, RepairOutcome::Repaired { stats, .. } if stats.rounds == 2));
+    }
+
+    #[test]
+    fn a_valid_labelling_comes_back_untouched() {
+        let (edges, tables) = path(9, 2, alternating());
+        let net = Network::new(2, edges, tables, everything(9, 2)).unwrap();
+        let start: Vec<u32> = (0..9).map(|i| i % 2).collect();
+        assert_eq!(
+            net.repair(&start, &Counter::new(1), budget(1)).unwrap(),
+            RepairOutcome::Repaired {
+                labels: start.clone(),
+                stats: RepairStats::default()
+            }
+        );
+    }
+
+    #[test]
+    fn repair_rejects_bad_input() {
+        let (edges, tables) = path(3, 3, differ(3));
+        let mut unary = everything(3, 3);
+        unary[1] = vec![(0, 1), (2, 1)];
+        let net = Network::new(3, edges, tables, unary).unwrap();
+        let ok = [0u32, 2, 0];
+        let c = Counter::new(1);
+        assert!(net.repair(&ok, &c, budget(1)).is_ok());
+        for labels in [&[0u32, 2][..], &[0, 2, 0, 0], &[0, 1, 0], &[0, 2, 3]] {
+            assert!(matches!(
+                net.repair(labels, &c, budget(1)),
+                Err(Error::InvalidParameter(_))
+            ));
+        }
+        for bad_budget in [
+            budget(0),
+            budget(MAX_REPAIR_RADIUS + 1),
+            RepairBudget {
+                max_rounds: MAX_REPAIR_ROUNDS + 1,
+                ..budget(1)
+            },
+        ] {
+            assert!(matches!(
+                net.repair(&ok, &c, bad_budget),
+                Err(Error::InvalidParameter(_))
+            ));
+        }
+    }
+
+    #[test]
+    fn repair_is_a_function_of_its_inputs_and_the_seed() {
+        // Four colours on a grid: many repairs of an all-equal start exist.
+        let edges = grid(8, 8);
+        let tables = four(differ(4), differ(4));
+        let net = Network::new(4, edges.clone(), tables.clone(), everything(64, 4)).unwrap();
+        let start = vec![0u32; 64];
+        let a = net.repair(&start, &Counter::new(1), budget(2)).unwrap();
+        check(&edges, &tables, &start, &a, 2);
+        assert_eq!(a, net.repair(&start, &Counter::new(1), budget(2)).unwrap());
+        let b = net.repair(&start, &Counter::new(2), budget(2)).unwrap();
+        check(&edges, &tables, &start, &b, 2);
+        let (
+            RepairOutcome::Repaired { labels: la, .. },
+            RepairOutcome::Repaired { labels: lb, .. },
+        ) = (&a, &b)
+        else {
+            panic!("{a:?} {b:?}");
+        };
+        assert_ne!(la, lb);
+    }
+
+    /// A proper four-colouring of a `w` by `h` grid, `(x + 2y) % 4`.
+    fn four_coloured(w: usize, h: usize) -> Vec<u32> {
+        (0..w * h)
+            .map(|i| ((i % w + 2 * (i / w)) % 4) as u32)
+            .collect()
+    }
+
+    #[test]
+    fn violations_just_outside_a_region_do_not_block_its_repair() {
+        // Two conflicts: one at (2,2)-(3,2), one at (2,4)-(3,4), two hops
+        // away, so the second sits on the pinned ring of the first.
+        let w = 8;
+        let edges = grid(w, 8);
+        let tables = four(differ(4), differ(4));
+        let net = Network::new(4, edges.clone(), tables.clone(), everything(64, 4)).unwrap();
+        let mut start = four_coloured(w, 8);
+        start[2 * w + 2] = start[2 * w + 3];
+        start[4 * w + 2] = start[4 * w + 3];
+        for seed in 0..4 {
+            let outcome = net.repair(&start, &Counter::new(seed), budget(1)).unwrap();
+            assert!(
+                matches!(outcome, RepairOutcome::Repaired { .. }),
+                "{outcome:?}"
+            );
+            check(&edges, &tables, &start, &outcome, 1);
+        }
+    }
+
+    #[test]
+    fn repair_does_not_depend_on_where_a_region_sits_in_the_numbering() {
+        // Node 0 is either isolated or tied by an unconstraining edge to a
+        // node next to the conflict, so it joins the region as a pinned
+        // node with the lowest index. Pinned and unconstraining, it changes
+        // nothing, so the grid nodes (1..=100) must repair the same way.
+        let w = 10;
+        let mut start = vec![0u32];
+        start.extend(four_coloured(w, 10));
+        let (a, b) = (1 + 5 * w + 5, 1 + 5 * w + 6);
+        start[a] = start[b];
+        let mut tables = four(differ(4), differ(4));
+        tables.push(PairTable::uniform(4, 1));
+        let shifted = |edges: Vec<Vec<Edge>>| -> Vec<Vec<Edge>> {
+            let mut out = vec![Vec::new()];
+            out.extend(edges.into_iter().map(|list| {
+                list.into_iter()
+                    .map(|e| Edge {
+                        to: e.to + 1,
+                        relation: e.relation,
+                    })
+                    .collect::<Vec<_>>()
+            }));
+            out
+        };
+        let alone = shifted(grid(w, 10));
+        let mut tied = alone.clone();
+        let neighbour = a - w; // one hop from the conflict
+        tied[0].push(Edge {
+            to: neighbour as u32,
+            relation: 4,
+        });
+        tied[neighbour].push(Edge { to: 0, relation: 4 });
+        let nets = [alone, tied]
+            .map(|edges| Network::new(4, edges, tables.clone(), everything(101, 4)).unwrap());
+        let mut moved = 0;
+        for seed in 0..12 {
+            let [x, y] = [0, 1].map(|k| {
+                nets[k]
+                    .repair(&start, &Counter::new(seed), budget(1))
+                    .unwrap()
+            });
+            let (
+                RepairOutcome::Repaired { labels: lx, .. },
+                RepairOutcome::Repaired { labels: ly, .. },
+            ) = (&x, &y)
+            else {
+                panic!("{x:?} {y:?}");
+            };
+            assert_eq!(lx, ly, "seed {seed}");
+            moved += usize::from(lx[a] != start[a] || lx[b] != start[b]);
+        }
+        assert!(moved > 0);
+    }
+
+    /// Small random networks against brute force. With a radius that reaches
+    /// the whole graph, a satisfiable network is always repaired; at any
+    /// radius, whatever is repaired is valid and local.
+    #[test]
+    fn repair_agrees_with_brute_force_on_small_random_networks() {
+        let mut satisfiable_cases = 0;
+        let mut needed_growth = 0;
+        for case in 0..600u32 {
+            let c = Counter::new(case);
+            let n = 5 + c.below(5, &[0]) as usize;
+            let labels = 2 + c.below(2, &[1]) as u32;
+            let relations = 1 + c.below(2, &[2]) as u32;
+            let cells = (labels * labels) as usize;
+            let mut tables: Vec<PairTable> = (0..relations)
+                .map(|r| {
+                    let w = (0..cells as u32)
+                        .map(|k| {
+                            if c.unit(&[3, r, k]) < (1 << 24) * 3 / 10 {
+                                0
+                            } else {
+                                1 + c.below(4, &[4, r, k]) as u32
+                            }
+                        })
+                        .collect();
+                    PairTable::new(labels, w).unwrap()
+                })
+                .collect();
+            let back: Vec<PairTable> = tables.iter().map(transpose).collect();
+            tables.extend(back);
+            let mut edges = vec![Vec::new(); n];
+            for i in 0..n as u32 {
+                for j in (i + 1)..n as u32 {
+                    if c.unit(&[5, i, j]) < (1 << 24) * 2 / 5 {
+                        let r = c.below(relations as u64, &[6, i, j]) as u32;
+                        edges[i as usize].push(Edge { to: j, relation: r });
+                        edges[j as usize].push(Edge {
+                            to: i,
+                            relation: r + relations,
+                        });
+                    }
+                }
+            }
+            let unary: Vec<Vec<(u32, u32)>> = (0..n as u32)
+                .map(|node| {
+                    let mut list: Vec<(u32, u32)> = (0..labels)
+                        .filter(|&l| c.unit(&[7, node, l]) >= (1 << 24) / 5)
+                        .map(|l| (l, 1 + c.below(3, &[8, node, l]) as u32))
+                        .collect();
+                    if list.is_empty() {
+                        list.push((c.below(labels as u64, &[9, node]) as u32, 1));
+                    }
+                    list
+                })
+                .collect();
+            let start: Vec<u32> = (0..n as u32)
+                .map(|node| {
+                    let list = &unary[node as usize];
+                    list[c.below(list.len() as u64, &[10, node]) as usize].0
+                })
+                .collect();
+            let net = Network::new(labels, edges.clone(), tables.clone(), unary.clone()).unwrap();
+            // Brute force over every candidate combination.
+            let mut satisfiable = false;
+            let mut pick = vec![0usize; n];
+            'all: loop {
+                let labelling: Vec<u32> = (0..n).map(|i| unary[i][pick[i]].0).collect();
+                if satisfies(&edges, &tables, &labelling) {
+                    satisfiable = true;
+                    break;
+                }
+                for i in 0..n {
+                    pick[i] += 1;
+                    if pick[i] < unary[i].len() {
+                        continue 'all;
+                    }
+                    pick[i] = 0;
+                }
+                break;
+            }
+            let diameter = (0..n)
+                .flat_map(|s| hops(&edges, &[s]))
+                .filter(|&d| d != u32::MAX)
+                .max()
+                .unwrap_or(0)
+                .max(1);
+            let full = net
+                .repair(&start, &Counter::new(case), budget(diameter))
+                .unwrap();
+            check(&edges, &tables, &start, &full, diameter);
+            if satisfiable {
+                satisfiable_cases += 1;
+                assert!(
+                    matches!(full, RepairOutcome::Repaired { .. }),
+                    "case {case}: {full:?}"
+                );
+            } else {
+                assert!(matches!(
+                    full,
+                    RepairOutcome::Refused {
+                        reason: RepairRefusal::Unrepairable,
+                        ..
+                    }
+                ));
+            }
+            let small = net.repair(&start, &Counter::new(case), budget(1)).unwrap();
+            check(&edges, &tables, &start, &small, 1);
+            // Satisfiable, repaired at full radius, refused at radius 1:
+            // growing the radius was what repaired it.
+            if satisfiable && matches!(small, RepairOutcome::Refused { .. }) {
+                needed_growth += 1;
+            }
+        }
+        assert!(satisfiable_cases > 100, "{satisfiable_cases}");
+        assert!(needed_growth > 0);
     }
 }

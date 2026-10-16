@@ -4,8 +4,8 @@
 use crate::{
     Assignment, BlendStrategy, BoundaryData, Budget, Constraint, Counter, Direction, Distribution,
     Edge, Error, GenerateOptions, Limits, Markov, MarkovData, Model, ModelSpec, Network, Outcome,
-    PairStats, PairTable, Replacement, Rng, RngState, Row, Schedule, Seed, Table, TransitionData,
-    Variable, Weighted,
+    PairStats, PairTable, RepairBudget, RepairOutcome, Replacement, Rng, RngState, Row, Schedule,
+    Seed, Table, TransitionData, Variable, Weighted,
 };
 use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
@@ -815,6 +815,46 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
                 return Err(invalid("one in-range label per node is required"));
             }
             output.u32(network.violations(&labels) as u32);
+        }
+        80 => {
+            let network = read_network(&mut reader)?;
+            let count = reader.count()?;
+            let labels = (0..count)
+                .map(|_| reader.u32())
+                .collect::<Result<Vec<_>, _>>()?;
+            let seed = reader.u32()?;
+            let budget = RepairBudget {
+                max_radius: reader.u32()?,
+                max_decisions: reader.u32()?,
+                max_backtracks: reader.u32()?,
+                max_rounds: reader.u32()?,
+            };
+            reader.finish()?;
+            let outcome = network.repair(&labels, &Counter::new(seed), budget)?;
+            let (RepairOutcome::Repaired { labels, stats }
+            | RepairOutcome::Refused { labels, stats, .. }) = &outcome;
+            output
+                .0
+                .push(u8::from(matches!(outcome, RepairOutcome::Repaired { .. })));
+            output.u32(stats.rounds);
+            output.u32(stats.decisions);
+            output.u32(stats.backtracks);
+            output.u32(stats.changed);
+            if let RepairOutcome::Refused {
+                reason,
+                node,
+                remaining,
+                ..
+            } = &outcome
+            {
+                output.text(reason.name());
+                output.u32(*node);
+                output.u32(*remaining as u32);
+            }
+            output.u32(labels.len() as u32);
+            for &label in labels {
+                output.u32(label);
+            }
         }
         _ => return Err(invalid("unknown operation")),
     }

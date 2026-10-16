@@ -8,7 +8,10 @@
 //! exactly. Regenerate only after an intentional semantics change and read the
 //! diff.
 
-use acausal::{Budget, Counter, Edge, Network, Outcome, PairStats, PairTable, Schedule};
+use acausal::{
+    Budget, Counter, Edge, Network, Outcome, PairStats, PairTable, RepairBudget, RepairOutcome,
+    Schedule,
+};
 use std::fmt::Write as _;
 
 /// Directions of a grid node's four edges: 0 east, 1 north, 2 west, 3 south.
@@ -153,6 +156,77 @@ fn run_solve(net: &Network, seed: u32, max_decisions: u32, max_backtracks: u32) 
             stats.decisions,
             stats.backtracks
         ),
+    }
+}
+
+/// Repair the labelling `sample(sample_seed, gibbs, icm)` left, with `seed`.
+fn run_repair(net: &Network, start: (u32, u32, u32), seed: u32, budget: RepairBudget) -> String {
+    let (sample_seed, gibbs, icm) = start;
+    let start = net
+        .sample(&Counter::new(sample_seed), Schedule { gibbs, icm })
+        .unwrap();
+    let head = format!(
+        "{{\"op\":\"repair\",\"seed\":{seed},\"start\":{},\"maxRadius\":{},\"maxDecisions\":{},\"maxBacktracks\":{},\"maxRounds\":{},",
+        list(start.iter()),
+        budget.max_radius,
+        budget.max_decisions,
+        budget.max_backtracks,
+        budget.max_rounds
+    );
+    match net.repair(&start, &Counter::new(seed), budget).unwrap() {
+        RepairOutcome::Repaired { labels, stats } => format!(
+            "{head}\"status\":\"repaired\",\"rounds\":{},\"decisions\":{},\"backtracks\":{},\"changed\":{},\"labels\":{}}}",
+            stats.rounds,
+            stats.decisions,
+            stats.backtracks,
+            stats.changed,
+            list(labels)
+        ),
+        RepairOutcome::Refused {
+            reason,
+            node,
+            remaining,
+            labels,
+            stats,
+        } => format!(
+            "{head}\"status\":\"refused\",\"reason\":\"{}\",\"node\":{node},\"remaining\":{remaining},\"rounds\":{},\"decisions\":{},\"backtracks\":{},\"changed\":{},\"labels\":{}}}",
+            reason.name(),
+            stats.rounds,
+            stats.decisions,
+            stats.backtracks,
+            stats.changed,
+            list(labels)
+        ),
+    }
+}
+
+/// Repair runs per case: (sample seed, gibbs, icm) of the starting
+/// labelling, the repair seed and the budget.
+fn repairs(name: &str) -> Vec<((u32, u32, u32), u32, RepairBudget)> {
+    let budget = |max_radius, max_rounds| RepairBudget {
+        max_radius,
+        max_decisions: 100_000,
+        max_backtracks: 1_000,
+        max_rounds,
+    };
+    match name {
+        // No zero in the tables: nothing to repair.
+        "grid-attract-2" => vec![((1, 6, 2), 1, budget(1, 100))],
+        // K4 with three labels that must differ: no region can be solved.
+        "grid-frustrated-k4-three-labels" => vec![((1, 6, 2), 1, budget(4, 100))],
+        "grid-repair-three-colours" => vec![
+            ((3, 0, 0), 1, budget(8, 1_000)),
+            ((1, 6, 2), 2, budget(8, 1_000)),
+            ((1, 6, 2), 3, budget(1, 1_000)),
+            ((3, 0, 0), 4, budget(8, 2)),
+        ],
+        "grid-repair-pipes" => vec![
+            ((3, 0, 0), 1, budget(8, 1_000)),
+            ((4, 3, 0), 2, budget(8, 1_000)),
+            ((4, 3, 0), 3, budget(1, 1_000)),
+            ((5, 0, 3), 4, budget(2, 1)),
+        ],
+        _ => vec![],
     }
 }
 
@@ -409,6 +483,43 @@ fn main() {
         tables: four(4, free.clone(), free),
         unary: all_labels(20, 4, &[1, 1, 1, 1]),
     });
+    // Repair: a sample of a hard 3-colouring leaves violations behind.
+    cases.push(Case {
+        name: "grid-repair-three-colours",
+        labels: 3,
+        edges: grid(12, 12),
+        tables: four(3, differ_all.clone(), differ_all.clone()),
+        unary: all_labels(144, 3, &[1, 1, 1]),
+    });
+    // Pipe tiles: bits are open sides (1 east, 2 toward the previous row,
+    // 4 west, 8 toward the next row; relation 1 points to the next row);
+    // neighbours agree on their shared side, so the tables are asymmetric.
+    // Only two-sided tiles are candidates, so a node can be stuck.
+    {
+        let mut east = vec![0; 256];
+        let mut south = vec![0; 256];
+        for a in 0..16usize {
+            for b in 0..16usize {
+                east[a * 16 + b] = u32::from((a & 1 != 0) == (b & 4 != 0));
+                south[a * 16 + b] = u32::from((a & 8 != 0) == (b & 2 != 0));
+            }
+        }
+        let tiles: Vec<(u32, u32)> = (0..16u32)
+            .filter(|l| l.count_ones() == 2)
+            .map(|l| (l, if l == 5 || l == 10 { 1 } else { 4 }))
+            .collect();
+        cases.push(Case {
+            name: "grid-repair-pipes",
+            labels: 16,
+            edges: grid(9, 7),
+            tables: four(
+                16,
+                PairTable::new(16, east).unwrap(),
+                PairTable::new(16, south).unwrap(),
+            ),
+            unary: vec![tiles; 63],
+        });
+    }
 
     let mut rendered = Vec::new();
     for case in &cases {
@@ -426,6 +537,9 @@ fn main() {
             runs.push(run_sample(&net, 3, 0, 0));
             runs.push(run_sample(&net, 4, 3, 0));
             runs.push(run_sample(&net, 5, 0, 3));
+            for (start, seed, budget) in repairs(case.name) {
+                runs.push(run_repair(&net, start, seed, budget));
+            }
         } else {
             for seed in [1u32, 2, 3] {
                 runs.push(run_solve(&net, seed, 100_000, 1_000));

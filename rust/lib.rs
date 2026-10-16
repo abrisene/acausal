@@ -17,7 +17,10 @@ pub use markov::{
     BlendStrategy, BoundaryData, Direction, GenerateOptions, Markov, MarkovData, MarkovStats,
     Score, TransitionData,
 };
-pub use network::{Budget, Edge, Network, Outcome, PairTable, RefusalReason, Schedule, SolveStats};
+pub use network::{
+    Budget, Edge, Network, Outcome, PairTable, RefusalReason, RepairBudget, RepairOutcome,
+    RepairRefusal, RepairStats, Schedule, SolveStats,
+};
 pub use pairstats::{CEILING, FLOOR, NEUTRAL, PairStats};
 pub use rng::{Distribution, Rng, RngState, Seed};
 pub use weighted::{Replacement, Weighted};

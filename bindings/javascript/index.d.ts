@@ -178,11 +178,23 @@ export type NetworkSolution =
   | { status: 'solved'; labels: number[]; decisions: number; backtracks: number }
   | { status: 'refused'; reason: string; node: number | null; decisions: number; backtracks: number };
 
+export interface RepairStats { rounds: number; decisions: number; backtracks: number; changed: number }
+
+export type NetworkRepair =
+  | ({ status: 'repaired'; labels: number[] } & RepairStats)
+  | ({ status: 'refused'; reason: 'unrepairable' | 'round-limit'; node: number; remaining: number; labels: number[] } & RepairStats);
+
 export function counterWord(seed: number, keys?: readonly number[]): number;
 export function counterUnit(seed: number, keys?: readonly number[]): number;
 export function networkSample(spec: NetworkSpec, seed: number, options?: { gibbs?: number; icm?: number }): number[];
 export function networkViolations(spec: NetworkSpec, labels: readonly number[]): number;
 export function networkSolve(spec: NetworkSpec, seed: number, options?: { maxDecisions?: number; maxBacktracks?: number }): NetworkSolution;
+export function networkRepair(
+  spec: NetworkSpec,
+  labels: readonly number[],
+  seed: number,
+  options?: { maxRadius?: number; maxDecisions?: number; maxBacktracks?: number; maxRounds?: number },
+): NetworkRepair;
 
 export class PairStats {
   constructor(labels: number);
@@ -203,6 +215,7 @@ export interface AcausalApi {
   readonly counterUnit: typeof counterUnit;
   readonly networkSample: typeof networkSample;
   readonly networkSolve: typeof networkSolve;
+  readonly networkRepair: typeof networkRepair;
   readonly networkViolations: typeof networkViolations;
   readonly Rng: typeof Rng;
   readonly Weighted: typeof Weighted;

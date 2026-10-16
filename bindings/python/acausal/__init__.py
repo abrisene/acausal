@@ -959,6 +959,43 @@ def network_solve(spec: NetworkSpec, seed: int, max_decisions: int = 1_000_000, 
     }
 
 
+def network_repair(
+    spec: NetworkSpec,
+    labels: Sequence[int],
+    seed: int,
+    max_radius: int = 4,
+    max_decisions: int = 100_000,
+    max_backtracks: int = 1_000,
+    max_rounds: int = 100_000,
+) -> dict[str, Any]:
+    """Repair the zero-weight edges of ``labels`` locally: free the nodes
+    within ``max_radius`` hops of each cluster of violations, pin the nodes
+    just outside, and solve that region. Returns
+    ``{"status": "repaired", "labels", "rounds", "decisions", "backtracks", "changed"}`` or
+    ``{"status": "refused", "reason", "node", "remaining", "labels", "rounds", "decisions", "backtracks", "changed"}``."""
+    writer = _network_payload(spec).u32(len(labels), "label count")
+    for label in labels:
+        writer.u32(label, "label")
+    writer.u32(_u32(seed, "seed")).u32(max_radius, "max_radius").u32(max_decisions, "max_decisions")
+    writer.u32(max_backtracks, "max_backtracks").u32(max_rounds, "max_rounds")
+    reader = _Reader(_runtime().call(80, writer.finish()))
+    repaired = reader.u8() == 1
+    result: dict[str, Any] = {
+        "status": "repaired" if repaired else "refused",
+        "rounds": reader.u32(),
+        "decisions": reader.u32(),
+        "backtracks": reader.u32(),
+        "changed": reader.u32(),
+    }
+    if not repaired:
+        result["reason"] = reader.text()
+        result["node"] = reader.u32()
+        result["remaining"] = reader.u32()
+    result["labels"] = [reader.u32() for _ in range(reader.u32())]
+    reader.finish()
+    return result
+
+
 class PairStats(_Resource):
     """Neighbour statistics over ``labels`` labels, counted per relation."""
 
@@ -1031,6 +1068,7 @@ __all__ = [
     "counter_unit",
     "counter_word",
     "init",
+    "network_repair",
     "network_sample",
     "network_solve",
     "network_violations",
