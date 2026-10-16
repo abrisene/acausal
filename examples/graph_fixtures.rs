@@ -119,7 +119,8 @@ fn run_sample(net: &Network, seed: u32, gibbs: u32, icm: u32) -> String {
         .sample(&Counter::new(seed), Schedule { gibbs, icm })
         .unwrap();
     format!(
-        "{{\"op\":\"sample\",\"seed\":{seed},\"gibbs\":{gibbs},\"icm\":{icm},\"labels\":{}}}",
+        "{{\"op\":\"sample\",\"seed\":{seed},\"gibbs\":{gibbs},\"icm\":{icm},\"violations\":{},\"labels\":{}}}",
+        net.violations(&labels),
         list(labels)
     )
 }
@@ -225,6 +226,81 @@ fn main() {
         edges: grid(7, 7),
         tables: four(2, heavy.clone(), heavy),
         unary: all_labels(49, 2, &[4_000_000_000, 1_000_000]),
+    });
+    // Eight neighbours per node and weights large enough that products need
+    // renormalising at every edge. Relation r points along direction r of
+    // the king-move graph, and every table is symmetric.
+    {
+        let (w, h) = (6usize, 5usize);
+        let directions: [(i32, i32); 8] = [
+            (1, 0),
+            (1, 1),
+            (0, 1),
+            (-1, 1),
+            (-1, 0),
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+        ];
+        let mut king = vec![Vec::new(); w * h];
+        for y in 0..h as i32 {
+            for x in 0..w as i32 {
+                for (r, (dx, dy)) in directions.iter().enumerate() {
+                    let (nx, ny) = (x + dx, y + dy);
+                    if (0..w as i32).contains(&nx) && (0..h as i32).contains(&ny) {
+                        king[(y * w as i32 + x) as usize].push(Edge {
+                            to: (ny * w as i32 + nx) as u32,
+                            relation: r as u32,
+                        });
+                    }
+                }
+            }
+        }
+        let big = table(
+            3,
+            &[
+                &[4_000_000_000, 7, 1],
+                &[7, 300_000_000, 9],
+                &[1, 9, 2_000_000_000],
+            ],
+        );
+        cases.push(Case {
+            name: "grid-king-moves-huge-weights",
+            labels: 3,
+            edges: king.clone(),
+            tables: vec![big.clone(); 8],
+            unary: all_labels(w * h, 3, &[4_000_000_000, 1, 3_000_000_000]),
+        });
+        // Every candidate of some node conflicts with a neighbour: the node
+        // keeps its label and the labelling carries a violation.
+        let differ3b = table(3, &[&[0, 5, 5], &[5, 0, 5], &[5, 5, 0]]);
+        let mut triangle = vec![Vec::new(); 4];
+        for (i, j) in [(0usize, 1usize), (0, 2), (1, 2), (0, 3), (1, 3), (2, 3)] {
+            triangle[i].push(Edge {
+                to: j as u32,
+                relation: 0,
+            });
+            triangle[j].push(Edge {
+                to: i as u32,
+                relation: 0,
+            });
+        }
+        cases.push(Case {
+            name: "grid-frustrated-k4-three-labels",
+            labels: 3,
+            edges: triangle,
+            tables: vec![differ3b],
+            unary: all_labels(4, 3, &[1, 1, 1]),
+        });
+    }
+    // More labels than a 40-bit total allows at full weight, so the draw
+    // has to renormalise the total.
+    cases.push(Case {
+        name: "grid-three-hundred-labels",
+        labels: 300,
+        edges: vec![Vec::new(); 40],
+        tables: vec![],
+        unary: vec![(0..300).map(|l| (l, 4_294_967_295)).collect(); 40],
     });
     let differ2 = table(2, &[&[0, 1], &[1, 0]]);
     cases.push(Case {
@@ -381,7 +457,7 @@ fn main() {
     let pattern: Vec<u32> = (0..24)
         .map(|i| ((i % 6) / 2 + (i / 6)) as u32 % 3)
         .collect();
-    let mut stats = PairStats::new(3);
+    let mut stats = PairStats::new(3).unwrap();
     stats.observe_graph(&edges, &pattern).unwrap();
     let mut relations = Vec::new();
     for r in 0..4u32 {

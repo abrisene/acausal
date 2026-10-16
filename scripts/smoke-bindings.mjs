@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const modulePath = process.env.ACAUSAL_JS_MODULE ?? '../bindings/javascript/index.mjs';
-const { init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve } = await import(modulePath);
+const { init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkViolations } = await import(modulePath);
 await init();
 const resources = [];
 const keep = value => (resources.push(value), value);
@@ -82,7 +82,9 @@ try {
     const spec = item.network;
     for (const run of item.runs) {
       if (run.op === 'sample') {
-        assert.deepEqual(networkSample(spec, run.seed, {gibbs: run.gibbs, icm: run.icm}), run.labels, item.name);
+        const got = networkSample(spec, run.seed, {gibbs: run.gibbs, icm: run.icm});
+        assert.deepEqual(got, run.labels, item.name);
+        assert.equal(networkViolations(spec, got), run.violations, item.name);
       } else {
         const got = networkSolve(spec, run.seed, {maxDecisions: run.maxDecisions, maxBacktracks: run.maxBacktracks});
         assert.equal(got.status, run.status, item.name);
@@ -104,7 +106,9 @@ try {
       assert.deepEqual(stats.table(r.relation, {observedOnly: true}), r.support);
     }
   }
+  assert.throws(() => new PairStats(100000));
   assert.throws(() => networkSample({labels: 2, edges: [[[1, 0]], []], tables: [[1, 1, 1, 1]], unary: [[[0, 1]], [[0, 1]]]}, 1));
+  assert.equal(counterWord(1, [1]), graph.counter.find(r => r.seed === 1 && r.keys.length === 1 && r.keys[0] === 1).word);
   console.log(JSON.stringify({samples, uses: sampleRng.uses(), generated, posterior: posterior.probabilities, graphRuns: replayed}));
 } finally {
   for (const resource of resources.reverse()) resource.close();

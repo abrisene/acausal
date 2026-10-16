@@ -18,6 +18,7 @@ what the code produces.
 | `sampler.json` | `RandomSampler`: every distribution method and `sampleDistribution`, over several parameter sets. |
 | `distributions.json` | `Distribution` and `ImmutableDistribution`: `pick` and `pickOne`, masked and exclusive. |
 | `markov.json` | `MarkovChain`: `addSequence`, `next`, `backward`, `generate` on a fixed corpus. |
+| `graph.json` | Rust reference, not TypeScript: the counter hash, pairwise network sampling and constraint search (solved and refused), and pair statistics tables. Written by `cargo run --offline --example graph_fixtures`; spec in `docs/specs/network.md`. |
 
 ## The engine state is part of the contract
 

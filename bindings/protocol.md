@@ -87,5 +87,8 @@ A network (read by ops 71 and 72): label count u32; node count u32; per node an 
 | 76 | handle, relation u32, observed_only byte | count u32, weights u32 |
 | 77 | handle | count u32, label counts u64 |
 | 78 | handle, relation u32 | count u32, repeated (a u32, b u32, n u64) |
+| 79 | network, label count u32, labels u32 | violations u32 |
 
 Op 10 clones a PairStats handle. The counter hash is specified in `docs/specs/network.md`.
+
+A network or a pair table has at most 4096 labels. A sample runs at most 100000 rounds.

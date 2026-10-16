@@ -219,6 +219,7 @@ fn network_samples_and_solves_match_the_fixture() {
                             },
                         )
                         .unwrap();
+                    assert_eq!(net.violations(&got) as u32, run.get("violations").u32());
                     assert_eq!(
                         got,
                         run.get("labels").u32s(),
@@ -299,7 +300,7 @@ fn pair_statistics_match_the_fixture() {
     let f = fixtures();
     for case in f.get("pairStats").list() {
         let labels = case.get("labels").u32();
-        let mut stats = PairStats::new(labels);
+        let mut stats = PairStats::new(labels).unwrap();
         stats
             .observe_graph(&edges_of(case.get("edges")), &case.get("nodeLabels").u32s())
             .unwrap();

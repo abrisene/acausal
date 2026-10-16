@@ -270,7 +270,13 @@ pub extern "C" fn acausal_call(operation: u32, payload: u32) -> u32 {
         _ => Vec::new(),
     };
     let mut output = Writer::default();
-    match dispatch(&mut state, operation, &input) {
+    // A panic must not unwind across the C boundary (that aborts the host
+    // process), and must not poison the store.
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        dispatch(&mut state, operation, &input)
+    }))
+    .unwrap_or_else(|_| Err(invalid("internal error")));
+    match result {
         Ok(bytes) => {
             output.0.push(1);
             output.0.extend(bytes);
@@ -706,7 +712,7 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
         73 => {
             let labels = reader.u32()?;
             reader.finish()?;
-            output.u32(state.insert(Resource::PairStats(PairStats::new(labels)))?);
+            output.u32(state.insert(Resource::PairStats(PairStats::new(labels)?))?);
         }
         74 => {
             let id = reader.u32()?;
@@ -798,6 +804,18 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
                 _ => return Err(invalid("handle is not pair statistics")),
             }
         }
+        79 => {
+            let network = read_network(&mut reader)?;
+            let count = reader.count()?;
+            let labels = (0..count)
+                .map(|_| reader.u32())
+                .collect::<Result<Vec<_>, _>>()?;
+            reader.finish()?;
+            if labels.len() != network.nodes() || labels.iter().any(|&l| l >= network.labels()) {
+                return Err(invalid("one in-range label per node is required"));
+            }
+            output.u32(network.violations(&labels) as u32);
+        }
         _ => return Err(invalid("unknown operation")),
     }
     Ok(output.0)
@@ -810,7 +828,7 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
 fn read_network(reader: &mut Reader<'_>) -> Result<Network, Error> {
     let labels = reader.u32()?;
     let nodes = reader.count()?;
-    let mut edges = Vec::with_capacity(nodes);
+    let mut edges = Vec::with_capacity(nodes.min(65_536));
     for _ in 0..nodes {
         let count = reader.count()?;
         edges.push(
@@ -838,7 +856,7 @@ fn read_network(reader: &mut Reader<'_>) -> Result<Network, Error> {
             .collect::<Result<Vec<_>, _>>()?;
         parsed.push(PairTable::new(labels, weights)?);
     }
-    let mut unary = Vec::with_capacity(nodes);
+    let mut unary = Vec::with_capacity(nodes.min(65_536));
     for _ in 0..nodes {
         let count = reader.count()?;
         unary.push(

@@ -59,9 +59,11 @@ impl Counter {
 }
 
 /// `(unit * total) >> 24`, the shared mapping from a 24-bit unit to an index.
+/// The product is a plain 64-bit multiply, so `total` must stay below `2^40`;
+/// callers shrink their weights first. Overflow panics in debug builds.
 #[inline]
 pub fn pick_below(unit: u32, total: u64) -> u64 {
-    ((unit as u128 * total as u128) >> 24) as u64
+    (unit as u64 * total) >> 24
 }
 
 #[cfg(test)]
@@ -105,5 +107,6 @@ mod tests {
         assert_eq!(pick_below(0, 1_000_000), 0);
         assert_eq!(pick_below((1 << 24) - 1, 1_000_000), 999_999);
         assert!(pick_below((1 << 24) - 1, (1 << 40) - 1) < (1 << 40) - 1);
+        assert_eq!(pick_below(1 << 23, 1 << 39), 1 << 38);
     }
 }

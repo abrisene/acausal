@@ -909,6 +909,17 @@ export function networkSample(spec, seed, { gibbs = 8, icm = 2 } = {}) {
   return labels;
 }
 
+/** How many edges hold a pair whose weight is zero (what `networkSample` can leave behind). */
+export function networkViolations(spec, labels) {
+  const engine = requireRuntime();
+  const writer = writeNetwork(spec).u32(asCount(labels.length, 'label count'));
+  for (const label of labels) writer.u32(label);
+  const reader = new Reader(engine.call(79, writer.finish()));
+  const count = reader.u32();
+  reader.finish();
+  return count;
+}
+
 /** Constraint search where a pair weight of zero is forbidden. */
 export function networkSolve(spec, seed, { maxDecisions = 1_000_000, maxBacktracks = 2_000 } = {}) {
   const engine = requireRuntime();
@@ -992,4 +1003,4 @@ export class PairStats {
   [Symbol.dispose]() { this.close(); }
 }
 
-const api = Object.freeze({ init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, AcausalError });
+const api = Object.freeze({ init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, networkViolations, AcausalError });

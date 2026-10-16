@@ -3,7 +3,7 @@ from contextlib import ExitStack
 import json
 import math
 from pathlib import Path
-from acausal import Rng, Weighted, Markov, Model, PairStats, AcausalError, counter_word, counter_unit, network_sample, network_solve
+from acausal import Rng, Weighted, Markov, Model, PairStats, AcausalError, counter_word, counter_unit, network_sample, network_solve, network_violations
 
 root = Path(__file__).resolve().parents[1]
 
@@ -83,7 +83,9 @@ with ExitStack() as stack:
         spec = item["network"]
         for run in item["runs"]:
             if run["op"] == "sample":
-                assert network_sample(spec, run["seed"], run["gibbs"], run["icm"]) == run["labels"], item["name"]
+                got = network_sample(spec, run["seed"], run["gibbs"], run["icm"])
+                assert got == run["labels"], item["name"]
+                assert network_violations(spec, got) == run["violations"], item["name"]
             else:
                 got = network_solve(spec, run["seed"], run["maxDecisions"], run["maxBacktracks"])
                 assert got["status"] == run["status"], item["name"]
@@ -101,5 +103,7 @@ with ExitStack() as stack:
             assert [list(p) for p in stats.pairs(r["relation"])] == r["pairs"]
             assert stats.table(r["relation"]) == r["table"]
             assert stats.table(r["relation"], observed_only=True) == r["support"]
+    fails(lambda: PairStats(100000))
     fails(lambda: network_sample({"labels":2,"edges":[[(1,0)],[]],"tables":[[1,1,1,1]],"unary":[[(0,1)],[(0,1)]]}, 1))
+    assert counter_word(1, [1]) == next(r["word"] for r in graph["counter"] if r["seed"] == 1 and r["keys"] == [1])
     print(json.dumps({"samples":samples,"uses":sample_rng.uses(),"generated":generated,"posterior":posterior["probabilities"],"graphRuns":replayed},separators=(",",":")))

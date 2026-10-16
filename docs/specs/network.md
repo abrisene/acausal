@@ -22,12 +22,12 @@ word(seed, keys):
   return h
 
 unit(seed, keys)  = word(seed, keys) >> 8          # 24 bits, fraction unit / 2^24
-below(unit, total) = (unit * total) >> 24          # exact, needs a 64-bit product; total < 2^40
+below(unit, total) = (unit * total) >> 24          # a plain unsigned 64-bit product; total must be < 2^40
 ```
 
 ## Network
 
-A network has `labels` L, `nodes` N, and these data:
+A network has `labels` L (at most 4096), `nodes` N, and these data:
 
 * `edges[node]`: list of `(to, relation)`. Every edge has a reverse edge, and the reverse edge's table is the transpose.
 * `tables[relation]`: `L * L` weights. `tables[r][a * L + b]` is the weight of this node holding `a` while the neighbour holds `b`. Zero forbids the pair.
@@ -69,8 +69,9 @@ walk candidates in ascending label order, add weights; first label whose running
 ### `sample(seed, gibbs, icm)`
 
 ```
-round 0: each node draws from its unary weights alone, unit = unit(seed, [node, 0, 0])
-rounds 1 .. gibbs + icm:
+round 0: each node draws from its unary weights alone (after shift_down_total(w, 40)), unit = unit(seed, [node, 0, 0]);
+         a node with no candidates makes the whole sample fail
+rounds 1 .. gibbs + icm (at most 100000 in all):
   for colour in 0 .. colour_count - 1:
     for every node of that colour (any order, updates applied after the colour is done):
       w = weights(node, current labelling)
@@ -88,8 +89,10 @@ The search treats every table entry above zero as allowed.
 domain[node] = the unary labels
 arc consistency: a label b of node j survives only if, for every edge (j -> i, r),
   some label a in domain[i] has tables[r][b * L + a] > 0.
-  Queue discipline: FIFO of nodes; revising a node that changed enqueues its neighbours in edge order.
-start: every node enqueued in index order; contradiction -> refuse "unsatisfiable".
+  Queue discipline: FIFO of nodes with a queued flag, so a node already waiting is not added again;
+  revising a node that lost labels enqueues its neighbours in edge order; a contradiction empties the queue.
+start: a node with no candidates -> refuse "unsatisfiable" naming the lowest-index such node.
+       Otherwise every node is enqueued in index order and propagated; contradiction -> refuse "unsatisfiable".
 
 loop:
   pick the node with more than one label and the smallest domain; ties by smaller word(seed, [node, 0, 2]), then smaller index.
@@ -108,6 +111,10 @@ loop:
 
 A refusal reports the reason, the node whose domain emptied last (or none), the decisions and the backtracks.
 
+## Violations
+
+`violations(labels)` counts the edges `(i, j)` with `i < j` for which `tables[r][a][b]` or `tables[r'][b][a]` is zero, where `r` is the relation of `i`'s edge to `j`, `r'` that of `j`'s edge to `i`. `sample` treats zero as forbidden: a node whose candidates all have weight zero keeps its current label, so a sample can finish with violations. Use `solve` for hard constraints.
+
 ## Pair statistics
 
 `PairStats(L)` counts, per relation, how often label `a` was next to label `b`, and how often each label was seen. `observe_graph(edges, labels)` counts every node and every directed edge once.
@@ -117,10 +124,10 @@ table(relation):  T = total count, R[a] = row sum, C[b] = column sum
   weight(a, b) = 33                                    if R[a] == 0 or C[b] == 0
   weight(a, b) = 1 + min(254, floor(32 * count(a,b) * T / (R[a] * C[b])))     otherwise
 support_table(relation): 1 where count > 0, otherwise 0
-unary_weights: 1 + floor(254 * count[l] / max(1, max count))
+unary_weights: 1 + floor(254 * count[l] / max(1, max count))      # the maximum is over all L labels
 ```
 
-Integer division throughout. A relation with no observations gives 33 everywhere.
+Integer division throughout. A relation with no observations gives 33 everywhere. A single count may not exceed 2^32, and a table is exact while a sum stays under 2^53.
 
 ## Fixtures
 

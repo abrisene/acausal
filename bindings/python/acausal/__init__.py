@@ -915,6 +915,19 @@ def network_sample(spec: NetworkSpec, seed: int, gibbs: int = 8, icm: int = 2) -
     return labels
 
 
+def network_violations(spec: NetworkSpec, labels: Sequence[int]) -> int:
+    """How many edges hold a pair whose weight is zero. ``network_sample``
+    treats zero as forbidden but can leave a stuck node on a conflicting
+    label; this counts what is left."""
+    writer = _network_payload(spec).u32(len(labels), "label count")
+    for label in labels:
+        writer.u32(label, "label")
+    reader = _Reader(_runtime().call(79, writer.finish()))
+    count = reader.u32()
+    reader.finish()
+    return count
+
+
 def network_solve(spec: NetworkSpec, seed: int, max_decisions: int = 1_000_000, max_backtracks: int = 2_000) -> dict[str, Any]:
     """Constraint search: pair weights of zero are forbidden. Returns
     ``{"status": "solved", "labels", "decisions", "backtracks"}`` or
@@ -1020,4 +1033,5 @@ __all__ = [
     "init",
     "network_sample",
     "network_solve",
+    "network_violations",
 ]

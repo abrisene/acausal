@@ -17,6 +17,17 @@ pub const FLOOR: u32 = 1;
 /// Largest weight a table entry takes.
 pub const CEILING: u32 = 255;
 
+/// Counts are held as exact integers in an f64, so one count may not exceed
+/// `2^32`. (A table of such counts stays exact up to `2^53` in total.)
+fn check_count(n: u64) -> Result<(), Error> {
+    if n > u32::MAX as u64 {
+        return Err(Error::InvalidParameter(
+            "a count may not exceed 2^32".to_owned(),
+        ));
+    }
+    Ok(())
+}
+
 #[derive(Clone, Debug)]
 pub struct PairStats {
     labels: u32,
@@ -25,12 +36,18 @@ pub struct PairStats {
 }
 
 impl PairStats {
-    pub fn new(labels: u32) -> Self {
-        Self {
+    pub fn new(labels: u32) -> Result<Self, Error> {
+        if labels > crate::network::MAX_LABELS {
+            return Err(Error::InvalidParameter(format!(
+                "at most {} labels",
+                crate::network::MAX_LABELS
+            )));
+        }
+        Ok(Self {
             labels,
             counts: Weighted::new(Vec::new()).expect("empty table is valid"),
             relations: BTreeMap::new(),
-        }
+        })
     }
 
     pub fn labels(&self) -> u32 {
@@ -46,6 +63,7 @@ impl PairStats {
     /// Count `n` nodes holding `label` (restoring saved counts).
     pub fn observe_label_n(&mut self, label: u32, n: u64) -> Result<(), Error> {
         self.check(label)?;
+        check_count(n)?;
         if n == 0 {
             return Ok(());
         }
@@ -63,6 +81,7 @@ impl PairStats {
     pub fn observe_pair_n(&mut self, relation: u32, a: u32, b: u32, n: u64) -> Result<(), Error> {
         self.check(a)?;
         self.check(b)?;
+        check_count(n)?;
         if n == 0 {
             return Ok(());
         }
@@ -224,7 +243,7 @@ mod tests {
 
     #[test]
     fn alternating_examples_make_unlike_neighbours_attractive() {
-        let mut stats = PairStats::new(2);
+        let mut stats = PairStats::new(2).unwrap();
         let labels: Vec<u32> = (0..40).map(|i| i % 2).collect();
         stats.observe_graph(&line(40), &labels).unwrap();
         let table = stats.table(0);
@@ -235,7 +254,7 @@ mod tests {
 
     #[test]
     fn learned_tables_are_valid_for_a_network() {
-        let mut stats = PairStats::new(3);
+        let mut stats = PairStats::new(3).unwrap();
         let labels: Vec<u32> = (0..30).map(|i| (i / 3) % 3).collect();
         let edges = line(30);
         stats.observe_graph(&edges, &labels).unwrap();
@@ -245,13 +264,13 @@ mod tests {
 
     #[test]
     fn an_unseen_relation_is_neutral() {
-        let stats = PairStats::new(2);
+        let stats = PairStats::new(2).unwrap();
         assert!(stats.table(5).weights().iter().all(|&w| w == NEUTRAL));
     }
 
     #[test]
     fn out_of_range_labels_are_rejected() {
-        let mut stats = PairStats::new(2);
+        let mut stats = PairStats::new(2).unwrap();
         assert!(stats.observe_pair(0, 0, 2).is_err());
     }
 }

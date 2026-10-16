@@ -18,6 +18,13 @@ use crate::Error;
 use crate::counter::{Counter, pick_below};
 use std::collections::BTreeSet;
 
+/// Largest label count a network or table may have. A pair table holds
+/// `labels * labels` weights, so this bounds memory at 64 MiB per table.
+pub const MAX_LABELS: u32 = 4096;
+
+/// Largest `gibbs + icm` a sample may run.
+pub const MAX_ROUNDS: u32 = 100_000;
+
 /// A directed half of a graph edge. `relation` selects the pair table read for
 /// `(label of this node, label of `to`)`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -36,6 +43,9 @@ pub struct PairTable {
 
 impl PairTable {
     pub fn new(labels: u32, weights: Vec<u32>) -> Result<Self, Error> {
+        if labels > MAX_LABELS {
+            return Err(bad("too many labels for a pair table"));
+        }
         let expected = (labels as usize)
             .checked_mul(labels as usize)
             .ok_or_else(|| bad("pair table is too large"))?;
@@ -149,6 +159,9 @@ impl Network {
         unary: Vec<Vec<(u32, u32)>>,
     ) -> Result<Self, Error> {
         let n = edges.len();
+        if labels > MAX_LABELS {
+            return Err(bad("too many labels"));
+        }
         if unary.len() != n {
             return Err(bad("unary must have one entry per node"));
         }
@@ -280,6 +293,27 @@ impl Network {
     /// ascending order and each node uses the labels its neighbours hold at
     /// that moment. A node whose weights are all zero keeps its label.
     pub fn sample(&self, counter: &Counter, schedule: Schedule) -> Result<Vec<u32>, Error> {
+        self.sample_ordered(counter, schedule, false, false)
+    }
+
+    /// `sample` with the visiting order made explicit, so a test can show that
+    /// the result does not depend on it: `reverse` visits each colour's nodes
+    /// from the highest index, and `immediate` applies each update at once
+    /// instead of after the whole colour. Nodes of one colour share no edge,
+    /// so every combination gives the same labelling.
+    fn sample_ordered(
+        &self,
+        counter: &Counter,
+        schedule: Schedule,
+        reverse: bool,
+        immediate: bool,
+    ) -> Result<Vec<u32>, Error> {
+        let rounds = schedule.gibbs.saturating_add(schedule.icm);
+        if rounds > MAX_ROUNDS {
+            return Err(Error::InvalidParameter(format!(
+                "gibbs + icm may not exceed {MAX_ROUNDS}"
+            )));
+        }
         let n = self.nodes();
         let mut state = vec![0u32; n];
         for (node, slot) in state.iter_mut().enumerate() {
@@ -289,14 +323,18 @@ impl Network {
             let weights = self.conditional(node, None);
             *slot = draw(&weights, counter.unit(&[node as u32, 0, 0])).expect("non-empty");
         }
-        let rounds = schedule.gibbs.saturating_add(schedule.icm);
+        let order: Vec<usize> = if reverse {
+            (0..n).rev().collect()
+        } else {
+            (0..n).collect()
+        };
         for round in 1..=rounds {
             let greedy = round > schedule.gibbs;
             for colour in 0..self.colour_count {
                 // Nodes of one colour are independent, so this loop may run in
                 // any order or in parallel; updates are staged then applied.
                 let mut updates = Vec::new();
-                for node in 0..n {
+                for &node in &order {
                     if self.colours[node] != colour {
                         continue;
                     }
@@ -307,7 +345,11 @@ impl Network {
                         draw(&weights, counter.unit(&[node as u32, round, 0]))
                     };
                     if let Some(label) = chosen {
-                        updates.push((node, label));
+                        if immediate {
+                            state[node] = label;
+                        } else {
+                            updates.push((node, label));
+                        }
                     }
                 }
                 for (node, label) in updates {
@@ -316,6 +358,26 @@ impl Network {
             }
         }
         Ok(state)
+    }
+
+    /// The number of edges (each counted once) whose pair weight is zero in
+    /// either direction under `labels`. `sample` treats a zero as forbidden but
+    /// may leave a node stuck on a label every candidate of which conflicts, so
+    /// a caller that needs hard constraints reads this, or uses `solve`.
+    pub fn violations(&self, labels: &[u32]) -> usize {
+        let mut count = 0;
+        for (node, list) in self.edges.iter().enumerate() {
+            for edge in list {
+                if (edge.to as usize) > node {
+                    let table = &self.tables[edge.relation as usize];
+                    let (a, b) = (labels[node], labels[edge.to as usize]);
+                    if table.get(a, b) == 0 || table.get(b, a) == 0 {
+                        count += 1;
+                    }
+                }
+            }
+        }
+        count
     }
 
     /// Search for a labelling where every edge's pair weight is non-zero.
@@ -795,15 +857,69 @@ mod tests {
 
     #[test]
     fn sampling_does_not_depend_on_visit_order_within_a_colour() {
-        // Reversing node numbering of a path changes the colouring, but the
-        // same network sampled twice must agree exactly.
+        // Reverse order with immediate updates is the most different order
+        // there is; it agrees only because one colour's nodes share no edge.
         let (edges, tables) = path(64, 3, PairTable::uniform(3, 2));
-        let net = Network::new(3, edges, tables, everything(64, 3)).unwrap();
-        let schedule = Schedule { gibbs: 4, icm: 1 };
-        assert_eq!(
-            net.sample(&Counter::new(77), schedule).unwrap(),
-            net.sample(&Counter::new(77), schedule).unwrap()
-        );
+        let mut grid = vec![Vec::new(); 36];
+        for y in 0..6usize {
+            for x in 0..6usize {
+                let i = y * 6 + x;
+                for (dx, dy, relation) in [(1i32, 0i32, 0u32), (-1, 0, 0), (0, 1, 0), (0, -1, 0)] {
+                    let (nx, ny) = (x as i32 + dx, y as i32 + dy);
+                    if (0..6).contains(&nx) && (0..6).contains(&ny) {
+                        grid[i].push(Edge {
+                            to: (ny * 6 + nx) as u32,
+                            relation,
+                        });
+                    }
+                }
+            }
+        }
+        let attract = PairTable::new(3, vec![9, 1, 1, 1, 9, 1, 1, 1, 9]).unwrap();
+        let networks = [
+            Network::new(3, edges, tables, everything(64, 3)).unwrap(),
+            Network::new(3, grid, vec![attract], everything(36, 3)).unwrap(),
+        ];
+        let schedule = Schedule { gibbs: 5, icm: 2 };
+        for net in &networks {
+            for seed in 0..5 {
+                let c = Counter::new(seed);
+                let reference = net.sample(&c, schedule).unwrap();
+                assert_eq!(
+                    reference,
+                    net.sample_ordered(&c, schedule, true, true).unwrap()
+                );
+                assert_eq!(
+                    reference,
+                    net.sample_ordered(&c, schedule, true, false).unwrap()
+                );
+                assert_eq!(
+                    reference,
+                    net.sample_ordered(&c, schedule, false, true).unwrap()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn violations_count_each_conflicting_edge_once() {
+        let (edges, tables) = path(5, 2, alternating());
+        let net = Network::new(2, edges, tables, everything(5, 2)).unwrap();
+        assert_eq!(net.violations(&[0, 1, 0, 1, 0]), 0);
+        assert_eq!(net.violations(&[0, 0, 0, 1, 1]), 3);
+    }
+
+    #[test]
+    fn a_long_run_or_a_huge_label_count_is_refused_not_attempted() {
+        let (edges, tables) = path(3, 2, alternating());
+        let net = Network::new(2, edges, tables, everything(3, 2)).unwrap();
+        let schedule = Schedule {
+            gibbs: MAX_ROUNDS + 1,
+            icm: 0,
+        };
+        assert!(net.sample(&Counter::new(1), schedule).is_err());
+        assert!(PairTable::new(MAX_LABELS + 1, vec![]).is_err());
+        assert!(Network::new(MAX_LABELS + 1, vec![], vec![], vec![]).is_err());
     }
 
     #[test]

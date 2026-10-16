@@ -181,6 +181,7 @@ export type NetworkSolution =
 export function counterWord(seed: number, keys?: readonly number[]): number;
 export function counterUnit(seed: number, keys?: readonly number[]): number;
 export function networkSample(spec: NetworkSpec, seed: number, options?: { gibbs?: number; icm?: number }): number[];
+export function networkViolations(spec: NetworkSpec, labels: readonly number[]): number;
 export function networkSolve(spec: NetworkSpec, seed: number, options?: { maxDecisions?: number; maxBacktracks?: number }): NetworkSolution;
 
 export class PairStats {
@@ -202,6 +203,7 @@ export interface AcausalApi {
   readonly counterUnit: typeof counterUnit;
   readonly networkSample: typeof networkSample;
   readonly networkSolve: typeof networkSolve;
+  readonly networkViolations: typeof networkViolations;
   readonly Rng: typeof Rng;
   readonly Weighted: typeof Weighted;
   readonly Markov: typeof Markov;
