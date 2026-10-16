@@ -167,6 +167,11 @@ loop:
     counts: every count rule that lists a free node, over its free nodes, with the nodes of the rule
             outside the free set that hold a label of its set taken off `min` and `max` (a rule
             already above its `max` makes this radius unsolvable)
+    closure: a boundary node that is an end of a violating edge (in `bad`) could not keep its label, so
+             the violating edges' cluster it belongs to is freed too (nodes reached over violating edges),
+             the boundary becomes the nodes beside the enlarged free set (edge neighbours and the other
+             nodes of count rules that list a free node), and the test repeats until no boundary node is
+             an end of a violating edge
     run the `solve` search on this subproblem with
       counter = Counter(word(seed, [0x52455041, v0, radius]))
       budget  = (max_decisions, max_backtracks)
@@ -177,6 +182,8 @@ loop:
               touching a free node and from bad_counts every rule that lists one; rounds += 1
   no radius solved -> refuse "unrepairable"
 ```
+
+The closure makes a region that only touches another cluster of violations free it whole, instead of pinning a label that already breaks a rule.
 
 A refusal names `v0` as `node`, reports `remaining` (the number of edges in `bad` plus the number of rules in `bad_counts`, which equals `violations(state)`) and returns `state` as repaired so far. Both outcomes report `rounds`, `decisions`, `backtracks` (sums, saturating at `2^32 - 1`) and `changed`, the number of nodes whose label differs from the input.
 

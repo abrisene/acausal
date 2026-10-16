@@ -617,6 +617,12 @@ impl Network {
                 }
             }
         }
+        // How many violating edges each node is an end of.
+        let mut bad_at: std::collections::BTreeMap<u32, u32> = std::collections::BTreeMap::new();
+        for &(a, b) in &bad {
+            *bad_at.entry(a).or_default() += 1;
+            *bad_at.entry(b).or_default() += 1;
+        }
         let mut bad_counts: BTreeSet<u32> = (0..self.counts.len() as u32)
             .filter(|&c| !self.count_holds(&state, c as usize))
             .collect();
@@ -673,13 +679,53 @@ impl Network {
                     // The region is a whole connected component already.
                     break;
                 }
-                let mut order: Vec<u32> = layers[..=radius as usize + 1]
+                let mut members: BTreeSet<u32> = layers[..=radius as usize + 1]
                     .iter()
                     .flatten()
                     .copied()
                     .collect();
-                order.sort_unstable();
-                let free = |node: u32| dist[node as usize] <= radius;
+                // A pinned node that is an end of a violating edge could not
+                // keep its label: the whole cluster of violations it belongs
+                // to is freed too, and the pinned ring moves out around it.
+                let mut extra: BTreeSet<u32> = BTreeSet::new();
+                loop {
+                    let broken: Vec<u32> = members
+                        .iter()
+                        .copied()
+                        .filter(|v| {
+                            dist[*v as usize] > radius
+                                && !extra.contains(v)
+                                && bad_at.contains_key(v)
+                        })
+                        .collect();
+                    if broken.is_empty() {
+                        break;
+                    }
+                    let mut stack = broken;
+                    let mut added: Vec<u32> = Vec::new();
+                    while let Some(v) = stack.pop() {
+                        if !extra.insert(v) {
+                            continue;
+                        }
+                        added.push(v);
+                        for edge in &self.edges[v as usize] {
+                            if self.violates(&state, v as usize, edge) {
+                                stack.push(edge.to);
+                            }
+                        }
+                    }
+                    for &v in &added {
+                        members.insert(v);
+                        for edge in &self.edges[v as usize] {
+                            members.insert(edge.to);
+                        }
+                        for &c in &self.node_counts[v as usize] {
+                            members.extend(self.counts[c as usize].nodes.iter().copied());
+                        }
+                    }
+                }
+                let order: Vec<u32> = members.into_iter().collect();
+                let free = |node: u32| dist[node as usize] <= radius || extra.contains(&node);
                 let region = self.build_region(&order, &free, &|node| Some(state[node as usize]));
                 if !region.feasible {
                     continue;
@@ -713,7 +759,16 @@ impl Network {
                             state[node as usize] = found[k];
                             for edge in &self.edges[node as usize] {
                                 let pair = (node.min(edge.to), node.max(edge.to));
-                                bad.remove(&pair);
+                                if bad.remove(&pair) {
+                                    for end in [pair.0, pair.1] {
+                                        if let Some(k) = bad_at.get_mut(&end) {
+                                            *k -= 1;
+                                            if *k == 0 {
+                                                bad_at.remove(&end);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             for c in &self.node_counts[node as usize] {
                                 bad_counts.remove(c);
@@ -2840,5 +2895,34 @@ mod tests {
             outcomes
         };
         assert_eq!(region_of(40), region_of(65));
+    }
+
+    #[test]
+    fn repair_frees_the_violations_a_region_only_touches() {
+        // A chain of six nodes whose neighbours must differ, the first fixed
+        // to 0 and the last to 1, so the only answer is 0 1 0 1 0 1. The start
+        // 0 1 1 0 1 1 breaks it in two places. Mending the first (nodes 1 and
+        // 2, one hop out: 0 to 3) pins node 4, which belongs to the second
+        // break; the region cannot be solved unless that break is freed too.
+        let (edges, tables) = path(6, 2, alternating());
+        let mut unary = everything(6, 2);
+        unary[0] = vec![(0, 1)];
+        unary[5] = vec![(1, 1)];
+        let net = Network::new(2, edges, tables, unary).unwrap();
+        let start = [0, 1, 1, 0, 1, 1];
+        assert_eq!(net.violations(&start).unwrap(), 2);
+        let budget = RepairBudget {
+            max_radius: 1,
+            max_decisions: 1000,
+            max_backtracks: 1000,
+            max_rounds: 10,
+        };
+        let RepairOutcome::Repaired { labels, stats } =
+            net.repair(&start, &Counter::new(1), budget).unwrap()
+        else {
+            panic!("refused at radius 1");
+        };
+        assert_eq!(labels, vec![0, 1, 0, 1, 0, 1]);
+        assert_eq!(stats.rounds, 1, "one region mended both");
     }
 }
