@@ -153,8 +153,10 @@ loop:
   rounds == max_rounds -> refuse "round-limit"
   layer[0] = cluster: for an edge, the nodes reached from v0 over violating edges (under state);
              for a rule, the rule's nodes
-  layer[d] = the nodes at hop distance exactly d from the cluster over all edges, where the other nodes
-             of any count rule that lists a node of layer[d-1] are one hop away too
+  layer[d] = the nodes at hop distance exactly d from the cluster over the edges that can bind, where the
+             other nodes of any count rule that lists a node of layer[d-1] are one hop away too.
+             An edge binds when its relation's table has a zero somewhere; an edge of a table of
+             non-zero weights forbids nothing and does not reach its neighbour.
   for radius in 1 ..= max_radius:
     if radius > 1 and layer[radius] is empty: stop growing      # the component is already free
     free     = layer[0] .. layer[radius]
@@ -172,6 +174,10 @@ loop:
              the boundary becomes the nodes beside the enlarged free set (edge neighbours and the other
              nodes of count rules that list a free node), and the test repeats until no boundary node is
              an end of a violating edge
+    growth: when the search refuses with a node whose candidates ran out (at most `max_radius`
+            times per radius), that node, its pinned neighbours over binding edges and the nodes of
+            the count rules that list it are freed too, the pinned ring moves out, closure applies
+            again, and the subproblem is solved again (the same counter)
     run the `solve` search on this subproblem with
       counter = Counter(word(seed, [0x52455041, v0, radius]))
       budget  = (max_decisions, max_backtracks)
@@ -184,6 +190,8 @@ loop:
 ```
 
 The closure makes a region that only touches another cluster of violations free it whole, instead of pinning a label that already breaks a rule.
+
+The growth steps matter when the answer to a violation is longer than the radius: a column of nodes whose only solution changes all of them is freed one squeezed node at a time. A node can change up to two hops per growth beyond `radius` hops from the cluster.
 
 A refusal names `v0` as `node`, reports `remaining` (the number of edges in `bad` plus the number of rules in `bad_counts`, which equals `violations(state)`) and returns `state` as repaired so far. Both outcomes report `rounds`, `decisions`, `backtracks` (sums, saturating at `2^32 - 1`) and `changed`, the number of nodes whose label differs from the input.
 

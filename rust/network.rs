@@ -249,6 +249,9 @@ pub struct Network {
     node_counts: Vec<Vec<u32>>,
     /// Supported neighbour labels per table row, worked out on first use.
     rows: std::sync::OnceLock<Vec<Vec<u64>>>,
+    /// Whether each relation's table has a zero, so that an edge of it can
+    /// bind: a table of non-zero weights forbids nothing.
+    binding: Vec<bool>,
 }
 
 fn bad(message: &str) -> Error {
@@ -335,6 +338,7 @@ impl Network {
                 }
             }
         }
+        let tables_binding: Vec<bool> = tables.iter().map(|t| t.weights().contains(&0)).collect();
         let mut colours = vec![0u32; n];
         let mut colour_count = 0;
         for node in 0..n {
@@ -361,6 +365,7 @@ impl Network {
             counts: Vec::new(),
             node_counts: vec![Vec::new(); n],
             rows: std::sync::OnceLock::new(),
+            binding: tables_binding,
         })
     }
 
@@ -679,104 +684,160 @@ impl Network {
                     // The region is a whole connected component already.
                     break;
                 }
-                let mut members: BTreeSet<u32> = layers[..=radius as usize + 1]
+                let base_members: BTreeSet<u32> = layers[..=radius as usize + 1]
                     .iter()
                     .flatten()
                     .copied()
                     .collect();
-                // A pinned node that is an end of a violating edge could not
-                // keep its label: the whole cluster of violations it belongs
-                // to is freed too, and the pinned ring moves out around it.
+                // Nodes freed beyond the radius: whole clusters of violations a
+                // pinned node belongs to, and the pinned neighbours of a node
+                // whose candidates ran out.
                 let mut extra: BTreeSet<u32> = BTreeSet::new();
+                let mut wants: Vec<u32> = Vec::new();
+                let mut attempts = 0;
                 loop {
-                    let broken: Vec<u32> = members
-                        .iter()
-                        .copied()
-                        .filter(|v| {
-                            dist[*v as usize] > radius
-                                && !extra.contains(v)
-                                && bad_at.contains_key(v)
-                        })
-                        .collect();
-                    if broken.is_empty() {
-                        break;
-                    }
-                    let mut stack = broken;
-                    let mut added: Vec<u32> = Vec::new();
-                    while let Some(v) = stack.pop() {
-                        if !extra.insert(v) {
-                            continue;
-                        }
-                        added.push(v);
+                    extra.extend(wants.iter().copied());
+                    let mut members = base_members.clone();
+                    members.extend(extra.iter().copied());
+                    for &v in &extra {
                         for edge in &self.edges[v as usize] {
-                            if self.violates(&state, v as usize, edge) {
-                                stack.push(edge.to);
+                            if self.binding[edge.relation as usize] {
+                                members.insert(edge.to);
                             }
-                        }
-                    }
-                    for &v in &added {
-                        members.insert(v);
-                        for edge in &self.edges[v as usize] {
-                            members.insert(edge.to);
                         }
                         for &c in &self.node_counts[v as usize] {
                             members.extend(self.counts[c as usize].nodes.iter().copied());
                         }
                     }
-                }
-                let order: Vec<u32> = members.into_iter().collect();
-                let free = |node: u32| dist[node as usize] <= radius || extra.contains(&node);
-                let region = self.build_region(&order, &free, &|node| Some(state[node as usize]));
-                if !region.feasible {
-                    continue;
-                }
-                let problem = Problem {
-                    labels: self.labels,
-                    edges: &region.edges,
-                    unary: &region.unary,
-                    ids: Some(&order),
-                    counts: &region.counts,
-                };
-                let search_counter = Counter::new(counter.word(&[REPAIR_KEY, v0, radius]));
-                let outcome = Search::new(
-                    problem,
-                    rows,
-                    &search_counter,
-                    Budget {
-                        max_decisions: budget.max_decisions,
-                        max_backtracks: budget.max_backtracks,
-                    },
-                )
-                .run();
-                let search = match &outcome {
-                    Outcome::Solved { stats, .. } | Outcome::Refused { stats, .. } => *stats,
-                };
-                stats.decisions = stats.decisions.saturating_add(search.decisions);
-                stats.backtracks = stats.backtracks.saturating_add(search.backtracks);
-                if let Outcome::Solved { labels: found, .. } = outcome {
-                    for (k, &node) in order.iter().enumerate() {
-                        if free(node) {
-                            state[node as usize] = found[k];
-                            for edge in &self.edges[node as usize] {
-                                let pair = (node.min(edge.to), node.max(edge.to));
-                                if bad.remove(&pair) {
-                                    for end in [pair.0, pair.1] {
-                                        if let Some(k) = bad_at.get_mut(&end) {
-                                            *k -= 1;
-                                            if *k == 0 {
-                                                bad_at.remove(&end);
-                                            }
-                                        }
-                                    }
+                    // A pinned node that is an end of a violating edge could
+                    // not keep its label: the whole cluster of violations it
+                    // belongs to is freed too, and the pinned ring moves out.
+                    loop {
+                        let broken: Vec<u32> = members
+                            .iter()
+                            .copied()
+                            .filter(|v| {
+                                dist[*v as usize] > radius
+                                    && !extra.contains(v)
+                                    && bad_at.contains_key(v)
+                            })
+                            .collect();
+                        if broken.is_empty() {
+                            break;
+                        }
+                        let mut stack = broken;
+                        let mut added: Vec<u32> = Vec::new();
+                        while let Some(v) = stack.pop() {
+                            if !extra.insert(v) {
+                                continue;
+                            }
+                            added.push(v);
+                            for edge in &self.edges[v as usize] {
+                                if self.violates(&state, v as usize, edge) {
+                                    stack.push(edge.to);
                                 }
                             }
-                            for c in &self.node_counts[node as usize] {
-                                bad_counts.remove(c);
+                        }
+                        for &v in &added {
+                            members.insert(v);
+                            for edge in &self.edges[v as usize] {
+                                if self.binding[edge.relation as usize] {
+                                    members.insert(edge.to);
+                                }
+                            }
+                            for &c in &self.node_counts[v as usize] {
+                                members.extend(self.counts[c as usize].nodes.iter().copied());
                             }
                         }
                     }
-                    stats.rounds += 1;
-                    solved = true;
+                    let order: Vec<u32> = members.into_iter().collect();
+                    let free = |node: u32| dist[node as usize] <= radius || extra.contains(&node);
+                    let region =
+                        self.build_region(&order, &free, &|node| Some(state[node as usize]));
+                    if !region.feasible {
+                        break;
+                    }
+                    let problem = Problem {
+                        labels: self.labels,
+                        edges: &region.edges,
+                        unary: &region.unary,
+                        ids: Some(&order),
+                        counts: &region.counts,
+                    };
+                    let search_counter = Counter::new(counter.word(&[REPAIR_KEY, v0, radius]));
+                    let outcome = Search::new(
+                        problem,
+                        rows,
+                        &search_counter,
+                        Budget {
+                            max_decisions: budget.max_decisions,
+                            max_backtracks: budget.max_backtracks,
+                        },
+                    )
+                    .run();
+                    let search = match &outcome {
+                        Outcome::Solved { stats, .. } | Outcome::Refused { stats, .. } => *stats,
+                    };
+                    stats.decisions = stats.decisions.saturating_add(search.decisions);
+                    stats.backtracks = stats.backtracks.saturating_add(search.backtracks);
+                    match outcome {
+                        Outcome::Solved { labels: found, .. } => {
+                            for (k, &node) in order.iter().enumerate() {
+                                if free(node) {
+                                    state[node as usize] = found[k];
+                                    for edge in &self.edges[node as usize] {
+                                        let pair = (node.min(edge.to), node.max(edge.to));
+                                        if bad.remove(&pair) {
+                                            for end in [pair.0, pair.1] {
+                                                if let Some(k) = bad_at.get_mut(&end) {
+                                                    *k -= 1;
+                                                    if *k == 0 {
+                                                        bad_at.remove(&end);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    for c in &self.node_counts[node as usize] {
+                                        bad_counts.remove(c);
+                                    }
+                                }
+                            }
+                            stats.rounds += 1;
+                            solved = true;
+                            break;
+                        }
+                        Outcome::Refused { node: Some(k), .. } if attempts < budget.max_radius => {
+                            // The node whose candidates ran out is squeezed by
+                            // something pinned beside it: free what is beside it.
+                            attempts += 1;
+                            let u = order[k as usize];
+                            let mut grown = false;
+                            let mut take = |v: u32, wants: &mut Vec<u32>| {
+                                if !free(v) && !wants.contains(&v) {
+                                    wants.push(v);
+                                    grown = true;
+                                }
+                            };
+                            take(u, &mut wants);
+                            for edge in &self.edges[u as usize] {
+                                if self.binding[edge.relation as usize] {
+                                    take(edge.to, &mut wants);
+                                }
+                            }
+                            for &c in &self.node_counts[u as usize] {
+                                for &other in &self.counts[c as usize].nodes {
+                                    take(other, &mut wants);
+                                }
+                            }
+                            if !grown {
+                                break;
+                            }
+                        }
+                        Outcome::Refused { .. } => break,
+                    }
+                }
+                if solved {
                     break;
                 }
             }
@@ -1007,7 +1068,10 @@ impl Network {
         for &node in layer {
             let d = dist[node as usize] + 1;
             for edge in &self.edges[node as usize] {
-                if dist[edge.to as usize] == u32::MAX {
+                // Only an edge that can forbid something reaches a neighbour:
+                // freeing a node beside a table of non-zero weights frees
+                // nothing that a label here depends on.
+                if self.binding[edge.relation as usize] && dist[edge.to as usize] == u32::MAX {
                     dist[edge.to as usize] = d;
                     next.push(edge.to);
                 }
@@ -1960,9 +2024,11 @@ mod tests {
     }
 
     /// What every repair must uphold: a repaired labelling satisfies every
-    /// edge, only nodes within `max_radius` hops of a violation change, every
-    /// round removes at least one violating edge, and `changed` counts the
-    /// nodes that changed.
+    /// edge, only nodes near a violation change (within `max_radius` hops, plus
+    /// the nodes a region frees when what is pinned beside it squeezes it: at
+    /// most two more hops for each of `max_radius` growths), every round
+    /// removes at least one violating edge, and `changed` counts the nodes that
+    /// changed.
     fn check(
         edges: &[Vec<Edge>],
         tables: &[PairTable],
@@ -1992,7 +2058,7 @@ mod tests {
         for node in 0..start.len() {
             if labels[node] != start[node] {
                 assert!(
-                    near[node] <= max_radius,
+                    near[node] <= 3 * max_radius,
                     "node {node} changed {} hops away",
                     near[node]
                 );
@@ -2924,5 +2990,74 @@ mod tests {
         };
         assert_eq!(labels, vec![0, 1, 0, 1, 0, 1]);
         assert_eq!(stats.rounds, 1, "one region mended both");
+    }
+
+    #[test]
+    fn repair_follows_the_edges_that_forbid_something_not_the_ones_that_forbid_nothing() {
+        // Twelve columns of five nodes: neighbours up a column must differ
+        // (relations 0 and 1), and columns sit side by side through a table
+        // that allows everything (relation 2). Column 5 has its ends fixed to 0
+        // and is all zeros, so it must become 0 1 0 1 0; the others are free
+        // and already alternate. Mending column 5 must leave the others alone:
+        // freeing them (they are beside it) would redraw some.
+        let (cols, rows) = (12usize, 5usize);
+        let n = cols * rows;
+        let mut edges = vec![Vec::new(); n];
+        for c in 0..cols {
+            for r in 0..rows {
+                let i = c * rows + r;
+                if r + 1 < rows {
+                    edges[i].push(Edge {
+                        to: (i + 1) as u32,
+                        relation: 0,
+                    });
+                    edges[i + 1].push(Edge {
+                        to: i as u32,
+                        relation: 1,
+                    });
+                }
+                if c + 1 < cols {
+                    edges[i].push(Edge {
+                        to: (i + rows) as u32,
+                        relation: 2,
+                    });
+                    edges[i + rows].push(Edge {
+                        to: i as u32,
+                        relation: 2,
+                    });
+                }
+            }
+        }
+        let tables = vec![alternating(), alternating(), PairTable::uniform(2, 1)];
+        let mut unary = everything(n, 2);
+        unary[5 * rows] = vec![(0, 1)];
+        unary[5 * rows + rows - 1] = vec![(0, 1)];
+        let net = Network::new(2, edges, tables, unary).unwrap();
+        for seed in 0..12 {
+            let mut start: Vec<u32> = (0..n).map(|i| (i % rows % 2) as u32).collect();
+            for r in 0..rows {
+                start[5 * rows + r] = 0;
+            }
+            let outcome = net
+                .repair(
+                    &start,
+                    &Counter::new(seed),
+                    RepairBudget {
+                        max_radius: 1,
+                        max_decisions: 10_000,
+                        max_backtracks: 10_000,
+                        max_rounds: 1_000,
+                    },
+                )
+                .unwrap();
+            let RepairOutcome::Repaired { labels, stats } = outcome else {
+                panic!("refused");
+            };
+            assert_eq!(&labels[5 * rows..6 * rows], &[0, 1, 0, 1, 0]);
+            assert_eq!(
+                stats.changed, 2,
+                "seed {seed}: only the column's own nodes change"
+            );
+        }
     }
 }
