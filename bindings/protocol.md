@@ -92,4 +92,4 @@ A network (read by ops 71, 72, 79 and 80): label count u32; node count u32; per 
 
 Op 10 clones a PairStats handle. The counter hash is specified in `docs/specs/network.md`.
 
-A network or a pair table has at most 4096 labels. A sample runs at most 100000 rounds. A repair grows to a radius of at most 16 (at least 1) and runs at most 100000 rounds; op 80 refuses a label that is not one of its node's candidates.
+A network or a pair table has at most 4096 labels, but one table of that size is 64 MiB and a single payload is capped at 16 MiB, so through the binary protocol a network holds at most about 2000 labels. A sample runs at most 100000 rounds. A repair grows to a radius of at most 16 (at least 1) and runs at most 100000 rounds; op 80 refuses a label that is not one of its node's candidates.

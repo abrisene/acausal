@@ -224,7 +224,10 @@ fn network_samples_and_solves_match_the_fixture() {
                             },
                         )
                         .unwrap();
-                    assert_eq!(net.violations(&got) as u32, run.get("violations").u32());
+                    assert_eq!(
+                        net.violations(&got).unwrap() as u32,
+                        run.get("violations").u32()
+                    );
                     assert_eq!(
                         got,
                         run.get("labels").u32s(),
@@ -321,7 +324,7 @@ fn network_samples_and_solves_match_the_fixture() {
                             assert_eq!(reason.name(), run.get("reason").str(), "{name}");
                             assert_eq!(*node, run.get("node").u32(), "{name}");
                             assert_eq!(*remaining as u32, run.get("remaining").u32(), "{name}");
-                            assert_eq!(net.violations(labels), *remaining);
+                            assert_eq!(net.violations(labels).unwrap(), *remaining);
                             repair_refused += 1;
                             (labels, stats)
                         }

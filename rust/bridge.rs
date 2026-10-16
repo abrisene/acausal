@@ -271,7 +271,9 @@ pub extern "C" fn acausal_call(operation: u32, payload: u32) -> u32 {
     };
     let mut output = Writer::default();
     // A panic must not unwind across the C boundary (that aborts the host
-    // process), and must not poison the store.
+    // process), and must not poison the store. This holds on native builds
+    // only: wasm32-unknown-unknown aborts on panic, so a panic there traps and
+    // the instance is dead (a host should drop it and start another).
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         dispatch(&mut state, operation, &input)
     }))
@@ -814,7 +816,7 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
             if labels.len() != network.nodes() || labels.iter().any(|&l| l >= network.labels()) {
                 return Err(invalid("one in-range label per node is required"));
             }
-            output.u32(network.violations(&labels) as u32);
+            output.u32(network.violations(&labels)? as u32);
         }
         80 => {
             let network = read_network(&mut reader)?;
@@ -867,6 +869,9 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
 /// (label u32, weight u32).
 fn read_network(reader: &mut Reader<'_>) -> Result<Network, Error> {
     let labels = reader.u32()?;
+    if labels == 0 {
+        return Err(invalid("a network needs at least one label"));
+    }
     let nodes = reader.count()?;
     let mut edges = Vec::with_capacity(nodes.min(65_536));
     for _ in 0..nodes {

@@ -112,12 +112,20 @@ impl PairStats {
                 "one label per node is required".to_owned(),
             ));
         }
+        // Check everything first so a failed call counts nothing.
         for (node, list) in edges.iter().enumerate() {
-            self.observe_label(labels[node])?;
+            self.check(labels[node])?;
             for edge in list {
                 let other = *labels
                     .get(edge.to as usize)
                     .ok_or_else(|| Error::InvalidParameter("edge leaves the graph".to_owned()))?;
+                self.check(other)?;
+            }
+        }
+        for (node, list) in edges.iter().enumerate() {
+            self.observe_label(labels[node])?;
+            for edge in list {
+                let other = labels[edge.to as usize];
                 self.observe_pair(edge.relation, labels[node], other)?;
             }
         }
@@ -239,6 +247,18 @@ mod tests {
             });
         }
         edges
+    }
+
+    #[test]
+    fn a_graph_that_fails_to_validate_counts_nothing() {
+        let mut stats = PairStats::new(2).unwrap();
+        // The second node's label is out of range, but the first is fine:
+        // nothing may be counted before the error.
+        assert!(stats.observe_graph(&line(2), &[0, 5]).is_err());
+        assert_eq!(stats.label_counts(), vec![0, 0]);
+        assert!(stats.relations().is_empty());
+        assert!(stats.observe_graph(&line(2), &[0, 1]).is_ok());
+        assert_eq!(stats.label_counts(), vec![1, 1]);
     }
 
     #[test]

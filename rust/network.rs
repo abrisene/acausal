@@ -434,7 +434,18 @@ impl Network {
     /// decides. `sample` treats a zero as forbidden but
     /// may leave a node stuck on a label every candidate of which conflicts, so
     /// a caller that needs hard constraints reads this, or uses `solve`.
-    pub fn violations(&self, labels: &[u32]) -> usize {
+    pub fn violations(&self, labels: &[u32]) -> Result<usize, Error> {
+        if labels.len() != self.edges.len() {
+            return Err(Error::InvalidParameter(
+                "one label per node is required".to_owned(),
+            ));
+        }
+        if let Some(bad) = labels.iter().find(|&&l| l >= self.labels) {
+            return Err(Error::InvalidParameter(format!(
+                "label {bad} is outside 0..{}",
+                self.labels
+            )));
+        }
         let mut count = 0;
         for (node, list) in self.edges.iter().enumerate() {
             for edge in list {
@@ -447,7 +458,7 @@ impl Network {
                 }
             }
         }
-        count
+        Ok(count)
     }
 
     /// Search for a labelling where every edge's pair weight is non-zero.
@@ -1017,7 +1028,7 @@ impl<'a> Search<'a> {
             }
             let mut failed = frame;
             loop {
-                self.stats.backtracks += 1;
+                self.stats.backtracks = self.stats.backtracks.saturating_add(1);
                 if self.stats.backtracks > self.budget.max_backtracks {
                     return self.refused(RefusalReason::BacktrackLimit);
                 }
@@ -1252,8 +1263,18 @@ mod tests {
     fn violations_count_each_conflicting_edge_once() {
         let (edges, tables) = path(5, 2, alternating());
         let net = Network::new(2, edges, tables, everything(5, 2)).unwrap();
-        assert_eq!(net.violations(&[0, 1, 0, 1, 0]), 0);
-        assert_eq!(net.violations(&[0, 0, 0, 1, 1]), 3);
+        assert_eq!(net.violations(&[0, 1, 0, 1, 0]).unwrap(), 0);
+        assert_eq!(net.violations(&[0, 0, 0, 1, 1]).unwrap(), 3);
+    }
+
+    #[test]
+    fn violations_refuse_a_labelling_that_does_not_fit_the_network() {
+        let (edges, tables) = path(3, 2, alternating());
+        let net = Network::new(2, edges, tables, everything(3, 2)).unwrap();
+        assert!(net.violations(&[0, 1]).is_err(), "too few labels");
+        assert!(net.violations(&[0, 1, 0, 1]).is_err(), "too many labels");
+        assert!(net.violations(&[0, 1, 2]).is_err(), "a label out of range");
+        assert_eq!(net.violations(&[0, 1, 0]).unwrap(), 0);
     }
 
     #[test]
@@ -1267,9 +1288,9 @@ mod tests {
             vec![Edge { to: 0, relation: 1 }],
         ];
         let net = Network::new(2, edges, vec![east, west], everything(2, 2)).unwrap();
-        assert_eq!(net.violations(&[0, 1]), 1);
-        assert_eq!(net.violations(&[1, 0]), 0);
-        assert_eq!(net.violations(&[0, 0]), 0);
+        assert_eq!(net.violations(&[0, 1]).unwrap(), 1);
+        assert_eq!(net.violations(&[1, 0]).unwrap(), 0);
+        assert_eq!(net.violations(&[0, 0]).unwrap(), 0);
     }
 
     #[test]
@@ -1473,7 +1494,7 @@ mod tests {
             let start = net
                 .sample(&Counter::new(seed), Schedule { gibbs: 3, icm: 1 })
                 .unwrap();
-            if net.violations(&start) == 0 {
+            if net.violations(&start).unwrap() == 0 {
                 continue;
             }
             frustrated += 1;
@@ -1495,14 +1516,14 @@ mod tests {
         assert!(frustrated > 0, "sampling left no violations to repair");
     }
 
-    /// Pipe tiles: label bits are the open sides (1 east, 2 up, 4 west,
+    /// Bit labels: label bits are the open sides (1 east, 2 up, 4 west,
     /// 8 down). Neighbours must agree on the side they share, so the east
     /// and down tables are not symmetric and the four relations differ. Only
-    /// straights and corners (two open sides) are candidates, so a node whose
+    /// labels with two open sides are candidates, so a node whose
     /// neighbours ask for three open sides has no label that fits.
     type Unary = Vec<Vec<(u32, u32)>>;
 
-    fn pipes(w: usize, h: usize) -> (Vec<Vec<Edge>>, Vec<PairTable>, Unary) {
+    fn open_sides(w: usize, h: usize) -> (Vec<Vec<Edge>>, Vec<PairTable>, Unary) {
         let mut east = vec![0; 256];
         let mut down = vec![0; 256];
         for a in 0..16usize {
@@ -1526,8 +1547,8 @@ mod tests {
     }
 
     #[test]
-    fn repair_joins_pipes_that_sampling_left_broken() {
-        let (edges, tables, unary) = pipes(9, 7);
+    fn repair_joins_open_sides_that_sampling_left_broken() {
+        let (edges, tables, unary) = open_sides(9, 7);
         assert_ne!(tables[0], transpose(&tables[0]));
         let net = Network::new(16, edges.clone(), tables.clone(), unary).unwrap();
         let mut frustrated = 0;
@@ -1535,7 +1556,7 @@ mod tests {
             let start = net
                 .sample(&Counter::new(seed), Schedule { gibbs: 2, icm: 1 })
                 .unwrap();
-            if net.violations(&start) == 0 {
+            if net.violations(&start).unwrap() == 0 {
                 continue;
             }
             frustrated += 1;
@@ -1617,7 +1638,7 @@ mod tests {
         let mut start: Vec<u32> = (0..40).map(|i| i % 3).collect();
         start[5] = start[4];
         start[30] = start[29];
-        let initial = net.violations(&start);
+        let initial = net.violations(&start).unwrap();
         assert_eq!(initial, 2);
         let limited = |max_rounds| {
             net.repair(
@@ -1645,7 +1666,7 @@ mod tests {
             };
             assert_eq!(*reason, RepairRefusal::RoundLimit);
             assert_eq!(stats.rounds, max_rounds);
-            assert_eq!(*remaining, net.violations(labels));
+            assert_eq!(*remaining, net.violations(labels).unwrap());
             assert_eq!(*remaining, initial - max_rounds as usize);
         }
         let outcome = limited(2);

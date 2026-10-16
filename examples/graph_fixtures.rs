@@ -123,7 +123,7 @@ fn run_sample(net: &Network, seed: u32, gibbs: u32, icm: u32) -> String {
         .unwrap();
     format!(
         "{{\"op\":\"sample\",\"seed\":{seed},\"gibbs\":{gibbs},\"icm\":{icm},\"violations\":{},\"labels\":{}}}",
-        net.violations(&labels),
+        net.violations(&labels).unwrap(),
         list(labels)
     )
 }
@@ -220,7 +220,7 @@ fn repairs(name: &str) -> Vec<((u32, u32, u32), u32, RepairBudget)> {
             ((1, 6, 2), 3, budget(1, 1_000)),
             ((3, 0, 0), 4, budget(8, 2)),
         ],
-        "grid-repair-pipes" => vec![
+        "grid-repair-open-sides" => vec![
             ((3, 0, 0), 1, budget(8, 1_000)),
             ((4, 3, 0), 2, budget(8, 1_000)),
             ((4, 3, 0), 3, budget(1, 1_000)),
@@ -491,10 +491,10 @@ fn main() {
         tables: four(3, differ_all.clone(), differ_all.clone()),
         unary: all_labels(144, 3, &[1, 1, 1]),
     });
-    // Pipe tiles: bits are open sides (1 east, 2 toward the previous row,
+    // Bit labels: bits are open sides (1 east, 2 toward the previous row,
     // 4 west, 8 toward the next row; relation 1 points to the next row);
     // neighbours agree on their shared side, so the tables are asymmetric.
-    // Only two-sided tiles are candidates, so a node can be stuck.
+    // Only labels with two open sides are candidates, so a node can be stuck.
     {
         let mut east = vec![0; 256];
         let mut south = vec![0; 256];
@@ -504,12 +504,12 @@ fn main() {
                 south[a * 16 + b] = u32::from((a & 8 != 0) == (b & 2 != 0));
             }
         }
-        let tiles: Vec<(u32, u32)> = (0..16u32)
+        let candidates: Vec<(u32, u32)> = (0..16u32)
             .filter(|l| l.count_ones() == 2)
             .map(|l| (l, if l == 5 || l == 10 { 1 } else { 4 }))
             .collect();
         cases.push(Case {
-            name: "grid-repair-pipes",
+            name: "grid-repair-open-sides",
             labels: 16,
             edges: grid(9, 7),
             tables: four(
@@ -517,7 +517,7 @@ fn main() {
                 PairTable::new(16, east).unwrap(),
                 PairTable::new(16, south).unwrap(),
             ),
-            unary: vec![tiles; 63],
+            unary: vec![candidates; 63],
         });
     }
 
