@@ -113,7 +113,7 @@ A refusal reports the reason, the node whose domain emptied last (or none), the 
 
 ## Violations
 
-`violations(labels)` counts the edges `(i, j)` with `i < j` for which `tables[r][a][b]` or `tables[r'][b][a]` is zero, where `r` is the relation of `i`'s edge to `j`, `r'` that of `j`'s edge to `i`. `sample` treats zero as forbidden: a node whose candidates all have weight zero keeps its current label, so a sample can finish with violations. Use `solve` for hard constraints.
+`violations(labels)` counts the edges `(i, j)` with `i < j` for which `tables[r][a][b]` is zero, where `r` is the relation of `i`'s edge to `j`, `a` the label of `i` and `b` the label of `j`. (The reverse edge's table is the transpose, so one direction decides.) `sample` treats zero as forbidden: a node whose candidates all have weight zero keeps its current label, so a sample can finish with violations. Use `solve` for hard constraints.
 
 ## Pair statistics
 

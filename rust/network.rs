@@ -360,8 +360,9 @@ impl Network {
         Ok(state)
     }
 
-    /// The number of edges (each counted once) whose pair weight is zero in
-    /// either direction under `labels`. `sample` treats a zero as forbidden but
+    /// The number of edges (each counted once) whose pair weight is zero under
+    /// `labels`. The reverse edge's table is the transpose, so one direction
+    /// decides. `sample` treats a zero as forbidden but
     /// may leave a node stuck on a label every candidate of which conflicts, so
     /// a caller that needs hard constraints reads this, or uses `solve`.
     pub fn violations(&self, labels: &[u32]) -> usize {
@@ -371,7 +372,7 @@ impl Network {
                 if (edge.to as usize) > node {
                     let table = &self.tables[edge.relation as usize];
                     let (a, b) = (labels[node], labels[edge.to as usize]);
-                    if table.get(a, b) == 0 || table.get(b, a) == 0 {
+                    if table.get(a, b) == 0 {
                         count += 1;
                     }
                 }
@@ -907,6 +908,22 @@ mod tests {
         let net = Network::new(2, edges, tables, everything(5, 2)).unwrap();
         assert_eq!(net.violations(&[0, 1, 0, 1, 0]), 0);
         assert_eq!(net.violations(&[0, 0, 0, 1, 1]), 3);
+    }
+
+    #[test]
+    fn violations_follow_the_direction_of_an_asymmetric_table() {
+        // Holding 0 beside a neighbour that holds 1 is forbidden going east,
+        // and so holding 1 beside a neighbour that holds 0 is forbidden going west.
+        let east = PairTable::new(2, vec![1, 0, 1, 1]).unwrap();
+        let west = PairTable::new(2, vec![1, 1, 0, 1]).unwrap();
+        let edges = vec![
+            vec![Edge { to: 1, relation: 0 }],
+            vec![Edge { to: 0, relation: 1 }],
+        ];
+        let net = Network::new(2, edges, vec![east, west], everything(2, 2)).unwrap();
+        assert_eq!(net.violations(&[0, 1]), 1);
+        assert_eq!(net.violations(&[1, 0]), 0);
+        assert_eq!(net.violations(&[0, 0]), 0);
     }
 
     #[test]

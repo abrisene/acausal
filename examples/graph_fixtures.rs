@@ -452,35 +452,54 @@ fn main() {
     out.push_str(&rendered.join(",\n"));
     out.push_str("\n],\n\"pairStats\":[\n");
 
-    // Pair statistics from a labelled grid.
+    // Pair statistics from labelled graphs.
+    let describe = |name: &str,
+                    labels: u32,
+                    edges: &[Vec<Edge>],
+                    pattern: &[u32],
+                    relation_count: u32| {
+        let mut stats = PairStats::new(labels).unwrap();
+        stats.observe_graph(edges, pattern).unwrap();
+        let mut relations = Vec::new();
+        for r in 0..relation_count {
+            relations.push(format!(
+                "{{\"relation\":{r},\"pairs\":{},\"table\":{},\"support\":{}}}",
+                list(
+                    stats
+                        .pairs(r)
+                        .iter()
+                        .map(|(a, b, n)| format!("[{a},{b},{n}]"))
+                ),
+                list(stats.table(r).weights().iter()),
+                list(stats.support_table(r).weights().iter())
+            ));
+        }
+        format!(
+            "{{\"name\":\"{name}\",\"labels\":{labels},\"edges\":{},\"nodeLabels\":{},\"labelCounts\":{},\"unaryWeights\":{},\"relations\":[{}]}}",
+            list(
+                edges
+                    .iter()
+                    .map(|node| list(node.iter().map(|e| format!("[{},{}]", e.to, e.relation))))
+            ),
+            list(pattern.iter()),
+            list(stats.label_counts().iter()),
+            list(stats.unary_weights().iter()),
+            relations.join(",")
+        )
+    };
     let edges = grid(6, 4);
     let pattern: Vec<u32> = (0..24)
         .map(|i| ((i % 6) / 2 + (i / 6)) as u32 % 3)
         .collect();
-    let mut stats = PairStats::new(3).unwrap();
-    stats.observe_graph(&edges, &pattern).unwrap();
-    let mut relations = Vec::new();
-    for r in 0..4u32 {
-        relations.push(format!(
-            "{{\"relation\":{r},\"pairs\":{},\"table\":{},\"support\":{}}}",
-            list(
-                stats
-                    .pairs(r)
-                    .iter()
-                    .map(|(a, b, n)| format!("[{a},{b},{n}]"))
-            ),
-            list(stats.table(r).weights().iter()),
-            list(stats.support_table(r).weights().iter())
-        ));
-    }
-    out.push_str(&format!(
-        "{{\"name\":\"grid-patterned\",\"labels\":3,\"edges\":{},\"nodeLabels\":{},\"labelCounts\":{},\"unaryWeights\":{},\"relations\":[{}]}}",
-        list(edges.iter().map(|node| list(node.iter().map(|e| format!("[{},{}]", e.to, e.relation))))),
-        list(pattern.iter()),
-        list(stats.label_counts().iter()),
-        list(stats.unary_weights().iter()),
-        relations.join(",")
-    ));
+    // Ten labels that always follow each other in a ring: every pair is ten
+    // times likelier than chance, so the lift hits its ceiling.
+    let ring_edges = grid(20, 1);
+    let ring: Vec<u32> = (0..20).map(|i| i % 10).collect();
+    let cases = [
+        describe("grid-patterned", 3, &edges, &pattern, 4),
+        describe("ring-of-ten-hits-the-ceiling", 10, &ring_edges, &ring, 4),
+    ];
+    out.push_str(&cases.join(",\n"));
     out.push_str("\n]}\n");
     std::fs::create_dir_all("fixtures").unwrap();
     std::fs::write("fixtures/graph.json", out).unwrap();
