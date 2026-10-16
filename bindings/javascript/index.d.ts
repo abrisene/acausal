@@ -172,6 +172,8 @@ export interface NetworkSpec {
   tables: ReadonlyArray<ReadonlyArray<number>>;
   /** `unary[node]` lists `[label, weight]` in ascending label order. */
   unary: ReadonlyArray<ReadonlyArray<readonly [number, number]>>;
+  /** Cardinality rules: between `min` and `max` of the `nodes` (ascending) hold one of the `labels` (ascending). */
+  counts?: ReadonlyArray<{ nodes: readonly number[]; labels: readonly number[]; min: number; max: number }>;
 }
 
 export type NetworkSolution =
@@ -189,6 +191,14 @@ export function counterUnit(seed: number, keys?: readonly number[]): number;
 export function networkSample(spec: NetworkSpec, seed: number, options?: { gibbs?: number; icm?: number }): number[];
 export function networkViolations(spec: NetworkSpec, labels: readonly number[]): number;
 export function networkSolve(spec: NetworkSpec, seed: number, options?: { maxDecisions?: number; maxBacktracks?: number }): NetworkSolution;
+/** Label the `free` nodes (ascending) with the `fixed` `[node, label]` pairs (ascending by node) held. */
+export function networkSolveRegion(
+  spec: NetworkSpec,
+  free: readonly number[],
+  fixed: ReadonlyArray<readonly [number, number]>,
+  seed: number,
+  options?: { maxDecisions?: number; maxBacktracks?: number },
+): NetworkSolution;
 export function networkRepair(
   spec: NetworkSpec,
   labels: readonly number[],
@@ -216,6 +226,7 @@ export interface AcausalApi {
   readonly networkSample: typeof networkSample;
   readonly networkSolve: typeof networkSolve;
   readonly networkRepair: typeof networkRepair;
+  readonly networkSolveRegion: typeof networkSolveRegion;
   readonly networkViolations: typeof networkViolations;
   readonly Rng: typeof Rng;
   readonly Weighted: typeof Weighted;

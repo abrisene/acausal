@@ -1,4 +1,4 @@
-const ABI_VERSION = 1;
+const ABI_VERSION = 2;
 const U32_MAX = 0xffff_ffff;
 const I64_MIN = -(1n << 63n);
 const I64_MAX = (1n << 63n) - 1n;

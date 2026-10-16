@@ -226,7 +226,7 @@ impl Writer {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn acausal_abi_version() -> u32 {
-    1
+    2
 }
 
 #[unsafe(no_mangle)]

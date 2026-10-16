@@ -605,16 +605,15 @@ fn main() {
         });
     }
 
-    // A little town: five houses of six rooms, each house a path of rooms.
-    // Labels: 0 hall, 1 bathroom, 2 kitchen, 3 bedroom. A bathroom may not
-    // share a wall with a kitchen. Every house has exactly one bathroom and at
-    // most one kitchen, and no rule reaches past its own house.
+    // Five groups of six nodes, each a path. Labels 0 to 3. Label 1 may not
+    // sit next to label 2. Every group holds exactly one node labelled 1 and
+    // at most one labelled 2, and no rule reaches past its own group.
     {
-        let (houses, rooms) = (5usize, 6usize);
-        let mut edges = vec![Vec::new(); houses * rooms];
-        for h in 0..houses {
-            for r in 0..rooms - 1 {
-                let (a, b) = (h * rooms + r, h * rooms + r + 1);
+        let (groups, size) = (5usize, 6usize);
+        let mut edges = vec![Vec::new(); groups * size];
+        for h in 0..groups {
+            for r in 0..size - 1 {
+                let (a, b) = (h * size + r, h * size + r + 1);
                 edges[a].push(Edge {
                     to: b as u32,
                     relation: 0,
@@ -630,8 +629,8 @@ fn main() {
             &[&[1, 1, 1, 1], &[1, 1, 0, 1], &[1, 0, 1, 1], &[1, 1, 1, 1]],
         );
         let mut counts = Vec::new();
-        for h in 0..houses as u32 {
-            let nodes: Vec<u32> = (0..rooms as u32).map(|r| h * rooms as u32 + r).collect();
+        for h in 0..groups as u32 {
+            let nodes: Vec<u32> = (0..size as u32).map(|r| h * size as u32 + r).collect();
             counts.push(Count {
                 nodes: nodes.clone(),
                 labels: vec![1],
@@ -647,11 +646,36 @@ fn main() {
         }
         cases.push(Case {
             counts,
-            name: "counts-town",
+            name: "counts-groups",
             labels: 4,
             edges,
             tables: vec![next_to.clone(), transpose(4, &next_to)],
-            unary: all_labels(houses * rooms, 4, &[4, 1, 1, 3]),
+            unary: all_labels(groups * size, 4, &[4, 1, 1, 3]),
+        });
+    }
+
+    // A refutation that takes tens of thousands of backtracks: three colours
+    // on a sparse random graph of 160 nodes near the hardest density. The
+    // search thrashes, so its selection queue is rebuilt along the way.
+    {
+        let n = 160u32;
+        let mut hard = vec![Vec::new(); n as usize];
+        let wiring = Counter::new(2);
+        for i in 0..n {
+            for j in (i + 1)..n {
+                if (wiring.unit(&[i, j, 0]) as f64) < 4.6 / (n as f64 - 1.0) * 16_777_216.0 {
+                    hard[i as usize].push(Edge { to: j, relation: 0 });
+                    hard[j as usize].push(Edge { to: i, relation: 0 });
+                }
+            }
+        }
+        cases.push(Case {
+            counts: vec![],
+            name: "wfc-random-hard-unsatisfiable",
+            labels: 3,
+            edges: hard,
+            tables: vec![table(3, &[&[0, 1, 1], &[1, 0, 1], &[1, 1, 0]])],
+            unary: all_labels(n as usize, 3, &[1, 1, 1]),
         });
     }
 
@@ -676,11 +700,11 @@ fn main() {
             for (start, seed, budget) in repairs(case.name) {
                 runs.push(run_repair(&net, start, seed, budget));
             }
-        } else if case.name == "counts-town" {
+        } else if case.name == "counts-groups" {
             for seed in [1u32, 2, 3] {
                 runs.push(run_solve(&net, seed, 100_000, 1_000));
             }
-            // A sample ignores the rules; repair mends the houses it breaks.
+            // A sample ignores the rules; repair mends the groups it breaks.
             let budget = RepairBudget {
                 max_radius: 4,
                 max_decisions: 100_000,
@@ -690,7 +714,7 @@ fn main() {
             for sample_seed in [1u32, 2, 3] {
                 runs.push(run_repair(&net, (sample_seed, 4, 0), sample_seed, budget));
             }
-            // One house at a time, the others held as they are.
+            // One group at a time, the others held as they are.
             runs.push(run_region(&net, 1, &[6, 7, 8, 9, 10, 11], 5, &case.edges));
             runs.push(run_region(&net, 1, &[12, 13, 14], 6, &case.edges));
             runs.push(run_region(
@@ -711,6 +735,9 @@ fn main() {
                     .collect();
                 runs.push(run_region(&net, 1, &free, 9, &case.edges));
                 runs.push(run_region(&net, 2, &free, 10, &case.edges));
+            }
+            if case.name == "wfc-random-hard-unsatisfiable" {
+                runs.push(run_solve(&net, 1, 1_000_000, 200_000));
             }
             if case.name == "wfc-k5-four-colours" {
                 runs.push(run_solve(&net, 1, 100_000, 2));

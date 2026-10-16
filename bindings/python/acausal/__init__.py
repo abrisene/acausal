@@ -13,9 +13,9 @@ import os
 import struct
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
 
-ABI_VERSION = 1
+ABI_VERSION = 2
 I64_MIN = -(1 << 63)
 I64_MAX = (1 << 63) - 1
 U32_MAX = (1 << 32) - 1
@@ -886,7 +886,7 @@ class NetworkSpec(TypedDict):
     unary: Sequence[Sequence[tuple[int, int]]]
     # Optional cardinality rules: each is {"nodes": [...], "labels": [...], "min": m, "max": M},
     # nodes and labels ascending: between m and M of the nodes must hold one of the labels.
-    counts: Sequence[dict[str, Any]]
+    counts: NotRequired[Sequence[dict[str, Any]]]
 
 
 def _network_payload(spec: NetworkSpec) -> _Writer:

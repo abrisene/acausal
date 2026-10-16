@@ -18,8 +18,8 @@ pub use markov::{
     Score, TransitionData,
 };
 pub use network::{
-    Budget, Count, Edge, Network, Outcome, PairTable, RefusalReason, RegionOutcome, RepairBudget,
-    RepairOutcome, RepairRefusal, RepairStats, Schedule, SolveStats,
+    Budget, Count, Edge, MAX_COUNTS, Network, Outcome, PairTable, RefusalReason, RegionOutcome,
+    RepairBudget, RepairOutcome, RepairRefusal, RepairStats, Schedule, SolveStats,
 };
 pub use pairstats::{CEILING, FLOOR, NEUTRAL, PairStats};
 pub use rng::{Distribution, Rng, RngState, Seed};
