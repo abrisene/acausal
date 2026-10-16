@@ -863,4 +863,133 @@ export class Model {
   [Symbol.dispose]() { this.close(); }
 }
 
-const api = Object.freeze({ init, Rng, Weighted, Markov, Model, AcausalError });
+
+/** The counter-based hash: a 32-bit word that depends only on seed and keys. */
+export function counterWord(seed, keys = []) {
+  const engine = requireRuntime();
+  const writer = new Writer().u32(asU32(seed, 'seed')).u32(asCount(keys.length, 'key count'));
+  for (const key of keys) writer.u32(asU32(key, 'key'));
+  const reader = new Reader(engine.call(70, writer.finish()));
+  const word = reader.u32();
+  reader.finish();
+  return word;
+}
+
+/** The top 24 bits of `counterWord`; `unit / 2**24` is in [0, 1). */
+export function counterUnit(seed, keys = []) {
+  return counterWord(seed, keys) >>> 8;
+}
+
+function writeNetwork(spec) {
+  const labels = asU32(spec.labels, 'labels');
+  const writer = new Writer().u32(labels).u32(asCount(spec.edges.length, 'node count'));
+  for (const node of spec.edges) {
+    writer.u32(asCount(node.length, 'edge count'));
+    for (const [to, relation] of node) writer.u32(to).u32(relation);
+  }
+  writer.u32(asCount(spec.tables.length, 'table count'));
+  for (const table of spec.tables) {
+    if (table.length !== labels * labels) throw new RangeError('every pair table needs labels * labels weights');
+    for (const weight of table) writer.u32(weight);
+  }
+  for (const node of spec.unary) {
+    writer.u32(asCount(node.length, 'unary count'));
+    for (const [label, weight] of node) writer.u32(label).u32(weight);
+  }
+  return writer;
+}
+
+/** Graph-colouring Gibbs sampling then greedy sweeps; one label per node. */
+export function networkSample(spec, seed, { gibbs = 8, icm = 2 } = {}) {
+  const engine = requireRuntime();
+  const writer = writeNetwork(spec).u32(asU32(seed, 'seed')).u32(asU32(gibbs, 'gibbs')).u32(asU32(icm, 'icm'));
+  const reader = new Reader(engine.call(71, writer.finish()));
+  const labels = Array.from({ length: reader.u32() }, () => reader.u32());
+  reader.finish();
+  return labels;
+}
+
+/** Constraint search where a pair weight of zero is forbidden. */
+export function networkSolve(spec, seed, { maxDecisions = 1_000_000, maxBacktracks = 2_000 } = {}) {
+  const engine = requireRuntime();
+  const writer = writeNetwork(spec)
+    .u32(asU32(seed, 'seed')).u32(asU32(maxDecisions, 'maxDecisions')).u32(asU32(maxBacktracks, 'maxBacktracks'));
+  const reader = new Reader(engine.call(72, writer.finish()));
+  const solved = reader.u8() === 1;
+  const decisions = reader.u32();
+  const backtracks = reader.u32();
+  if (solved) {
+    const labels = Array.from({ length: reader.u32() }, () => reader.u32());
+    reader.finish();
+    return { status: 'solved', labels, decisions, backtracks };
+  }
+  const reason = reader.text();
+  const hasNode = reader.u8() === 1;
+  const node = reader.u32();
+  reader.finish();
+  return { status: 'refused', reason, node: hasNode ? node : null, decisions, backtracks };
+}
+
+/** Neighbour statistics over a fixed number of labels, counted per relation. */
+export class PairStats {
+  constructor(labels) {
+    const engine = requireRuntime();
+    registerResource(this, engine, readHandle(engine.call(73, new Writer().u32(asU32(labels, 'labels')).finish())));
+  }
+
+  static _fromHandle(engine, handle) { return registerResource(Object.create(this.prototype), engine, handle); }
+
+  /** Count every node and every directed edge of a labelled graph. */
+  observeGraph(edges, labels) {
+    assertResource(this);
+    const writer = new Writer().u32(this._handle).u32(asCount(edges.length, 'node count'));
+    for (const node of edges) {
+      writer.u32(asCount(node.length, 'edge count'));
+      for (const [to, relation] of node) writer.u32(to).u32(relation);
+    }
+    writer.u32(asCount(labels.length, 'label count'));
+    for (const label of labels) writer.u32(label);
+    this._engine.call(74, writer.finish());
+  }
+
+  observePair(relation, a, b, count = 1) {
+    assertResource(this);
+    this._engine.call(75, new Writer().u32(this._handle).u32(relation).u32(a).u32(b).u64(count).finish());
+  }
+
+  /** Lift quantised to 1..255 (33 is chance); with `observedOnly`, 1 where the pair was seen and 0 where not. */
+  table(relation, { observedOnly = false } = {}) {
+    assertResource(this);
+    const payload = new Writer().u32(this._handle).u32(relation).u8(observedOnly ? 1 : 0);
+    const reader = new Reader(this._engine.call(76, payload.finish()));
+    const weights = Array.from({ length: reader.u32() }, () => reader.u32());
+    reader.finish();
+    return weights;
+  }
+
+  labelCounts() {
+    assertResource(this);
+    const reader = new Reader(this._engine.call(77, new Writer().u32(this._handle).finish()));
+    const counts = Array.from({ length: reader.u32() }, () => fromInteger(reader.u64()));
+    reader.finish();
+    return counts;
+  }
+
+  pairs(relation) {
+    assertResource(this);
+    const reader = new Reader(this._engine.call(78, new Writer().u32(this._handle).u32(relation).finish()));
+    const rows = Array.from({ length: reader.u32() }, () => [reader.u32(), reader.u32(), fromInteger(reader.u64())]);
+    reader.finish();
+    return rows;
+  }
+
+  clone() {
+    assertResource(this);
+    return PairStats._fromHandle(this._engine, readHandle(this._engine.call(10, new Writer().u32(this._handle).finish())));
+  }
+
+  close() { closeResource(this); }
+  [Symbol.dispose]() { this.close(); }
+}
+
+const api = Object.freeze({ init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve, AcausalError });

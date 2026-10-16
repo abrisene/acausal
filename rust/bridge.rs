@@ -2,9 +2,10 @@
 //! Models and algorithms remain in the ordinary Rust API.
 
 use crate::{
-    Assignment, BlendStrategy, BoundaryData, Constraint, Direction, Distribution, Error,
-    GenerateOptions, Limits, Markov, MarkovData, Model, ModelSpec, Replacement, Rng, RngState, Row,
-    Seed, Table, TransitionData, Variable, Weighted,
+    Assignment, BlendStrategy, BoundaryData, Budget, Constraint, Counter, Direction, Distribution,
+    Edge, Error, GenerateOptions, Limits, Markov, MarkovData, Model, ModelSpec, Network, Outcome,
+    PairStats, PairTable, Replacement, Rng, RngState, Row, Schedule, Seed, Table, TransitionData,
+    Variable, Weighted,
 };
 use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
@@ -16,6 +17,7 @@ enum Resource {
     Rng(Box<Rng>),
     Weighted(Weighted<String>),
     Markov(Markov<String>),
+    PairStats(PairStats),
     Model {
         compiled: Box<Model>,
         limits: Limits,
@@ -362,6 +364,7 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
                 Some(Resource::Rng(rng)) => Resource::Rng(rng.clone()),
                 Some(Resource::Weighted(weights)) => Resource::Weighted(weights.clone()),
                 Some(Resource::Markov(model)) => Resource::Markov(model.clone()),
+                Some(Resource::PairStats(stats)) => Resource::PairStats(stats.clone()),
                 Some(Resource::Model { compiled, limits }) => Resource::Model {
                     compiled: compiled.clone(),
                     limits: *limits,
@@ -643,9 +646,208 @@ fn dispatch(state: &mut Store, operation: u32, input: &[u8]) -> Result<Vec<u8>, 
                 _ => return Err(invalid("handle is not a conditioning model")),
             }
         }
+        70 => {
+            let seed = reader.u32()?;
+            let count = reader.count()?;
+            let keys = (0..count)
+                .map(|_| reader.u32())
+                .collect::<Result<Vec<_>, _>>()?;
+            reader.finish()?;
+            output.u32(Counter::new(seed).word(&keys));
+        }
+        71 => {
+            let network = read_network(&mut reader)?;
+            let seed = reader.u32()?;
+            let gibbs = reader.u32()?;
+            let icm = reader.u32()?;
+            reader.finish()?;
+            let labels = network.sample(&Counter::new(seed), Schedule { gibbs, icm })?;
+            output.u32(labels.len() as u32);
+            for label in labels {
+                output.u32(label);
+            }
+        }
+        72 => {
+            let network = read_network(&mut reader)?;
+            let seed = reader.u32()?;
+            let max_decisions = reader.u32()?;
+            let max_backtracks = reader.u32()?;
+            reader.finish()?;
+            match network.solve(
+                &Counter::new(seed),
+                Budget {
+                    max_decisions,
+                    max_backtracks,
+                },
+            ) {
+                Outcome::Solved { labels, stats } => {
+                    output.0.push(1);
+                    output.u32(stats.decisions);
+                    output.u32(stats.backtracks);
+                    output.u32(labels.len() as u32);
+                    for label in labels {
+                        output.u32(label);
+                    }
+                }
+                Outcome::Refused {
+                    reason,
+                    node,
+                    stats,
+                } => {
+                    output.0.push(0);
+                    output.u32(stats.decisions);
+                    output.u32(stats.backtracks);
+                    output.text(reason.name());
+                    output.0.push(u8::from(node.is_some()));
+                    output.u32(node.unwrap_or(0));
+                }
+            }
+        }
+        73 => {
+            let labels = reader.u32()?;
+            reader.finish()?;
+            output.u32(state.insert(Resource::PairStats(PairStats::new(labels)))?);
+        }
+        74 => {
+            let id = reader.u32()?;
+            let nodes = reader.count()?;
+            let mut edges = Vec::with_capacity(nodes);
+            for _ in 0..nodes {
+                let count = reader.count()?;
+                edges.push(
+                    (0..count)
+                        .map(|_| {
+                            Ok(Edge {
+                                to: reader.u32()?,
+                                relation: reader.u32()?,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, Error>>()?,
+                );
+            }
+            let count = reader.count()?;
+            let labels = (0..count)
+                .map(|_| reader.u32())
+                .collect::<Result<Vec<_>, _>>()?;
+            reader.finish()?;
+            match state.resources.get_mut(&id) {
+                Some(Resource::PairStats(stats)) => stats.observe_graph(&edges, &labels)?,
+                _ => return Err(invalid("handle is not pair statistics")),
+            }
+        }
+        75 => {
+            let id = reader.u32()?;
+            let relation = reader.u32()?;
+            let a = reader.u32()?;
+            let b = reader.u32()?;
+            let n = reader.u64()?;
+            reader.finish()?;
+            match state.resources.get_mut(&id) {
+                Some(Resource::PairStats(stats)) => stats.observe_pair_n(relation, a, b, n)?,
+                _ => return Err(invalid("handle is not pair statistics")),
+            }
+        }
+        76 => {
+            let id = reader.u32()?;
+            let relation = reader.u32()?;
+            let support = reader.boolean()?;
+            reader.finish()?;
+            match state.resources.get(&id) {
+                Some(Resource::PairStats(stats)) => {
+                    let table = if support {
+                        stats.support_table(relation)
+                    } else {
+                        stats.table(relation)
+                    };
+                    output.u32(table.weights().len() as u32);
+                    for weight in table.weights() {
+                        output.u32(*weight);
+                    }
+                }
+                _ => return Err(invalid("handle is not pair statistics")),
+            }
+        }
+        77 => {
+            let id = reader.u32()?;
+            reader.finish()?;
+            match state.resources.get(&id) {
+                Some(Resource::PairStats(stats)) => {
+                    let counts = stats.label_counts();
+                    output.u32(counts.len() as u32);
+                    for count in counts {
+                        output.u64(count);
+                    }
+                }
+                _ => return Err(invalid("handle is not pair statistics")),
+            }
+        }
+        78 => {
+            let id = reader.u32()?;
+            let relation = reader.u32()?;
+            reader.finish()?;
+            match state.resources.get(&id) {
+                Some(Resource::PairStats(stats)) => {
+                    let pairs = stats.pairs(relation);
+                    output.u32(pairs.len() as u32);
+                    for (a, b, n) in pairs {
+                        output.u32(a);
+                        output.u32(b);
+                        output.u64(n);
+                    }
+                }
+                _ => return Err(invalid("handle is not pair statistics")),
+            }
+        }
         _ => return Err(invalid("unknown operation")),
     }
     Ok(output.0)
+}
+
+/// Wire form of a network: label count u32; node count u32; per node an edge
+/// count u32 and repeated (to u32, relation u32); table count u32; per table
+/// label*label weights u32; per node a unary count u32 and repeated
+/// (label u32, weight u32).
+fn read_network(reader: &mut Reader<'_>) -> Result<Network, Error> {
+    let labels = reader.u32()?;
+    let nodes = reader.count()?;
+    let mut edges = Vec::with_capacity(nodes);
+    for _ in 0..nodes {
+        let count = reader.count()?;
+        edges.push(
+            (0..count)
+                .map(|_| {
+                    Ok(Edge {
+                        to: reader.u32()?,
+                        relation: reader.u32()?,
+                    })
+                })
+                .collect::<Result<Vec<_>, Error>>()?,
+        );
+    }
+    let tables = reader.count()?;
+    let cells = (labels as usize)
+        .checked_mul(labels as usize)
+        .ok_or_else(|| invalid("too many labels"))?;
+    let mut parsed = Vec::with_capacity(tables);
+    for _ in 0..tables {
+        if cells > reader.bytes.len().saturating_sub(reader.position) / 4 {
+            return Err(invalid("truncated pair table"));
+        }
+        let weights = (0..cells)
+            .map(|_| reader.u32())
+            .collect::<Result<Vec<_>, _>>()?;
+        parsed.push(PairTable::new(labels, weights)?);
+    }
+    let mut unary = Vec::with_capacity(nodes);
+    for _ in 0..nodes {
+        let count = reader.count()?;
+        unary.push(
+            (0..count)
+                .map(|_| Ok((reader.u32()?, reader.u32()?)))
+                .collect::<Result<Vec<_>, Error>>()?,
+        );
+    }
+    Network::new(labels, edges, parsed, unary)
 }
 
 fn direction(value: u8) -> Result<Direction, Error> {

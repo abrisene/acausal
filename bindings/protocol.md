@@ -71,3 +71,21 @@ Host model description is `{variables:[{id,domain}],tables:[{target,parents,rows
 | 63 | Model handle | original model-spec bytes (including compile limits) |
 
 Model.fromState uses op60 with saved bytes. Resource clone op10 covers models and weighted tables too. Weighted entries op27 returns raw count+(key,weight) pairs for serialization. Parent owns protocol and Rust bridge.
+
+## Graph primitives
+
+A network (read by ops 71 and 72): label count u32; node count u32; per node an edge count u32 and repeated (to u32, relation u32); table count u32; per table `labels * labels` weights u32; per node a unary count u32 and repeated (label u32, weight u32). Tables are indexed `[a * labels + b]` for (this node, neighbour). Weight 0 forbids. Every edge needs a reverse edge whose table is the transpose.
+
+| op | input | output |
+|---|---|---|
+| 70 | seed u32, key count u32, keys u32 | word u32 |
+| 71 | network, seed u32, gibbs u32, icm u32 | count u32, labels u32 |
+| 72 | network, seed u32, max_decisions u32, max_backtracks u32 | status byte: 1 solved then decisions u32, backtracks u32, count u32, labels u32; 0 refused then decisions u32, backtracks u32, reason string, has_node byte, node u32 |
+| 73 | label count u32 | PairStats handle |
+| 74 | handle, node count u32 + per node edges (count u32, repeated to u32 + relation u32), label count u32 + labels u32 | empty |
+| 75 | handle, relation u32, a u32, b u32, count u64 | empty |
+| 76 | handle, relation u32, observed_only byte | count u32, weights u32 |
+| 77 | handle | count u32, label counts u64 |
+| 78 | handle, relation u32 | count u32, repeated (a u32, b u32, n u64) |
+
+Op 10 clones a PairStats handle. The counter hash is specified in `docs/specs/network.md`.

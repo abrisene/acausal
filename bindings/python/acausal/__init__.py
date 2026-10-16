@@ -853,12 +853,171 @@ class Model(_Resource):
         return Model._from_handle(self._runtime, _handle(self._runtime.call(10, _Writer().u32(self._handle).finish())))
 
 
+def counter_word(seed: int, keys: Iterable[int] = ()) -> int:
+    """The counter-based hash: a 32-bit word that depends only on the seed and
+    the keys, never on the order of calls."""
+    keys = list(keys)
+    writer = _Writer().u32(_u32(seed, "seed")).u32(len(keys), "key count")
+    for key in keys:
+        writer.u32(_u32(key, "key"))
+    reader = _Reader(_runtime().call(70, writer.finish()))
+    word = reader.u32()
+    reader.finish()
+    return word
+
+
+def counter_unit(seed: int, keys: Iterable[int] = ()) -> int:
+    """The top 24 bits of ``counter_word``: ``unit / 2**24`` is in [0, 1)."""
+    return counter_word(seed, keys) >> 8
+
+
+class NetworkSpec(TypedDict):
+    """A pairwise network as plain data.
+
+    ``edges[node]`` lists ``(to, relation)``; ``tables[relation]`` is a flat
+    ``labels * labels`` list where ``tables[r][a * labels + b]`` weighs this
+    node holding ``a`` and the neighbour ``b`` (0 forbids); ``unary[node]``
+    lists ``(label, weight)`` in ascending label order.
+    """
+
+    labels: int
+    edges: Sequence[Sequence[tuple[int, int]]]
+    tables: Sequence[Sequence[int]]
+    unary: Sequence[Sequence[tuple[int, int]]]
+
+
+def _network_payload(spec: NetworkSpec) -> _Writer:
+    labels = _u32(spec["labels"], "labels")
+    writer = _Writer().u32(labels).u32(len(spec["edges"]), "node count")
+    for node in spec["edges"]:
+        writer.u32(len(node), "edge count")
+        for to, relation in node:
+            writer.u32(to, "edge target").u32(relation, "edge relation")
+    writer.u32(len(spec["tables"]), "table count")
+    for table in spec["tables"]:
+        if len(table) != labels * labels:
+            raise ValueError("every pair table needs labels * labels weights")
+        for weight in table:
+            writer.u32(weight, "table weight")
+    for node in spec["unary"]:
+        writer.u32(len(node), "unary count")
+        for label, weight in node:
+            writer.u32(label, "label").u32(weight, "weight")
+    return writer
+
+
+def network_sample(spec: NetworkSpec, seed: int, gibbs: int = 8, icm: int = 2) -> list[int]:
+    """Graph-colouring Gibbs sampling then greedy sweeps; one label per node."""
+    writer = _network_payload(spec).u32(_u32(seed, "seed")).u32(gibbs, "gibbs").u32(icm, "icm")
+    reader = _Reader(_runtime().call(71, writer.finish()))
+    labels = [reader.u32() for _ in range(reader.u32())]
+    reader.finish()
+    return labels
+
+
+def network_solve(spec: NetworkSpec, seed: int, max_decisions: int = 1_000_000, max_backtracks: int = 2_000) -> dict[str, Any]:
+    """Constraint search: pair weights of zero are forbidden. Returns
+    ``{"status": "solved", "labels", "decisions", "backtracks"}`` or
+    ``{"status": "refused", "reason", "node", "decisions", "backtracks"}``."""
+    writer = (
+        _network_payload(spec)
+        .u32(_u32(seed, "seed"))
+        .u32(max_decisions, "max_decisions")
+        .u32(max_backtracks, "max_backtracks")
+    )
+    reader = _Reader(_runtime().call(72, writer.finish()))
+    solved = reader.u8() == 1
+    decisions = reader.u32()
+    backtracks = reader.u32()
+    if solved:
+        labels = [reader.u32() for _ in range(reader.u32())]
+        reader.finish()
+        return {"status": "solved", "labels": labels, "decisions": decisions, "backtracks": backtracks}
+    reason = reader.text()
+    has_node = reader.u8() == 1
+    node = reader.u32()
+    reader.finish()
+    return {
+        "status": "refused",
+        "reason": reason,
+        "node": node if has_node else None,
+        "decisions": decisions,
+        "backtracks": backtracks,
+    }
+
+
+class PairStats(_Resource):
+    """Neighbour statistics over ``labels`` labels, counted per relation."""
+
+    def __init__(self, labels: int) -> None:
+        runtime = _runtime()
+        super().__init__(runtime, _handle(runtime.call(73, _Writer().u32(_u32(labels, "labels")).finish())))
+
+    @classmethod
+    def _from_handle(cls, runtime: _Runtime, handle: int) -> PairStats:
+        result = cls.__new__(cls)
+        _Resource.__init__(result, runtime, handle)
+        return result
+
+    def observe_graph(self, edges: Sequence[Sequence[tuple[int, int]]], labels: Sequence[int]) -> None:
+        """Count every node and every directed edge of a labelled graph."""
+        self._require_open()
+        writer = _Writer().u32(self._handle).u32(len(edges), "node count")
+        for node in edges:
+            writer.u32(len(node), "edge count")
+            for to, relation in node:
+                writer.u32(to, "edge target").u32(relation, "edge relation")
+        writer.u32(len(labels), "label count")
+        for label in labels:
+            writer.u32(label, "label")
+        self._runtime.call(74, writer.finish())
+
+    def observe_pair(self, relation: int, a: int, b: int, count: int = 1) -> None:
+        self._require_open()
+        payload = _Writer().u32(self._handle).u32(relation, "relation").u32(a, "label").u32(b, "label").u64(count, "count")
+        self._runtime.call(75, payload.finish())
+
+    def table(self, relation: int, observed_only: bool = False) -> list[int]:
+        """Lift of each pair quantised to 1..255 (33 is chance), or with
+        ``observed_only`` 1 where the pair was seen and 0 where it was not."""
+        self._require_open()
+        payload = _Writer().u32(self._handle).u32(relation, "relation").u8(1 if observed_only else 0)
+        reader = _Reader(self._runtime.call(76, payload.finish()))
+        weights = [reader.u32() for _ in range(reader.u32())]
+        reader.finish()
+        return weights
+
+    def label_counts(self) -> list[int]:
+        self._require_open()
+        reader = _Reader(self._runtime.call(77, _Writer().u32(self._handle).finish()))
+        counts = [reader.u64() for _ in range(reader.u32())]
+        reader.finish()
+        return counts
+
+    def pairs(self, relation: int) -> list[tuple[int, int, int]]:
+        self._require_open()
+        reader = _Reader(self._runtime.call(78, _Writer().u32(self._handle).u32(relation, "relation").finish()))
+        rows = [(reader.u32(), reader.u32(), reader.u64()) for _ in range(reader.u32())]
+        reader.finish()
+        return rows
+
+    def clone(self) -> PairStats:
+        self._require_open()
+        return PairStats._from_handle(self._runtime, _handle(self._runtime.call(10, _Writer().u32(self._handle).finish())))
+
+
 __all__ = [
     "AcausalError",
     "DistributionSpec",
     "Model",
     "Markov",
+    "NetworkSpec",
+    "PairStats",
     "Rng",
     "Weighted",
+    "counter_unit",
+    "counter_word",
     "init",
+    "network_sample",
+    "network_solve",
 ]

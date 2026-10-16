@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const modulePath = process.env.ACAUSAL_JS_MODULE ?? '../bindings/javascript/index.mjs';
-const { init, Rng, Weighted, Markov, Model } = await import(modulePath);
+const { init, Rng, Weighted, Markov, Model, PairStats, counterWord, counterUnit, networkSample, networkSolve } = await import(modulePath);
 await init();
 const resources = [];
 const keep = value => (resources.push(value), value);
@@ -70,7 +70,42 @@ try {
   assert.deepEqual(modelCopy.posterior('gender', evidence), posterior);
   const unicode = keep(new Model({variables: [{id: 'café', domain: ['王','queen']}], tables: [{target: 'café', parents: [], rows: [{given: {}, weights: {'王': 1, queen: 1}}]}]}));
   assert.equal(unicode.posterior('café', {'café':'王'}).probabilities['王'], 1);
-  console.log(JSON.stringify({samples, uses: sampleRng.uses(), generated, posterior: posterior.probabilities}));
+
+  // Graph primitives: replay the Rust-reference golden fixture through wasm.
+  const graph = JSON.parse(await readFile(new URL('../fixtures/graph.json', import.meta.url), 'utf8'));
+  for (const row of graph.counter) {
+    assert.equal(counterWord(row.seed, row.keys), row.word);
+    assert.equal(counterUnit(row.seed, row.keys), row.unit);
+  }
+  let replayed = 0;
+  for (const item of graph.networks) {
+    const spec = item.network;
+    for (const run of item.runs) {
+      if (run.op === 'sample') {
+        assert.deepEqual(networkSample(spec, run.seed, {gibbs: run.gibbs, icm: run.icm}), run.labels, item.name);
+      } else {
+        const got = networkSolve(spec, run.seed, {maxDecisions: run.maxDecisions, maxBacktracks: run.maxBacktracks});
+        assert.equal(got.status, run.status, item.name);
+        assert.equal(got.decisions, run.decisions);
+        assert.equal(got.backtracks, run.backtracks);
+        if (run.status === 'solved') assert.deepEqual(got.labels, run.labels, item.name);
+        else { assert.equal(got.reason, run.reason); assert.equal(got.node, run.node); }
+      }
+      replayed += 1;
+    }
+  }
+  for (const item of graph.pairStats) {
+    const stats = keep(new PairStats(item.labels));
+    stats.observeGraph(item.edges, item.nodeLabels);
+    assert.deepEqual(stats.labelCounts(), item.labelCounts);
+    for (const r of item.relations) {
+      assert.deepEqual(stats.pairs(r.relation), r.pairs);
+      assert.deepEqual(stats.table(r.relation), r.table);
+      assert.deepEqual(stats.table(r.relation, {observedOnly: true}), r.support);
+    }
+  }
+  assert.throws(() => networkSample({labels: 2, edges: [[[1, 0]], []], tables: [[1, 1, 1, 1]], unary: [[[0, 1]], [[0, 1]]]}, 1));
+  console.log(JSON.stringify({samples, uses: sampleRng.uses(), generated, posterior: posterior.probabilities, graphRuns: replayed}));
 } finally {
   for (const resource of resources.reverse()) resource.close();
 }

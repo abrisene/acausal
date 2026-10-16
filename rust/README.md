@@ -77,6 +77,36 @@ Binomial trial loops and rejection-based samplers have explicit work bounds. An 
 
 Selected legacy primitive fixtures match values and draw counts exactly. This does not promise historical Markov outputs or exact transcendental results across all platforms.
 
+## Counter hash and pairwise networks
+
+`Counter` is a stateless random source: `Counter::new(seed).word(&[key, ...])` depends only on the seed and the keys, never on call order. A parallel sampler or a GPU port that asks for the same keys gets the same word. `Rng` stays the sequential stream.
+
+`Network` is plain data over a graph: per-node candidate labels with weights, and per-edge pair tables. Two solvers read it, and every draw comes from a `Counter` keyed by `(node, round, purpose)`:
+
+```rust
+use acausal::{Budget, Counter, Edge, Network, Outcome, PairTable, Schedule};
+
+let differ = PairTable::new(2, vec![0, 1, 1, 0])?;           // neighbours must differ
+let edges = vec![
+    vec![Edge { to: 1, relation: 0 }],
+    vec![Edge { to: 0, relation: 0 }, Edge { to: 2, relation: 0 }],
+    vec![Edge { to: 1, relation: 0 }],
+];
+let unary = vec![vec![(0, 1), (1, 1)]; 3];
+let net = Network::new(2, edges, vec![differ], unary)?;
+
+let sampled = net.sample(&Counter::new(7), Schedule { gibbs: 6, icm: 2 })?;
+match net.solve(&Counter::new(7), Budget { max_decisions: 1000, max_backtracks: 100 }) {
+    Outcome::Solved { labels, .. } => println!("{labels:?}"),
+    Outcome::Refused { reason, .. } => println!("refused: {}", reason.name()),
+}
+# Ok::<(), acausal::Error>(())
+```
+
+`sample` runs a graph-colouring Gibbs sweep then greedy sweeps: nodes of one colour share no edge, so they update in any order with the same result. `solve` treats a pair weight of zero as forbidden, keeps arc consistency and backtracks within a budget. It returns a refusal with a reason (`unsatisfiable`, `backtrack-limit`, `decision-limit`) rather than hanging.
+
+`PairStats` learns pair statistics from labelled example graphs. It keeps counts in an order-1 `Markov` model per relation and a `Weighted` table of label frequencies, and `table(relation)` turns them into integer lift weights a `Network` can read. The exact arithmetic of all of this is in `docs/specs/network.md`; `fixtures/graph.json` holds the golden cases, replayed by `tests/graph_replay.rs` and by both smoke programs.
+
 ## Bindings
 
 TypeScript/JavaScript uses the same core compiled to wasm. Python uses the native shared library through ctypes. Both are dependency-free at runtime.

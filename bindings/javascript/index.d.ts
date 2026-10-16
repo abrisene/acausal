@@ -164,8 +164,44 @@ export class Model {
   [Symbol.dispose](): void;
 }
 
+export interface NetworkSpec {
+  labels: number;
+  /** `edges[node]` lists `[to, relation]`. */
+  edges: ReadonlyArray<ReadonlyArray<readonly [number, number]>>;
+  /** `tables[relation][a * labels + b]` weighs this node on `a`, the neighbour on `b`; 0 forbids. */
+  tables: ReadonlyArray<ReadonlyArray<number>>;
+  /** `unary[node]` lists `[label, weight]` in ascending label order. */
+  unary: ReadonlyArray<ReadonlyArray<readonly [number, number]>>;
+}
+
+export type NetworkSolution =
+  | { status: 'solved'; labels: number[]; decisions: number; backtracks: number }
+  | { status: 'refused'; reason: string; node: number | null; decisions: number; backtracks: number };
+
+export function counterWord(seed: number, keys?: readonly number[]): number;
+export function counterUnit(seed: number, keys?: readonly number[]): number;
+export function networkSample(spec: NetworkSpec, seed: number, options?: { gibbs?: number; icm?: number }): number[];
+export function networkSolve(spec: NetworkSpec, seed: number, options?: { maxDecisions?: number; maxBacktracks?: number }): NetworkSolution;
+
+export class PairStats {
+  constructor(labels: number);
+  observeGraph(edges: NetworkSpec['edges'], labels: readonly number[]): void;
+  observePair(relation: number, a: number, b: number, count?: SafeInteger): void;
+  table(relation: number, options?: { observedOnly?: boolean }): number[];
+  labelCounts(): Array<number | bigint>;
+  pairs(relation: number): Array<[number, number, number | bigint]>;
+  clone(): PairStats;
+  close(): void;
+  [Symbol.dispose](): void;
+}
+
 export interface AcausalApi {
   readonly init: typeof init;
+  readonly PairStats: typeof PairStats;
+  readonly counterWord: typeof counterWord;
+  readonly counterUnit: typeof counterUnit;
+  readonly networkSample: typeof networkSample;
+  readonly networkSolve: typeof networkSolve;
   readonly Rng: typeof Rng;
   readonly Weighted: typeof Weighted;
   readonly Markov: typeof Markov;

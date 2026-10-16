@@ -2,17 +2,23 @@
 
 mod bridge;
 mod conditioning;
+mod counter;
 mod markov;
+mod network;
+mod pairstats;
 mod rng;
 mod weighted;
 
 pub use conditioning::{
     Assignment, Constraint, Limits, Model, ModelSpec, Posterior, Row, Table, Variable,
 };
+pub use counter::{Counter, mix, pick_below};
 pub use markov::{
     BlendStrategy, BoundaryData, Direction, GenerateOptions, Markov, MarkovData, MarkovStats,
     Score, TransitionData,
 };
+pub use network::{Budget, Edge, Network, Outcome, PairTable, RefusalReason, Schedule, SolveStats};
+pub use pairstats::{CEILING, FLOOR, NEUTRAL, PairStats};
 pub use rng::{Distribution, Rng, RngState, Seed};
 pub use weighted::{Replacement, Weighted};
 

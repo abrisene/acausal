@@ -3,7 +3,7 @@ from contextlib import ExitStack
 import json
 import math
 from pathlib import Path
-from acausal import Rng, Weighted, Markov, Model, AcausalError
+from acausal import Rng, Weighted, Markov, Model, PairStats, AcausalError, counter_word, counter_unit, network_sample, network_solve
 
 root = Path(__file__).resolve().parents[1]
 
@@ -73,4 +73,33 @@ with ExitStack() as stack:
     assert model_copy.posterior("gender",evidence) == posterior
     unicode = keep(Model({"variables":[{"id":"café","domain":["王","queen"]}],"tables":[{"target":"café","parents":[],"rows":[{"given":{},"weights":{"王":1,"queen":1}}]}]}))
     assert unicode.posterior("café",{"café":"王"})["probabilities"]["王"] == 1
-    print(json.dumps({"samples":samples,"uses":sample_rng.uses(),"generated":generated,"posterior":posterior["probabilities"]},separators=(",",":")))
+    # Graph primitives: replay the Rust-reference golden fixture through ctypes.
+    graph = json.loads((root / "fixtures/graph.json").read_text())
+    for row in graph["counter"]:
+        assert counter_word(row["seed"], row["keys"]) == row["word"]
+        assert counter_unit(row["seed"], row["keys"]) == row["unit"]
+    replayed = 0
+    for item in graph["networks"]:
+        spec = item["network"]
+        for run in item["runs"]:
+            if run["op"] == "sample":
+                assert network_sample(spec, run["seed"], run["gibbs"], run["icm"]) == run["labels"], item["name"]
+            else:
+                got = network_solve(spec, run["seed"], run["maxDecisions"], run["maxBacktracks"])
+                assert got["status"] == run["status"], item["name"]
+                assert (got["decisions"], got["backtracks"]) == (run["decisions"], run["backtracks"])
+                if run["status"] == "solved":
+                    assert got["labels"] == run["labels"], item["name"]
+                else:
+                    assert (got["reason"], got["node"]) == (run["reason"], run["node"])
+            replayed += 1
+    for item in graph["pairStats"]:
+        stats = keep(PairStats(item["labels"]))
+        stats.observe_graph(item["edges"], item["nodeLabels"])
+        assert stats.label_counts() == item["labelCounts"]
+        for r in item["relations"]:
+            assert [list(p) for p in stats.pairs(r["relation"])] == r["pairs"]
+            assert stats.table(r["relation"]) == r["table"]
+            assert stats.table(r["relation"], observed_only=True) == r["support"]
+    fails(lambda: network_sample({"labels":2,"edges":[[(1,0)],[]],"tables":[[1,1,1,1]],"unary":[[(0,1)],[(0,1)]]}, 1))
+    print(json.dumps({"samples":samples,"uses":sample_rng.uses(),"generated":generated,"posterior":posterior["probabilities"],"graphRuns":replayed},separators=(",",":")))
