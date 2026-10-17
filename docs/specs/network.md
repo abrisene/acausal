@@ -102,7 +102,11 @@ loop:
   none left -> solved: each domain holds one label.
   if decisions == max_decisions -> refuse "decision-limit".
   serial = decisions; decisions += 1
-  weights = unary weights of the node's remaining labels
+  weights = unary weights of the node's remaining labels                         # (label, weight), ascending label
+  for each edge of the node whose neighbour has exactly one label left (decided, forced or pinned):
+      weights[label] *= table[relation].get(label, neighbour's label); shift_down(weights, 32)
+  (a remaining label always has a non-zero table weight against such a neighbour; if every weight were 0 the
+   unary weights are used.  With tables of only 0 and 1 the factors are 1: the draw is by unary weight alone.)
   shift_down_total(weights, 40), then draw with unit(seed, [node, serial, 1])    # same draw rule as above
   remove the other labels, enqueue the node and its neighbours, propagate.
   on contradiction:
@@ -113,6 +117,10 @@ loop:
 ```
 
 A refusal reports the reason, the node whose domain emptied last (or none), the decisions and the backtracks.
+
+### `refine(labels, seed, gibbs, icm)`
+
+Starts from a labelling that satisfies every table and count rule (else an error) and runs `gibbs` drawing rounds then `icm` greedy rounds like `sample`, except that colours are visited in ascending order, nodes ascending within a colour, each update applied at once; a node chooses among the labels with a non-zero weight (own weight times table weights against the neighbours' current labels, as in `sample`) whose move keeps every count rule listing it within `min..=max`. Units: `[node, round, 2]` for a draw, `[node, round, 3]` for a greedy tie. The result still satisfies every rule.
 
 ### Count rules
 

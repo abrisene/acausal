@@ -521,6 +521,84 @@ impl Network {
         Ok(state)
     }
 
+    /// Run `schedule` rounds of Gibbs and ICM from `labels`, which must satisfy
+    /// every pair table and count rule, moving each node only to labels that
+    /// keep them satisfied. A node chooses among the labels its neighbours
+    /// allow, by its own weight times the pair weights, so the result is a
+    /// labelling that holds every rule and still follows the weights, which
+    /// `sample` then `repair` cannot promise. Colours are visited in
+    /// ascending order, nodes ascending within a colour, each update applied
+    /// at once.
+    pub fn refine(
+        &self,
+        labels: &[u32],
+        counter: &Counter,
+        schedule: Schedule,
+    ) -> Result<Vec<u32>, Error> {
+        let rounds = schedule.gibbs.saturating_add(schedule.icm);
+        if rounds > MAX_ROUNDS {
+            return Err(Error::InvalidParameter(format!(
+                "gibbs + icm may not exceed {MAX_ROUNDS}"
+            )));
+        }
+        if labels.len() != self.nodes()
+            || (0..self.nodes()).any(|v| self.unary_weight(v, labels[v]).is_none())
+            || self.violations(labels)? != 0
+        {
+            return Err(Error::InvalidParameter(
+                "refine starts from a labelling that satisfies every rule".to_owned(),
+            ));
+        }
+        let mut state = labels.to_vec();
+        let in_set = |c: usize, label: u32| self.counts[c].labels.binary_search(&label).is_ok();
+        let mut have: Vec<u32> = (0..self.counts.len())
+            .map(|c| {
+                self.counts[c]
+                    .nodes
+                    .iter()
+                    .filter(|&&v| in_set(c, state[v as usize]))
+                    .count() as u32
+            })
+            .collect();
+        let n = self.nodes();
+        for round in 1..=rounds {
+            let greedy = round > schedule.gibbs;
+            for colour in 0..self.colour_count {
+                for node in 0..n {
+                    if self.colours[node] != colour {
+                        continue;
+                    }
+                    let mut weights = self.conditional(node, Some(&state));
+                    let here = state[node];
+                    weights.retain(|&(label, _)| {
+                        self.node_counts[node].iter().all(|&c| {
+                            let c = c as usize;
+                            let next =
+                                have[c] - u32::from(in_set(c, here)) + u32::from(in_set(c, label));
+                            (self.counts[c].min..=self.counts[c].max).contains(&next)
+                        })
+                    });
+                    let chosen = if greedy {
+                        heaviest(&weights, counter.unit(&[node as u32, round, 3]))
+                    } else {
+                        draw(&weights, counter.unit(&[node as u32, round, 2]))
+                    };
+                    if let Some(label) = chosen
+                        && label != here
+                    {
+                        for &c in &self.node_counts[node] {
+                            let c = c as usize;
+                            have[c] =
+                                have[c] - u32::from(in_set(c, here)) + u32::from(in_set(c, label));
+                        }
+                        state[node] = label;
+                    }
+                }
+            }
+        }
+        Ok(state)
+    }
+
     /// The number of edges (each counted once) whose pair weight is zero under
     /// `labels`. The reverse edge's table is the transpose, so one direction
     /// decides. `sample` treats a zero as forbidden but
@@ -560,6 +638,7 @@ impl Network {
         let rows = self.rows();
         let problem = Problem {
             labels: self.labels,
+            tables: &self.tables,
             edges: &self.edges,
             unary: &self.unary,
             ids: None,
@@ -754,6 +833,7 @@ impl Network {
                     }
                     let problem = Problem {
                         labels: self.labels,
+                        tables: &self.tables,
                         edges: &region.edges,
                         unary: &region.unary,
                         ids: Some(&order),
@@ -1017,6 +1097,7 @@ impl Network {
         let rows = self.rows();
         let problem = Problem {
             labels: self.labels,
+            tables: &self.tables,
             edges: &region.edges,
             unary: &region.unary,
             ids: Some(&order),
@@ -1175,6 +1256,9 @@ fn support_rows(labels: u32, tables: &[PairTable]) -> Vec<Vec<u64>> {
 struct Problem<'a> {
     labels: u32,
     edges: &'a [Vec<Edge>],
+    /// The pair tables the edges' relations name; a decision weighs its
+    /// labels by them.
+    tables: &'a [PairTable],
     unary: &'a [Vec<(u32, u32)>],
     ids: Option<&'a [u32]>,
     counts: &'a [Count],
@@ -1545,6 +1629,45 @@ impl<'a> Search<'a> {
         }
     }
 
+    /// The weight of each label `node` still has, for a decision: its own
+    /// weight times the table weight against the label of every neighbour
+    /// that is already down to one label (decided, forced, or pinned). Labels
+    /// that clash with such a neighbour are gone from the domain already, so
+    /// every weight is positive. With tables that only forbid (weights 0 and
+    /// 1) the factors are all 1 and this is the node's own weight.
+    fn decision_weights(&self, node: usize) -> Vec<(u32, u64)> {
+        let own = &self.net.unary[node];
+        let mut weights: Vec<(u32, u64)> = self
+            .labels_of(node)
+            .into_iter()
+            .map(|l| {
+                let w = own
+                    .binary_search_by_key(&l, |p| p.0)
+                    .ok()
+                    .map_or(1, |i| own[i].1);
+                (l, w as u64)
+            })
+            .collect();
+        let mut tilted = weights.clone();
+        for edge in &self.net.edges[node] {
+            let other = edge.to as usize;
+            if self.size[other] != 1 {
+                continue;
+            }
+            let table = &self.net.tables[edge.relation as usize];
+            let label = self.labels_of(other)[0];
+            for entry in tilted.iter_mut() {
+                entry.1 *= table.get(entry.0, label) as u64;
+            }
+            shift_down(&mut tilted, 32);
+        }
+        if tilted.iter().any(|w| w.1 > 0) {
+            weights = tilted;
+        }
+        shift_down_total(&mut weights, 40);
+        weights
+    }
+
     fn refused(&self, reason: RefusalReason) -> Outcome {
         Outcome::Refused {
             reason,
@@ -1599,18 +1722,7 @@ impl<'a> Search<'a> {
             }
             let serial = self.stats.decisions;
             self.stats.decisions += 1;
-            let mut weights: Vec<(u32, u64)> = self
-                .labels_of(node)
-                .into_iter()
-                .map(|l| {
-                    let w = self.net.unary[node]
-                        .iter()
-                        .find(|(label, _)| *label == l)
-                        .map_or(1, |p| p.1);
-                    (l, w as u64)
-                })
-                .collect();
-            shift_down_total(&mut weights, 40);
+            let weights = self.decision_weights(node);
             let label = draw(&weights, self.counter.unit(&[self.id(node), serial, 1]))
                 .expect("a live domain has positive weights");
             let frame = Frame {
@@ -1684,6 +1796,80 @@ mod tests {
 
     fn everything(n: usize, labels: u32) -> Vec<Vec<(u32, u32)>> {
         vec![(0..labels).map(|l| (l, 1)).collect(); n]
+    }
+
+    /// A decision is weighed by the table against the neighbours already
+    /// decided: a table that likes equal neighbours gives long runs, the same
+    /// network with a table of equal non-zero weights does not.
+    #[test]
+    fn a_decision_follows_the_pair_weights_of_decided_neighbours() {
+        let n = 24;
+        let share = |table: PairTable| {
+            let (edges, tables) = path(n, 2, table);
+            let net = Network::new(2, edges, tables, everything(n, 2)).unwrap();
+            let (mut same, mut pairs) = (0u32, 0u32);
+            for seed in 0..40 {
+                let counter = Counter::new(seed);
+                let budget = Budget {
+                    max_decisions: 10_000,
+                    max_backtracks: 10_000,
+                };
+                let Outcome::Solved { labels, .. } = net.solve(&counter, budget) else {
+                    panic!("a network with no zeros is solvable");
+                };
+                for w in labels.windows(2) {
+                    pairs += 1;
+                    same += u32::from(w[0] == w[1]);
+                }
+            }
+            f64::from(same) / f64::from(pairs)
+        };
+        let flat = share(PairTable::uniform(2, 5));
+        let liking = share(PairTable::new(2, vec![30, 1, 1, 30]).unwrap());
+        assert!((flat - 0.5).abs() < 0.1, "{flat}");
+        assert!(liking > 0.75, "{liking}");
+    }
+
+    /// Refinement moves only between labellings that satisfy every rule: the
+    /// pair tables stay satisfied, a count rule stays at its limits, and a
+    /// start that breaks a rule is refused.
+    #[test]
+    fn refine_keeps_every_rule_while_following_the_weights() {
+        let n = 20;
+        let (edges, tables) = path(
+            n,
+            3,
+            PairTable::new(3, vec![9, 1, 0, 1, 9, 1, 0, 1, 9]).unwrap(),
+        );
+        let net = Network::new(3, edges, tables, everything(n, 3))
+            .unwrap()
+            .with_counts(vec![Count {
+                nodes: (0..n as u32).collect(),
+                labels: vec![2],
+                min: 4,
+                max: 4,
+            }])
+            .unwrap();
+        let budget = Budget {
+            max_decisions: 10_000,
+            max_backtracks: 10_000,
+        };
+        for seed in 0..20 {
+            let counter = Counter::new(seed);
+            let Outcome::Solved { labels, .. } = net.solve(&counter, budget) else {
+                panic!("solvable");
+            };
+            let refined = net
+                .refine(&labels, &counter, Schedule { gibbs: 12, icm: 2 })
+                .unwrap();
+            assert_eq!(net.violations(&refined).unwrap(), 0, "{seed}");
+            assert_eq!(refined.iter().filter(|&&l| l == 2).count(), 4, "{seed}");
+        }
+        let broken = vec![0u32; n];
+        assert!(
+            net.refine(&broken, &Counter::new(1), Schedule { gibbs: 1, icm: 0 })
+                .is_err()
+        );
     }
 
     /// Two labels, neighbours must differ.
