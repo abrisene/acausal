@@ -105,6 +105,12 @@ loop:
   weights = unary weights of the node's remaining labels                         # (label, weight), ascending label
   for each edge of the node whose neighbour has exactly one label left (decided, forced or pinned):
       weights[label] *= table[relation].get(label, neighbour's label); shift_down(weights, 32)
+  for each edge whose neighbour has more than one label left, whose table is graded (its non-zero entries are
+  not all equal), while |labels of the node| * |labels of the neighbour| <= 16384:
+      look[label] *= (sum over the neighbour's labels m of table(label, m) * unary(neighbour, m)) / (sum of unary(neighbour, m))
+      then divide look by its largest entry.
+  if any look was taken: weights[label] = unary-and-decided weight * look[label], scaled so the largest is 2^40
+  (a positive weight stays at least 1).
   (a remaining label always has a non-zero table weight against such a neighbour; if every weight were 0 the
    unary weights are used.  With tables of only 0 and 1 the factors are 1: the draw is by unary weight alone.)
   shift_down_total(weights, 40), then draw with unit(seed, [node, serial, 1])    # same draw rule as above

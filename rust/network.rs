@@ -253,6 +253,9 @@ pub struct Network {
     /// Whether each relation's table has a zero, so that an edge of it can
     /// bind: a table of non-zero weights forbids nothing.
     binding: Vec<bool>,
+    /// Whether each relation's table weighs pairs beyond allowing them: its
+    /// non-zero entries are not all equal.
+    graded: Vec<bool>,
 }
 
 fn bad(message: &str) -> Error {
@@ -340,6 +343,15 @@ impl Network {
             }
         }
         let tables_binding: Vec<bool> = tables.iter().map(|t| t.weights().contains(&0)).collect();
+        let tables_graded: Vec<bool> = tables
+            .iter()
+            .map(|t| {
+                let mut positive = t.weights().iter().filter(|&&w| w > 0);
+                positive
+                    .next()
+                    .is_some_and(|first| positive.any(|w| w != first))
+            })
+            .collect();
         let mut colours = vec![0u32; n];
         let mut colour_count = 0;
         for node in 0..n {
@@ -367,6 +379,7 @@ impl Network {
             node_counts: vec![Vec::new(); n],
             rows: std::sync::OnceLock::new(),
             binding: tables_binding,
+            graded: tables_graded,
         })
     }
 
@@ -401,6 +414,18 @@ impl Network {
         self.counts = counts;
         self.node_counts = node_counts;
         Ok(self)
+    }
+
+    /// Whether the network has any hard rule: a table with a zero that an edge
+    /// uses, or a count rule. Without one every labelling is allowed and a
+    /// sampled field needs nothing started from or repaired.
+    pub fn binds(&self) -> bool {
+        !self.counts.is_empty()
+            || self
+                .edges
+                .iter()
+                .flatten()
+                .any(|e| self.binding[e.relation as usize])
     }
 
     pub fn counts(&self) -> &[Count] {
@@ -639,6 +664,7 @@ impl Network {
         let problem = Problem {
             labels: self.labels,
             tables: &self.tables,
+            graded: &self.graded,
             edges: &self.edges,
             unary: &self.unary,
             ids: None,
@@ -834,6 +860,7 @@ impl Network {
                     let problem = Problem {
                         labels: self.labels,
                         tables: &self.tables,
+                        graded: &self.graded,
                         edges: &region.edges,
                         unary: &region.unary,
                         ids: Some(&order),
@@ -1098,6 +1125,7 @@ impl Network {
         let problem = Problem {
             labels: self.labels,
             tables: &self.tables,
+            graded: &self.graded,
             edges: &region.edges,
             unary: &region.unary,
             ids: Some(&order),
@@ -1259,10 +1287,16 @@ struct Problem<'a> {
     /// The pair tables the edges' relations name; a decision weighs its
     /// labels by them.
     tables: &'a [PairTable],
+    /// See `Network::graded`.
+    graded: &'a [bool],
     unary: &'a [Vec<(u32, u32)>],
     ids: Option<&'a [u32]>,
     counts: &'a [Count],
 }
+
+/// Largest product of two domain sizes a decision looks across to an
+/// undecided neighbour.
+const LOOKAHEAD_PAIRS: usize = 16_384;
 
 /// While the largest weight is `>= 2^bits`, shift every weight right so the
 /// largest has exactly `bits` bits. Weights that were positive stay positive.
@@ -1663,6 +1697,67 @@ impl<'a> Search<'a> {
         }
         if tilted.iter().any(|w| w.1 > 0) {
             weights = tilted;
+        }
+        // Neighbours still undecided weigh in by what they would allow: for
+        // each label, how much of the neighbour's own weight it leaves
+        // compatible, scaled by the table. This is the belief a decision
+        // would otherwise lack, so that a pair the statistics favour is drawn
+        // from either end. Only tables that weigh pairs beyond allowing them
+        // take part, and only while the labels of both ends are few.
+        let mut look: Option<Vec<f64>> = None;
+        for edge in &self.net.edges[node] {
+            let other = edge.to as usize;
+            let size = self.size[other] as usize;
+            if size <= 1
+                || !self.net.graded[edge.relation as usize]
+                || size * weights.len() > LOOKAHEAD_PAIRS
+            {
+                continue;
+            }
+            let table = &self.net.tables[edge.relation as usize];
+            let theirs = &self.net.unary[other];
+            let domain: Vec<(u32, u64)> = self
+                .labels_of(other)
+                .into_iter()
+                .map(|m| {
+                    let w = theirs
+                        .binary_search_by_key(&m, |p| p.0)
+                        .ok()
+                        .map_or(1, |i| theirs[i].1);
+                    (m, u64::from(w))
+                })
+                .collect();
+            let den: u128 = domain.iter().map(|&(_, w)| u128::from(w)).sum();
+            let look = look.get_or_insert_with(|| vec![1.0; weights.len()]);
+            for (k, &(l, _)) in weights.iter().enumerate() {
+                let num: u128 = domain
+                    .iter()
+                    .map(|&(m, w)| u128::from(table.get(l, m)) * u128::from(w))
+                    .sum();
+                look[k] *= num as f64 / den as f64;
+            }
+            // Keep the factors in range however many neighbours multiply.
+            let top = look.iter().cloned().fold(0.0, f64::max);
+            if top > 0.0 {
+                look.iter_mut().for_each(|f| *f /= top);
+            }
+        }
+        if let Some(look) = look
+            && look.iter().all(|f| f.is_finite())
+            && look.iter().any(|&f| f > 0.0)
+        {
+            let scaled: Vec<f64> = weights
+                .iter()
+                .zip(&look)
+                .map(|(w, f)| w.1 as f64 * f)
+                .collect();
+            let top = scaled.iter().cloned().fold(0.0, f64::max);
+            if top > 0.0 {
+                for (w, f) in weights.iter_mut().zip(&scaled) {
+                    let unit = (f / top * 1_099_511_627_776.0).round() as u64;
+                    w.1 = if w.1 > 0 { unit.max(1) } else { 0 };
+                }
+            }
         }
         shift_down_total(&mut weights, 40);
         weights
